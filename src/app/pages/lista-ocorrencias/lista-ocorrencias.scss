@@ -1,0 +1,210 @@
+// Container principal
+.lista-container {
+  min-height: 100vh;
+  background: #f5f7fa;
+}
+
+// Header
+.lista-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 1.5rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  position: relative;
+
+  h2 {
+    margin: 0;
+    font-size: 1.5rem;
+  }
+}
+
+// Botão voltar
+.btn-voltar {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
+}
+
+// Conteúdo principal
+.lista-content {
+  padding: 2rem 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+// Lista de ocorrências
+.ocorrencias-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+
+  // Responsividade - Desktop
+  @media (min-width: 768px) {
+    gap: 2rem;
+  }
+}
+
+// Card de ocorrência
+.ocorrencia-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: all 0.3s;
+
+  &:hover {
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.2);
+  }
+}
+
+// Header do card (clicável)
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  transition: background 0.2s;
+
+  &:hover {
+    background: #f8f9fa;
+  }
+}
+
+// Conteúdo do header (esquerda)
+.header-content {
+  flex: 1;
+
+  h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.25rem;
+    color: #333;
+  }
+}
+
+// Resumo (data e turma)
+.resumo {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.resumo-item {
+  font-size: 0.875rem;
+  color: #666;
+  
+  &::before {
+    content: '• ';
+    color: #999;
+  }
+  
+  &:first-child::before {
+    content: '';
+  }
+}
+
+// Actions do header (direita)
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+// Ícone de toggle
+.toggle-icon {
+  font-size: 0.875rem;
+  color: #667eea;
+  font-weight: bold;
+}
+
+// Corpo do card
+.card-body {
+  padding: 1.25rem;
+}
+
+// Linha de informação
+.info-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+
+  &.descricao {
+    flex-direction: column;
+    margin-bottom: 0;
+  }
+
+  .label {
+    font-weight: 600;
+    color: #666;
+    min-width: 80px;
+  }
+
+  .value {
+    color: #333;
+  }
+
+  p.value {
+    margin: 0.25rem 0 0 0;
+    line-height: 1.5;
+    color: #555;
+  }
+}
+
+// Badges de gravidade
+.badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  
+  &.badge-leve {
+    background: #e8f5e9;
+    color: #2e7d32;
+  }
+  
+  &.badge-moderada {
+    background: #fff3e0;
+    color: #f57c00;
+  }
+  
+  &.badge-grave {
+    background: #ffebee;
+    color: #c62828;
+  }
+}
+
+// Empty state (sem ocorrências)
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  
+  p:first-child {
+    font-size: 4rem;
+    margin: 0 0 1rem 0;
+  }
+  
+  h3 {
+    margin: 0 0 0.5rem 0;
+    color: #333;
+    font-size: 1.5rem;
+  }
+  
+  p:last-child {
+    margin: 0;
+    color: #666;
+  }
+}

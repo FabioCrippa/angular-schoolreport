@@ -1,1 +1,66 @@
-<p>lista-ocorrencias works!</p>
+<div class="lista-container">
+  
+  <header class="lista-header">
+    <button class="btn-voltar" (click)="voltar()">← Voltar</button>
+    <h2>Minhas Ocorrências</h2>
+  </header>
+  
+  <main class="lista-content">
+    
+    <div class="ocorrencias-list" *ngIf="ocorrencias.length > 0; else semOcorrencias">
+      
+      <div class="ocorrencia-card" *ngFor="let ocorrencia of ocorrencias">
+        
+        <div class="card-header" (click)="toggleExpansao(ocorrencia)">
+          <div class="header-content">
+            <h3>{{ ocorrencia.nomeAluno }}</h3>
+            <div class="resumo">
+              <span class="resumo-item">{{ ocorrencia.data | date: 'dd/MM/yyyy' }}</span>
+              <span class="resumo-item">{{ ocorrencia.turma }}</span>
+            </div>
+          </div>
+          <div class="header-actions">
+            <span class="badge" [class]="'badge-' + ocorrencia.gravidade.toLowerCase()">
+              {{ ocorrencia.gravidade }}
+            </span>
+            <span class="toggle-icon">{{ ocorrencia.expandido ? '▲' : '▼' }}</span>
+          </div>
+        </div>
+        
+        <div class="card-body" *ngIf="ocorrencia.expandido">
+          <div class="info-row">
+            <span class="label">Tipo de Ensino:</span>
+            <span class="value">{{ ocorrencia.tipoEnsino }}</span>
+          </div>
+          
+          <div class="info-row">
+            <span class="label">Disciplina:</span>
+            <span class="value">{{ ocorrencia.disciplina }}</span>
+          </div>
+          
+          <div class="info-row">
+            <span class="label">Tipo de Ocorrência:</span>
+            <span class="value">{{ ocorrencia.tipoOcorrencia }}</span>
+          </div>
+          
+          <div class="info-row descricao">
+            <span class="label">Descrição:</span>
+            <p class="value">{{ ocorrencia.descricao }}</p>
+          </div>
+        </div>
+        
+      </div>
+      
+    </div>
+    
+    <ng-template #semOcorrencias>
+      <div class="empty-state">
+        <p>📋</p>
+        <h3>Nenhuma ocorrência registrada</h3>
+        <p>Quando você registrar ocorrências, elas aparecerão aqui.</p>
+      </div>
+    </ng-template>
+    
+  </main>
+  
+</div>
