@@ -3,9 +3,10 @@
   <!-- HEADER/NAVBAR -->
   <header class="navbar">
     <div class="nav-content">
-      <div class="logo">
-        <h1>📋 SchoolReport</h1>
-      </div>
+      <a href="/" class="logo">
+        <span class="logo-icon">📋</span>
+        <span class="logo-text">SchoolReport</span>
+      </a>
       <nav class="nav-links">
         <a href="#recursos">Recursos</a>
         <a href="#como-funciona">Como Funciona</a>
@@ -18,20 +19,17 @@
   <!-- HERO SECTION -->
   <section class="hero">
     <div class="hero-content">
+      <div class="hero-badge">✨ Plataforma de gestão escolar</div>
       <h1 class="hero-title">
-        Gestão de Ocorrências<br>
-        Escolares Simplificada
+        Gestão de ocorrências<br>
+        escolares simplificada
       </h1>
       <p class="hero-subtitle">
-        Pare de usar papel. Registre, acompanhe e notifique ocorrências<br>
-        em segundos com nossa plataforma intuitiva.
+        Sistema moderno e intuitivo para registrar, acompanhar e notificar ocorrências.<br>
       </p>
       <div class="hero-buttons">
-        <button class="btn-primary" (click)="solicitarDemo()">
-          📞 Solicitar Demonstração
-        </button>
-        <button class="btn-secondary" (click)="irParaLogin()">
-          Acessar Sistema
+        <button class="btn-primary" (click)="irParaLogin()">
+          Acessar plataforma →
         </button>
       </div>
     </div>
@@ -39,108 +37,115 @@
 
   <!-- RECURSOS/BENEFÍCIOS -->
   <section id="recursos" class="recursos">
-    <h2 class="section-title">Por que escolher o SchoolReport?</h2>
-    <div class="recursos-grid">
+    <div class="recursos-container">
+      <div class="recursos-header">
+        <h2 class="section-title">Tudo que sua escola precisa</h2>
+        <p class="section-subtitle">Ferramentas projetadas para facilitar o dia a dia escolar</p>
+      </div>
       
-      <div class="recurso-card">
-        <div class="recurso-icon">⚡</div>
-        <h3>Rápido e Prático</h3>
-        <p>Registre ocorrências em menos de 1 minuto. Interface intuitiva e sem complexidade.</p>
-      </div>
+      <div class="recursos-grid">
+        
+        <div class="recurso-card">
+          <div class="recurso-icon">⚡</div>
+          <h3>Registro rápido</h3>
+          <p>Menos de 1 minuto para registrar. Interface limpa e objetiva.</p>
+        </div>
 
-      <div class="recurso-card">
-        <div class="recurso-icon">🔒</div>
-        <h3>100% Seguro</h3>
-        <p>Dados protegidos com Firebase. Sem edição ou exclusão após registro.</p>
-      </div>
+        <div class="recurso-card">
+          <div class="recurso-icon">🔒</div>
+          <h3>Segurança total</h3>
+          <p>Dados criptografados e armazenados com segurança na nuvem.</p>
+        </div>
 
-      <div class="recurso-card">
-        <div class="recurso-icon">📧</div>
-        <h3>Notificação Automática</h3>
-        <p>Direção e coordenação recebem email instantâneo a cada nova ocorrência.</p>
-      </div>
+        <div class="recurso-card">
+          <div class="recurso-icon">📧</div>
+          <h3>Notificações automáticas</h3>
+          <p>Gestão recebe alertas instantâneos por email.</p>
+        </div>
 
-      <div class="recurso-card">
-        <div class="recurso-icon">📊</div>
-        <h3>Relatórios Completos</h3>
-        <p>Visualize todas as ocorrências organizadas por turma, gravidade e período.</p>
-      </div>
+        <div class="recurso-card">
+          <div class="recurso-icon">📊</div>
+          <h3>Relatórios inteligentes</h3>
+          <p>Visualize dados organizados por turma e período.</p>
+        </div>
 
-      <div class="recurso-card">
-        <div class="recurso-icon">👥</div>
-        <h3>Multi-Usuário</h3>
-        <p>Professores, coordenação e direção com acessos específicos.</p>
-      </div>
+        <div class="recurso-card">
+          <div class="recurso-icon">👥</div>
+          <h3>Múltiplos usuários</h3>
+          <p>Perfis específicos para professores, coordenação e direção.</p>
+        </div>
 
-      <div class="recurso-card">
-        <div class="recurso-icon">☁️</div>
-        <h3>100% Online</h3>
-        <p>Acesse de qualquer lugar, a qualquer hora. Sem instalação necessária.</p>
-      </div>
+        <div class="recurso-card">
+          <div class="recurso-icon">☁️</div>
+          <h3>Acesso universal</h3>
+          <p>De qualquer lugar, qualquer hora. Sem instalações.</p>
+        </div>
 
+      </div>
     </div>
   </section>
 
   <!-- COMO FUNCIONA -->
   <section id="como-funciona" class="como-funciona">
-    <h2 class="section-title">Como Funciona</h2>
-    <div class="passos">
+    <div class="como-funciona-container">
+      <div class="como-funciona-header">
+        <h2 class="section-title">Como funciona na prática</h2>
+      </div>
       
-      <div class="passo">
-        <div class="passo-numero">1</div>
-        <h3>Professor Registra</h3>
-        <p>Em sala de aula, o professor identifica uma ocorrência e registra no sistema em segundos.</p>
+      <div class="passos">
+        
+        <div class="passo">
+          <div class="passo-numero">1</div>
+          <h3>Registre</h3>
+          <p>Professor identifica e registra a ocorrência em segundos.</p>
+        </div>
+
+        <div class="passo">
+          <div class="passo-numero">2</div>
+          <h3>Notifique</h3>
+          <p>Gestão recebe email automático com detalhes completos.</p>
+        </div>
+
+        <div class="passo">
+          <div class="passo-numero">3</div>
+          <h3>Analise</h3>
+          <p>Acompanhe histórico e tome decisões baseadas em dados.</p>
+        </div>
+
       </div>
-
-      <div class="passo-arrow">→</div>
-
-      <div class="passo">
-        <div class="passo-numero">2</div>
-        <h3>Sistema Notifica</h3>
-        <p>Direção e coordenação recebem email automático com todos os detalhes.</p>
-      </div>
-
-      <div class="passo-arrow">→</div>
-
-      <div class="passo">
-        <div class="passo-numero">3</div>
-        <h3>Gestão Eficiente</h3>
-        <p>Acompanhe histórico, gere relatórios e tome decisões baseadas em dados.</p>
-      </div>
-
     </div>
-  </section>
-
-  <!-- CTA FINAL -->
-  <section class="cta">
-    <h2>Pronto para modernizar sua escola?</h2>
-    <p>Junte-se a dezenas de escolas que já eliminaram o papel</p>
-    <button class="btn-cta" (click)="solicitarDemo()">
-      🚀 Solicitar Demonstração Gratuita
-    </button>
   </section>
 
   <!-- FOOTER -->
   <footer id="contato" class="footer">
     <div class="footer-content">
-      <div class="footer-section">
-        <h3>SchoolReport</h3>
-        <p>Gestão de ocorrências escolares simplificada</p>
+      <div class="footer-main">
+        <div class="footer-brand">
+          <a href="/" class="footer-logo">
+            <span class="logo-icon">📋</span>
+            <span class="logo-text">SchoolReport</span>
+          </a>
+          <p class="footer-description">Gestão de ocorrências escolares na era digital</p>
+        </div>
       </div>
-      <div class="footer-section">
-        <h4>Contato</h4>
-        <p>📧 contato@schoolreport.com.br</p>
-        <p>📱 (XX) XXXXX-XXXX</p>
-      </div>
-      <div class="footer-section">
-        <h4>Links</h4>
-        <a href="#recursos">Recursos</a>
-        <a href="#como-funciona">Como Funciona</a>
-        <a (click)="irParaLogin()">Acessar Sistema</a>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Recursos</h4>
+          <a href="#recursos">Todos os recursos</a>
+          <a href="#como-funciona">Como funciona</a>
+        </div>
+        <div class="footer-col">
+          <h4>Acesso</h4>
+          <a (click)="irParaLogin()">Entrar no sistema</a>
+        </div>
+        <div class="footer-col">
+          <h4>Contato</h4>
+          <a href="mailto:contato@schoolreport.com.br">contato@schoolreport.com.br</a>
+        </div>
       </div>
     </div>
     <div class="footer-bottom">
-      <p>&copy; 2026 SchoolReport. Todos os direitos reservados.</p>
+      <p>© 2026 SchoolReport. Todos os direitos reservados.</p>
     </div>
   </footer>
 
