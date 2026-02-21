@@ -85,9 +85,9 @@ export class Admin implements OnInit {
       
       console.log('Escolas carregadas com sucesso:', this.escolas.length);
     } catch (error: any) {
-      console.error('Erro ao carregar escolas:', error);
-      console.error('Código do erro:', error.code);
-      console.error('Mensagem:', error.message);
+      // console.error('Erro ao carregar escolas:', error);
+      // console.error('Código do erro:', error.code);
+      // console.error('Mensagem:', error.message);
       
       this.erroCarregar = `Erro ao carregar escolas: ${error.code || 'Desconhecido'}`;
     } finally {
