@@ -113,8 +113,14 @@ export class RegistroOcorrencia {
       const formData = this.ocorrenciaForm.value;
       const user = this.authService.getCurrentUser();
       
-      // TODO: Buscar escolaId do usuário logado (quando implementar collection usuarios)
-      const escolaId = '1SP0ZO2KFKbv2RSnTdT3'; // Temporário - hardcoded
+      // Buscar escolaId do usuário logado
+      const escolaId = await this.authService.getEscolaId();
+      
+      if (!escolaId) {
+        alert('Erro: Usuário não vinculado a nenhuma escola. Contate o administrador.');
+        this.loading = false;
+        return;
+      }
       
       await this.firestoreService.adicionarOcorrencia({
         escolaId: escolaId,

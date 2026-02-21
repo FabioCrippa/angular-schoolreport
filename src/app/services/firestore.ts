@@ -3,12 +3,23 @@ import {
   Firestore, 
   collection, 
   addDoc, 
-  getDocs, 
+  getDocs,
+  getDoc,
+  doc,
   query, 
   where,
   orderBy,
   Timestamp 
 } from '@angular/fire/firestore';
+
+export interface Usuario {
+  email: string;
+  nome: string;
+  escolaId: string;
+  role: 'professor' | 'coordenacao' | 'direcao';
+  ativo: boolean;
+  criadoEm?: Date;
+}
 
 export interface Ocorrencia {
   id?: string;
@@ -77,6 +88,30 @@ export class FirestoreService {
       
     } catch (error) {
       console.error('Erro ao buscar ocorrências:', error);
+      throw error;
+    }
+  }
+
+  async buscarUsuario(userId: string): Promise<Usuario | null> {
+    try {
+      const usuarioDoc = await getDoc(doc(this.firestore, 'usuarios', userId));
+      
+      if (usuarioDoc.exists()) {
+        const data = usuarioDoc.data();
+        return {
+          email: data['email'],
+          nome: data['nome'],
+          escolaId: data['escolaId'],
+          role: data['role'],
+          ativo: data['ativo'],
+          criadoEm: data['criadoEm']?.toDate()
+        } as Usuario;
+      }
+      
+      return null;
+      
+    } catch (error) {
+      console.error('Erro ao buscar usuário:', error);
       throw error;
     }
   }

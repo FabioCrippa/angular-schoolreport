@@ -2,6 +2,7 @@ import { Component, inject, OnInit, ChangeDetectorRef, NgZone } from '@angular/c
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FirestoreService, Ocorrencia } from '../../services/firestore';
+import { AuthService } from '../../services/auth';
 
 @Component({
   selector: 'app-lista-ocorrencias',
@@ -13,6 +14,7 @@ export class ListaOcorrencias implements OnInit {
   
   private router = inject(Router);
   private firestoreService = inject(FirestoreService);
+  private authService = inject(AuthService);
   private cdr = inject(ChangeDetectorRef);
   private ngZone = inject(NgZone);
   
@@ -27,8 +29,14 @@ export class ListaOcorrencias implements OnInit {
     try {
       this.loading = true;
       
-      // TODO: Buscar escolaId do usuário logado (quando implementar collection usuarios)
-      const escolaId = '1SP0ZO2KFKbv2RSnTdT3'; // Temporário - hardcoded
+      // Buscar escolaId do usuário logado
+      const escolaId = await this.authService.getEscolaId();
+      
+      if (!escolaId) {
+        alert('Erro: Usuário não vinculado a nenhuma escola. Contate o administrador.');
+        this.loading = false;
+        return;
+      }
       
       this.ocorrencias = await this.firestoreService.buscarOcorrencias(escolaId);
       
