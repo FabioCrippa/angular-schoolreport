@@ -1,0 +1,66 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Função auxiliar para verificar se é admin
+    function isAdmin() {
+      return request.auth != null && request.auth.token.email in [
+        'professor@escola.com'
+      ];
+    }
+    
+    // Função auxiliar para verificar se usuário pertence à escola
+    function belongsToSchool(escolaId) {
+      return request.auth != null && 
+             exists(/databases/$(database)/documents/usuarios/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.escolaId == escolaId;
+    }
+    
+    // Regras para coleção 'escolas'
+    match /escolas/{escolaId} {
+      // Admins podem ler, criar, atualizar e deletar escolas
+      allow read, write: if isAdmin();
+      
+      // Usuários podem apenas ler sua própria escola
+      allow read: if request.auth != null && belongsToSchool(escolaId);
+    }
+    
+    // Regras para coleção 'usuarios'
+    match /usuarios/{userId} {
+      // Admins podem ler, criar, atualizar e deletar qualquer usuário
+      allow read, write: if isAdmin();
+      
+      // Usuário pode ler e atualizar seu próprio documento
+      allow read, update: if request.auth != null && request.auth.uid == userId;
+      
+      // Permitir criação de documento durante primeiro acesso (sem auth ainda)
+      // ou quando o email corresponde
+      allow create: if request.auth != null;
+      
+      // Permitir leitura por email para o fluxo de primeiro acesso
+      allow read: if request.auth != null;
+    }
+    
+    // Regras para coleção 'ocorrencias'
+    match /ocorrencias/{ocorrenciaId} {
+      // Usuários podem criar ocorrências apenas para sua escola
+      allow create: if request.auth != null && 
+                      belongsToSchool(request.resource.data.escolaId);
+      
+      // Usuários podem ler e atualizar ocorrências da sua escola
+      allow read, update: if request.auth != null && 
+                            belongsToSchool(resource.data.escolaId);
+      
+      // Admins podem ler todas as ocorrências
+      allow read: if isAdmin();
+      
+      // Usuários podem deletar apenas suas próprias ocorrências
+      allow delete: if request.auth != null && 
+                      resource.data.criadoPor == request.auth.uid;
+      
+      // Admins podem deletar qualquer ocorrência
+      allow delete: if isAdmin();
+    }
+  }
+}

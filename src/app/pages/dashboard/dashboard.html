@@ -9,6 +9,9 @@
         <span class="user-name">{{ userName }}</span>
         <span class="user-email">{{ userEmail }}</span>
       </div>
+      <button class="btn-admin" *ngIf="isAdmin" routerLink="/admin">
+        ⚙️ Painel Admin
+      </button>
       <button class="btn-logout" (click)="logout()">
         Sair
       </button>

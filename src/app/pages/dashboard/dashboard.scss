@@ -82,6 +82,26 @@ $border-color: #E5E7EB;
   }
 }
 
+.btn-admin {
+  padding: 0.5rem 1rem;
+  background: rgba(255, 215, 0, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 215, 0, 0.4);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-decoration: none;
+  display: inline-block;
+
+  &:hover {
+    background: rgba(255, 215, 0, 0.35);
+    border-color: rgba(255, 215, 0, 0.6);
+    transform: translateY(-1px);
+  }
+}
+
 // ===== CONTENT =====
 .dashboard-content {
   padding: 3rem 2rem;

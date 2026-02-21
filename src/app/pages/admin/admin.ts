@@ -1,6 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { FirestoreService, Escola, Usuario } from '../../services/firestore';
 import { AuthService } from '../../services/auth';
 
@@ -13,6 +14,7 @@ import { AuthService } from '../../services/auth';
 export class Admin implements OnInit {
   private firestoreService = inject(FirestoreService);
   authService = inject(AuthService);
+  private router = inject(Router);
   
   escolas: Escola[] = [];
   carregandoEscolas = false;
@@ -64,6 +66,11 @@ export class Admin implements OnInit {
         this.erroCarregar = 'Você precisa estar logado para acessar o painel admin.';
       }
     });
+  }
+
+  async logout() {
+    await this.authService.logout();
+    this.router.navigate(['/login']);
   }
 
   async carregarEscolas() {
@@ -248,6 +255,7 @@ export class Admin implements OnInit {
   async salvarUsuario() {
     if (!this.novoUsuario.email || !this.novoUsuario.nome || !this.escolaSelecionada?.id) {
       console.error('Preencha todos os campos obrigatórios.');
+      alert('Preencha todos os campos obrigatórios.');
       return;
     }
 
@@ -256,21 +264,36 @@ export class Admin implements OnInit {
       
       if (this.modoEdicaoUsuario && this.usuarioEditandoId) {
         // Atualizar usuário existente
-        await this.firestoreService.atualizarUsuario(this.usuarioEditandoId, this.novoUsuario);
+        await this.firestoreService.atualizarUsuario(this.usuarioEditandoId, {
+          email: this.novoUsuario.email,
+          nome: this.novoUsuario.nome,
+          role: this.novoUsuario.role,
+          ativo: this.novoUsuario.ativo
+        });
         console.log('Usuário atualizado com sucesso!');
       } else {
-        // Adicionar novo usuário
+        // Criar novo usuário no Firestore (sem conta no Auth ainda)
+        // O usuário criará sua senha via "Primeiro Acesso"
         await this.firestoreService.adicionarUsuarioFirestore({
-          ...this.novoUsuario,
+          email: this.novoUsuario.email,
+          nome: this.novoUsuario.nome,
+          role: this.novoUsuario.role,
+          ativo: this.novoUsuario.ativo,
           escolaId: this.escolaSelecionada.id
         });
+        
+        // Exibe link de primeiro acesso que deve ser enviado ao professor
+        const primeiroAcessoLink = `${window.location.origin}/primeiro-acesso`;
+        alert(`Usuário criado com sucesso!\n\nEnvie este link para ${this.novoUsuario.nome}:\n${primeiroAcessoLink}\n\nO professor deverá usar o email ${this.novoUsuario.email} para criar sua senha.`);
+        
         console.log('Usuário adicionado com sucesso!');
       }
       
       this.fecharFormUsuario();
       await this.carregarUsuarios();
-    } catch (error) {
-      console.error('Erro ao salvar usuário:', error);
+    } catch (error: any) {
+      console.error('❌ Erro ao salvar usuário:', error);
+      alert(`Erro ao salvar usuário: ${error.message || 'Erro desconhecido'}`);
     } finally {
       this.salvandoUsuario = false;
     }

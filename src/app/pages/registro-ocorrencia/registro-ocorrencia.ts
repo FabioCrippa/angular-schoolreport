@@ -1,13 +1,13 @@
 import { Component, inject } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth';
 import { FirestoreService } from '../../services/firestore';
 import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-registro-ocorrencia',
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './registro-ocorrencia.html',
   styleUrl: './registro-ocorrencia.scss',
 })
@@ -21,6 +21,9 @@ export class RegistroOcorrencia {
   ocorrenciaForm: FormGroup;
   showConfirm = false;
   loading = false;
+  isAdmin = false;
+
+  private ADMIN_EMAILS = ['professor@escola.com'];
 
   tiposOcorrencia = [
     'Atraso',
@@ -97,6 +100,12 @@ export class RegistroOcorrencia {
       gravidade: ['', Validators.required],
       descricao: ['', [Validators.required, Validators.minLength(10)]],
     })
+    
+    // Verifica se o usuário é admin
+    const user = this.authService.getCurrentUser();
+    if (user) {
+      this.isAdmin = this.ADMIN_EMAILS.includes(user.email || '');
+    }
   }
 
   onSubmit() {

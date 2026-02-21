@@ -13,6 +13,9 @@
       <button class="btn-adicionar" (click)="abrirModalNovaEscola()">
         + Nova Escola
       </button>
+      <button class="btn-logout" (click)="logout()">
+        🚪 Sair
+      </button>
     </div>
   </header>
 
@@ -212,6 +215,10 @@
                 <option [value]="false">Inativo</option>
               </select>
             </div>
+          </div>
+
+          <div class="info-primeiro-acesso" *ngIf="!modoEdicaoUsuario">
+            <p>ℹ️ <strong>Importante:</strong> Após criar o usuário, envie o link de <strong>Primeiro Acesso</strong> para o professor definir sua própria senha.</p>
           </div>
 
           <div class="form-actions">

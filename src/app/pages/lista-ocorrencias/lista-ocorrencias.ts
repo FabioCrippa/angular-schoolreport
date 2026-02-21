@@ -1,12 +1,12 @@
 import { Component, inject, OnInit, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { FirestoreService, Ocorrencia } from '../../services/firestore';
 import { AuthService } from '../../services/auth';
 
 @Component({
   selector: 'app-lista-ocorrencias',
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './lista-ocorrencias.html',
   styleUrl: './lista-ocorrencias.scss',
 })
@@ -20,8 +20,17 @@ export class ListaOcorrencias implements OnInit {
   
   ocorrencias: Ocorrencia[] = [];
   loading = true;
+  isAdmin = false;
+
+  private ADMIN_EMAILS = ['professor@escola.com'];
   
   ngOnInit() {
+    // Verifica se o usuário é admin
+    const user = this.authService.getCurrentUser();
+    if (user) {
+      this.isAdmin = this.ADMIN_EMAILS.includes(user.email || '');
+    }
+    
     this.carregarOcorrencias();
   }
   

@@ -80,6 +80,23 @@ $error-color: #DC2626;
   }
 }
 
+.btn-logout {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.875rem;
+
+  &:hover {
+    background: rgba(220, 38, 38, 0.9);
+    border-color: rgba(220, 38, 38, 1);
+  }
+}
+
 // ===== CONTENT =====
 .admin-content {
   padding: 3rem 2rem;
@@ -561,6 +578,25 @@ $error-color: #DC2626;
     color: $text-dark;
     font-size: 1.25rem;
     font-weight: 700;
+  }
+}
+
+.info-primeiro-acesso {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: rgba(59, 130, 246, 0.05);
+  border-left: 3px solid $primary-blue;
+  border-radius: 6px;
+
+  p {
+    margin: 0;
+    font-size: 0.875rem;
+    color: $text-gray;
+    line-height: 1.5;
+
+    strong {
+      color: $text-dark;
+    }
   }
 }
 

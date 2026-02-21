@@ -5,7 +5,12 @@
       <span class="logo-icon">🎓</span>
       <span class="logo-text">Ocorrências Escolares</span>
     </a>
-    <button class="btn-voltar" (click)="voltar()">← Voltar</button>
+    <div class="header-actions">
+      <button class="btn-admin" *ngIf="isAdmin" routerLink="/admin">
+        ⚙️ Admin
+      </button>
+      <button class="btn-voltar" (click)="voltar()">← Voltar</button>
+    </div>
   </header>
   
   <main class="lista-content">

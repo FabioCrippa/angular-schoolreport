@@ -15,10 +15,23 @@ export class AuthService {
   
   user$ = user(this.auth);
   
+  private ADMIN_EMAILS = ['admin@escola.com'];
+  
+  private isAdmin(email: string | null): boolean {
+    return email ? this.ADMIN_EMAILS.includes(email) : false;
+  }
+  
   async loginWithEmail(email: string, password: string) {
     try {
       const resultado = await signInWithEmailAndPassword(this.auth, email, password);
-      this.router.navigate(['/dashboard']);
+      
+      // Redireciona admin para painel admin, usuários normais para dashboard
+      if (this.isAdmin(resultado.user.email)) {
+        this.router.navigate(['/admin']);
+      } else {
+        this.router.navigate(['/dashboard']);
+      }
+      
       return resultado;
     } catch (erro: any) {
       console.error('Erro no login:', erro.message);
@@ -30,7 +43,14 @@ export class AuthService {
     try {
       const provider = new GoogleAuthProvider();
       const resultado = await signInWithPopup(this.auth, provider);
-      this.router.navigate(['/dashboard']);
+      
+      // Redireciona admin para painel admin, usuários normais para dashboard
+      if (this.isAdmin(resultado.user.email)) {
+        this.router.navigate(['/admin']);
+      } else {
+        this.router.navigate(['/dashboard']);
+      }
+      
       return resultado;
     } catch (erro: any) {
       console.error('Erro no login com Google:', erro.message);
