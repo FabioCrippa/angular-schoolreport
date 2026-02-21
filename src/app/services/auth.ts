@@ -21,15 +21,17 @@ export class AuthService {
     return email ? this.ADMIN_EMAILS.includes(email) : false;
   }
   
-  async loginWithEmail(email: string, password: string) {
+  async loginWithEmail(email: string, password: string, autoRedirect: boolean = true) {
     try {
       const resultado = await signInWithEmailAndPassword(this.auth, email, password);
       
       // Redireciona admin para painel admin, usuários normais para dashboard
-      if (this.isAdmin(resultado.user.email)) {
-        this.router.navigate(['/admin']);
-      } else {
-        this.router.navigate(['/dashboard']);
+      if (autoRedirect) {
+        if (this.isAdmin(resultado.user.email)) {
+          this.router.navigate(['/admin']);
+        } else {
+          this.router.navigate(['/dashboard']);
+        }
       }
       
       return resultado;

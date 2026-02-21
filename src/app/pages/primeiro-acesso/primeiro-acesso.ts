@@ -99,13 +99,8 @@ export class PrimeiroAcesso {
       const uid = await this.authService.criarContaComEmail(this.email, this.senha);
       console.log('✅ Conta Auth criada com UID:', uid);
       
-      console.log('🔑 Fazendo login automático...');
-      // 2. Faz login automático para ter permissões no Firestore
-      await this.authService.loginWithEmail(this.email, this.senha);
-      console.log('✅ Login automático realizado');
-      
-      console.log('📝 Criando documento no Firestore...');
-      // 3. Cria documento do usuário no Firestore com o UID do Auth
+      console.log('� Criando documento no Firestore com UID correto...');
+      // 2. Cria documento do usuário no Firestore com o UID do Auth
       await this.firestoreService.adicionarUsuarioComId(uid, {
         email: this.usuarioEncontrado.email,
         nome: this.usuarioEncontrado.nome,
@@ -116,9 +111,14 @@ export class PrimeiroAcesso {
       console.log('✅ Documento Firestore criado');
       
       console.log('🗑️ Removendo documento temporário...');
-      // 4. Remove o documento inicial criado pelo admin
+      // 3. Remove o documento inicial criado pelo admin
       await this.firestoreService.deletarUsuario(this.usuarioEncontrado.docId);
       console.log('✅ Documento temporário removido');
+      
+      console.log('🔑 Fazendo login automático...');
+      // 4. Faz login automático (sem redirecionar ainda)
+      await this.authService.loginWithEmail(this.email, this.senha, false);
+      console.log('✅ Login automático realizado');
       
       console.log('🎉 Conta criada com sucesso!');
       
