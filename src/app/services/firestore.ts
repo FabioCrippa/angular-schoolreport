@@ -5,12 +5,14 @@ import {
   addDoc, 
   getDocs, 
   query, 
+  where,
   orderBy,
   Timestamp 
 } from '@angular/fire/firestore';
 
 export interface Ocorrencia {
   id?: string;
+  escolaId: string;
   nomeAluno: string;
   data: string;
   tipoEnsino: string;
@@ -49,9 +51,15 @@ export class FirestoreService {
     }
   }
 
-  async buscarOcorrencias(): Promise<Ocorrencia[]> {
+  async buscarOcorrencias(escolaId: string): Promise<Ocorrencia[]> {
     try {
-      const querySnapshot = await getDocs(this.ocorrenciasCollection);
+      // Filtrar apenas ocorrências da escola específica
+      const q = query(
+        this.ocorrenciasCollection, 
+        where('escolaId', '==', escolaId)
+      );
+      
+      const querySnapshot = await getDocs(q);
       
       const ocorrencias: Ocorrencia[] = [];
       
@@ -64,7 +72,7 @@ export class FirestoreService {
         } as Ocorrencia);
       });
       
-      console.log('Buscou do Firestore:', ocorrencias);
+      console.log(`Buscou ${ocorrencias.length} ocorrências da escola ${escolaId}`);
       return ocorrencias;
       
     } catch (error) {

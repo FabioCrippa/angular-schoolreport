@@ -113,7 +113,11 @@ export class RegistroOcorrencia {
       const formData = this.ocorrenciaForm.value;
       const user = this.authService.getCurrentUser();
       
+      // TODO: Buscar escolaId do usuário logado (quando implementar collection usuarios)
+      const escolaId = '1SP0ZO2KFKbv2RSnTdT3'; // Temporário - hardcoded
+      
       await this.firestoreService.adicionarOcorrencia({
+        escolaId: escolaId,
         nomeAluno: formData.nomeAluno,
         data: formData.data,
         tipoEnsino: formData.tipoEnsino,

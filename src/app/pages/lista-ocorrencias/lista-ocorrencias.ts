@@ -26,7 +26,11 @@ export class ListaOcorrencias implements OnInit {
   async carregarOcorrencias() {
     try {
       this.loading = true;
-      this.ocorrencias = await this.firestoreService.buscarOcorrencias();
+      
+      // TODO: Buscar escolaId do usuário logado (quando implementar collection usuarios)
+      const escolaId = '1SP0ZO2KFKbv2RSnTdT3'; // Temporário - hardcoded
+      
+      this.ocorrencias = await this.firestoreService.buscarOcorrencias(escolaId);
       
       console.log('Ocorrências carregadas:', this.ocorrencias.length);
       console.log('Dados:', this.ocorrencias);
