@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Auth, user } from '@angular/fire/auth';
 import { Router } from '@angular/router';
-import { GoogleAuthProvider, signInWithEmailAndPassword, signInWithPopup, signOut } from 'firebase/auth';
+import { GoogleAuthProvider, signInWithEmailAndPassword, signInWithPopup, signOut, createUserWithEmailAndPassword } from 'firebase/auth';
 import { FirestoreService } from './firestore';
 
 @Injectable({
@@ -52,19 +52,41 @@ export class AuthService {
     return this.auth.currentUser !== null;
   }
 
+  async criarContaComEmail(email: string, password: string): Promise<string> {
+    try {
+      console.log('📧 Tentando criar conta para:', email);
+      const userCredential = await createUserWithEmailAndPassword(this.auth, email, password);
+      console.log('✅ Conta criada! UID:', userCredential.user.uid);
+      return userCredential.user.uid;
+    } catch (erro: any) {
+      console.error('❌ Erro ao criar conta:', erro);
+      console.error('Código do erro:', erro.code);
+      console.error('Mensagem:', erro.message);
+      throw erro;
+    }
+  }
+
   getCurrentUser() {
     return this.auth.currentUser;
   }
 
   async getEscolaId(): Promise<string | null> {
     const user = this.getCurrentUser();
-    if (!user) return null;
+    console.log('🔍 Buscando escolaId para usuário:', user?.uid);
+    
+    if (!user) {
+      console.log('❌ Nenhum usuário logado');
+      return null;
+    }
     
     try {
+      console.log('📡 Buscando documento do usuário no Firestore...');
       const usuario = await this.firestoreService.buscarUsuario(user.uid);
+      console.log('✅ Documento encontrado:', usuario);
+      console.log('🏫 EscolaId:', usuario?.escolaId);
       return usuario?.escolaId || null;
     } catch (error) {
-      console.error('Erro ao buscar escolaId:', error);
+      console.error('❌ Erro ao buscar escolaId:', error);
       return null;
     }
   }

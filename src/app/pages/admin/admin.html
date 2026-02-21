@@ -1,0 +1,259 @@
+<div class="admin-container">
+  <div class="admin-header">
+    <h1>Painel Administrativo</h1>
+    <button class="btn-adicionar" (click)="abrirModalNovaEscola()">
+      + Adicionar Escola
+    </button>
+  </div>
+
+  <!-- Info do usuário logado -->
+  <div class="user-info">
+    <p>👤 Logado como: <strong>{{ userEmail || 'Carregando...' }}</strong></p>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading" *ngIf="carregandoEscolas">
+    <p>Carregando escolas...</p>
+  </div>
+
+  <!-- Erro -->
+  <div class="erro-mensagem" *ngIf="erroCarregar && !carregandoEscolas">
+    <p>⚠️ {{ erroCarregar }}</p>
+  </div>
+
+  <!-- Tabela de Escolas -->
+  <div class="tabela-container" *ngIf="!carregandoEscolas">
+    <table class="tabela-escolas">
+      <thead>
+        <tr>
+          <th>Nome da Escola</th>
+          <th>Email Direção</th>
+          <th>Email Coordenação</th>
+          <th>Plano</th>
+          <th>Status</th>
+          <th>Data Criação</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let escola of escolas">
+          <td>{{ escola.nome }}</td>
+          <td>{{ escola.emailDirecao }}</td>
+          <td>{{ escola.emailCoordenacao || '-' }}</td>
+          <td>
+            <span class="badge badge-plano" [class.trial]="escola.plano === 'trial'">
+              {{ escola.plano === 'mensal' ? 'Mensal' : escola.plano === 'anual' ? 'Anual' : 'Trial' }}
+            </span>
+          </td>
+          <td>
+            <span class="badge badge-status" [class.inativo]="escola.status === 'inativo'">
+              {{ escola.status === 'ativo' ? 'Ativa' : 'Inativa' }}
+            </span>
+          </td>
+          <td>{{ escola.criadoEm | date: 'dd/MM/yyyy' }}</td>
+          <td>
+            <div class="btn-acoes">
+              <button class="btn-usuarios" (click)="abrirModalUsuarios(escola)" title="Gerenciar Usuários">
+                👥
+              </button>
+              <button class="btn-editar" (click)="abrirModalEditarEscola(escola)" title="Editar">
+                ✏️
+              </button>
+              <button class="btn-deletar" (click)="deletarEscola(escola)" title="Deletar">
+                🗑️
+              </button>
+            </div>
+          </td>
+        </tr>
+        <tr *ngIf="escolas.length === 0">
+          <td colspan="7" style="text-align: center; padding: 2rem;">
+            Nenhuma escola cadastrada ainda.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Modal Nova/Editar Escola -->
+  <div class="modal-overlay" *ngIf="mostrarModalNovaEscola" (click)="fecharModalNovaEscola()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>{{ modoEdicao ? 'Editar Escola' : 'Adicionar Nova Escola' }}</h2>
+        <button class="btn-fechar" (click)="fecharModalNovaEscola()">✕</button>
+      </div>
+
+      <form class="form-escola" (ngSubmit)="salvarNovaEscola()">
+        <div class="form-group">
+          <label for="nome">Nome da Escola *</label>
+          <input 
+            type="text" 
+            id="nome" 
+            [(ngModel)]="novaEscola.nome" 
+            name="nome"
+            placeholder="Ex: Escola Estadual João da Silva"
+            required>
+        </div>
+
+        <div class="form-group">
+          <label for="emailDirecao">Email da Direção *</label>
+          <input 
+            type="email" 
+            id="emailDirecao" 
+            [(ngModel)]="novaEscola.emailDirecao" 
+            name="emailDirecao"
+            placeholder="direcao@escola.com"
+            required>
+        </div>
+
+        <div class="form-group">
+          <label for="emailCoordenacao">Email da Coordenação</label>
+          <input 
+            type="email" 
+            id="emailCoordenacao" 
+            [(ngModel)]="novaEscola.emailCoordenacao" 
+            name="emailCoordenacao"
+            placeholder="coordenacao@escola.com">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="plano">Plano</label>
+            <select id="plano" [(ngModel)]="novaEscola.plano" name="plano">
+              <option value="trial">Trial (Teste)</option>
+              <option value="mensal">Mensal</option>
+              <option value="anual">Anual</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="status">Status</label>
+            <select id="status" [(ngModel)]="novaEscola.status" name="status">
+              <option value="ativo">Ativa</option>
+              <option value="inativo">Inativa</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-cancelar" (click)="fecharModalNovaEscola()">
+            Cancelar
+          </button>
+          <button type="submit" class="btn-salvar" [disabled]="salvandoEscola">
+            {{ salvandoEscola ? 'Salvando...' : (modoEdicao ? 'Atualizar Escola' : 'Salvar Escola') }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Gerenciar Usuários -->
+  <div class="modal-overlay" *ngIf="mostrarModalUsuarios" (click)="fecharModalUsuarios()">
+    <div class="modal-content modal-usuarios" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Usuários - {{ escolaSelecionada?.nome }}</h2>
+        <button class="btn-fechar" (click)="fecharModalUsuarios()">✕</button>
+      </div>
+
+      <!-- Formulário de Adicionar/Editar Usuário -->
+      <div class="form-usuario" *ngIf="mostrarFormUsuario">
+        <h3>{{ modoEdicaoUsuario ? 'Editar Usuário' : 'Adicionar Novo Usuário' }}</h3>
+        <form (ngSubmit)="salvarUsuario()">
+          <div class="form-group">
+            <label for="userEmail">Email *</label>
+            <input 
+              type="email" 
+              id="userEmail" 
+              [(ngModel)]="novoUsuario.email" 
+              name="userEmail"
+              placeholder="usuario@email.com"
+              [disabled]="modoEdicaoUsuario"
+              required>
+          </div>
+
+          <div class="form-group">
+            <label for="userName">Nome *</label>
+            <input 
+              type="text" 
+              id="userName" 
+              [(ngModel)]="novoUsuario.nome" 
+              name="userName"
+              placeholder="Nome completo"
+              required>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="userRole">Função</label>
+              <select id="userRole" [(ngModel)]="novoUsuario.role" name="userRole">
+                <option value="professor">Professor</option>
+                <option value="coordenacao">Coordenação</option>
+                <option value="direcao">Direção</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="userAtivo">Status</label>
+              <select id="userAtivo" [(ngModel)]="novoUsuario.ativo" name="userAtivo">
+                <option [value]="true">Ativo</option>
+                <option [value]="false">Inativo</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn-cancelar" (click)="fecharFormUsuario()">
+              Cancelar
+            </button>
+            <button type="submit" class="btn-salvar" [disabled]="salvandoUsuario">
+              {{ salvandoUsuario ? 'Salvando...' : (modoEdicaoUsuario ? 'Atualizar' : 'Adicionar') }}
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Lista de Usuários -->
+      <div class="usuarios-content" *ngIf="!mostrarFormUsuario">
+        <div class="usuarios-header-acoes">
+          <button class="btn-adicionar-usuario" (click)="abrirFormNovoUsuario()">
+            + Adicionar Usuário
+          </button>
+          <button class="btn-copiar-link" (click)="copiarLinkPrimeiroAcesso()" title="Copiar link do Primeiro Acesso">
+            🔗 Copiar Link de Cadastro
+          </button>
+        </div>
+
+        <div class="loading" *ngIf="carregandoUsuarios">
+          <p>Carregando usuários...</p>
+        </div>
+
+        <div class="usuarios-lista" *ngIf="!carregandoUsuarios">
+          <div class="usuario-card" *ngFor="let usuario of usuarios">
+            <div class="usuario-info">
+              <h4>{{ usuario.nome }}</h4>
+              <p class="usuario-email">{{ usuario.email }}</p>
+              <div class="usuario-badges">
+                <span class="badge badge-role">{{ usuario.role }}</span>
+                <span class="badge badge-status" [class.inativo]="!usuario.ativo">
+                  {{ usuario.ativo ? 'Ativo' : 'Inativo' }}
+                </span>
+              </div>
+            </div>
+            <div class="usuario-acoes">
+              <button class="btn-editar-pequeno" (click)="abrirFormEditarUsuario(usuario)" title="Editar">
+                ✏️
+              </button>
+              <button class="btn-deletar-pequeno" (click)="deletarUsuario(usuario)" title="Deletar">
+                🗑️
+              </button>
+            </div>
+          </div>
+
+          <div class="usuarios-vazio" *ngIf="usuarios.length === 0">
+            <p>Nenhum usuário cadastrado nesta escola.</p>
+            <p style="font-size: 0.9rem; color: #666;">Clique em "Adicionar Usuário" para começar.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

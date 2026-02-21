@@ -1,0 +1,85 @@
+<div class="primeiro-acesso-container">
+  <div class="card">
+    <div class="header">
+      <h1>Primeiro Acesso</h1>
+      <p class="subtitulo">Configure sua conta para acessar a plataforma</p>
+    </div>
+
+    <!-- ETAPA 1: Verificar Email -->
+    <div class="form-container" *ngIf="etapa === 'email'">
+      <form (ngSubmit)="verificarEmail()">
+        <div class="form-group">
+          <label for="email">Digite seu email cadastrado</label>
+          <input 
+            type="email" 
+            id="email" 
+            [(ngModel)]="email" 
+            name="email"
+            placeholder="seuemail@escola.com"
+            [disabled]="processando"
+            required>
+          <p class="hint">Use o email que foi cadastrado pelo administrador da sua escola.</p>
+        </div>
+
+        <div class="mensagem-erro" *ngIf="mensagemErro">
+          ⚠️ {{ mensagemErro }}
+        </div>
+
+        <button type="submit" class="btn-primary" [disabled]="processando">
+          {{ processando ? 'Verificando...' : 'Continuar' }}
+        </button>
+
+        <div class="link-container">
+          <a routerLink="/login">Já tenho conta • Fazer login</a>
+        </div>
+      </form>
+    </div>
+
+    <!-- ETAPA 2: Criar Senha -->
+    <div class="form-container" *ngIf="etapa === 'senha'">
+      <div class="info-usuario">
+        <p><strong>Olá, {{ usuarioEncontrado?.nome }}!</strong></p>
+        <p>Agora defina sua senha de acesso:</p>
+      </div>
+
+      <form (ngSubmit)="criarConta()">
+        <div class="form-group">
+          <label for="senha">Senha</label>
+          <input 
+            type="password" 
+            id="senha" 
+            [(ngModel)]="senha" 
+            name="senha"
+            placeholder="Mínimo 6 caracteres"
+            [disabled]="processando"
+            required>
+        </div>
+
+        <div class="form-group">
+          <label for="confirmarSenha">Confirmar Senha</label>
+          <input 
+            type="password" 
+            id="confirmarSenha" 
+            [(ngModel)]="confirmarSenha" 
+            name="confirmarSenha"
+            placeholder="Digite a senha novamente"
+            [disabled]="processando"
+            required>
+        </div>
+
+        <div class="mensagem-erro" *ngIf="mensagemErro">
+          ⚠️ {{ mensagemErro }}
+        </div>
+
+        <div class="button-group">
+          <button type="button" class="btn-secondary" (click)="voltarParaEmail()" [disabled]="processando">
+            Voltar
+          </button>
+          <button type="submit" class="btn-primary" [disabled]="processando">
+            {{ processando ? 'Criando conta...' : 'Criar Conta' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

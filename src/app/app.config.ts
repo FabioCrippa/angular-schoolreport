@@ -1,6 +1,6 @@
 import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { provideRouter } from '@angular/router';
-import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
+// import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 
 // Imports do Firebase
 import { provideFirebaseApp, initializeApp } from '@angular/fire/app';
@@ -16,12 +16,12 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes), 
-    provideClientHydration(withEventReplay()),
+    // DESABILITADO: provideClientHydration(withEventReplay()) - causa problemas com Firebase Auth
     
     // Inicializar Firebase com as credenciais
     provideFirebaseApp(() => initializeApp(environment.firebaseConfig)),
     
-    // Fornecer serviço de Autenticação
+    // Fornecer serviço de Autenticação com persistência LOCAL por padrão
     provideAuth(() => getAuth()),
     
     // Fornecer serviço de Firestore (banco de dados)
