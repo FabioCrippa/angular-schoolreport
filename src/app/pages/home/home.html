@@ -1,0 +1,147 @@
+<div class="home-container">
+  
+  <!-- HEADER/NAVBAR -->
+  <header class="navbar">
+    <div class="nav-content">
+      <div class="logo">
+        <h1>📋 SchoolReport</h1>
+      </div>
+      <nav class="nav-links">
+        <a href="#recursos">Recursos</a>
+        <a href="#como-funciona">Como Funciona</a>
+        <a href="#contato">Contato</a>
+        <button class="btn-login" (click)="irParaLogin()">Entrar</button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- HERO SECTION -->
+  <section class="hero">
+    <div class="hero-content">
+      <h1 class="hero-title">
+        Gestão de Ocorrências<br>
+        Escolares Simplificada
+      </h1>
+      <p class="hero-subtitle">
+        Pare de usar papel. Registre, acompanhe e notifique ocorrências<br>
+        em segundos com nossa plataforma intuitiva.
+      </p>
+      <div class="hero-buttons">
+        <button class="btn-primary" (click)="solicitarDemo()">
+          📞 Solicitar Demonstração
+        </button>
+        <button class="btn-secondary" (click)="irParaLogin()">
+          Acessar Sistema
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- RECURSOS/BENEFÍCIOS -->
+  <section id="recursos" class="recursos">
+    <h2 class="section-title">Por que escolher o SchoolReport?</h2>
+    <div class="recursos-grid">
+      
+      <div class="recurso-card">
+        <div class="recurso-icon">⚡</div>
+        <h3>Rápido e Prático</h3>
+        <p>Registre ocorrências em menos de 1 minuto. Interface intuitiva e sem complexidade.</p>
+      </div>
+
+      <div class="recurso-card">
+        <div class="recurso-icon">🔒</div>
+        <h3>100% Seguro</h3>
+        <p>Dados protegidos com Firebase. Sem edição ou exclusão após registro.</p>
+      </div>
+
+      <div class="recurso-card">
+        <div class="recurso-icon">📧</div>
+        <h3>Notificação Automática</h3>
+        <p>Direção e coordenação recebem email instantâneo a cada nova ocorrência.</p>
+      </div>
+
+      <div class="recurso-card">
+        <div class="recurso-icon">📊</div>
+        <h3>Relatórios Completos</h3>
+        <p>Visualize todas as ocorrências organizadas por turma, gravidade e período.</p>
+      </div>
+
+      <div class="recurso-card">
+        <div class="recurso-icon">👥</div>
+        <h3>Multi-Usuário</h3>
+        <p>Professores, coordenação e direção com acessos específicos.</p>
+      </div>
+
+      <div class="recurso-card">
+        <div class="recurso-icon">☁️</div>
+        <h3>100% Online</h3>
+        <p>Acesse de qualquer lugar, a qualquer hora. Sem instalação necessária.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- COMO FUNCIONA -->
+  <section id="como-funciona" class="como-funciona">
+    <h2 class="section-title">Como Funciona</h2>
+    <div class="passos">
+      
+      <div class="passo">
+        <div class="passo-numero">1</div>
+        <h3>Professor Registra</h3>
+        <p>Em sala de aula, o professor identifica uma ocorrência e registra no sistema em segundos.</p>
+      </div>
+
+      <div class="passo-arrow">→</div>
+
+      <div class="passo">
+        <div class="passo-numero">2</div>
+        <h3>Sistema Notifica</h3>
+        <p>Direção e coordenação recebem email automático com todos os detalhes.</p>
+      </div>
+
+      <div class="passo-arrow">→</div>
+
+      <div class="passo">
+        <div class="passo-numero">3</div>
+        <h3>Gestão Eficiente</h3>
+        <p>Acompanhe histórico, gere relatórios e tome decisões baseadas em dados.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- CTA FINAL -->
+  <section class="cta">
+    <h2>Pronto para modernizar sua escola?</h2>
+    <p>Junte-se a dezenas de escolas que já eliminaram o papel</p>
+    <button class="btn-cta" (click)="solicitarDemo()">
+      🚀 Solicitar Demonstração Gratuita
+    </button>
+  </section>
+
+  <!-- FOOTER -->
+  <footer id="contato" class="footer">
+    <div class="footer-content">
+      <div class="footer-section">
+        <h3>SchoolReport</h3>
+        <p>Gestão de ocorrências escolares simplificada</p>
+      </div>
+      <div class="footer-section">
+        <h4>Contato</h4>
+        <p>📧 contato@schoolreport.com.br</p>
+        <p>📱 (XX) XXXXX-XXXX</p>
+      </div>
+      <div class="footer-section">
+        <h4>Links</h4>
+        <a href="#recursos">Recursos</a>
+        <a href="#como-funciona">Como Funciona</a>
+        <a (click)="irParaLogin()">Acessar Sistema</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 SchoolReport. Todos os direitos reservados.</p>
+    </div>
+  </footer>
+
+</div>
