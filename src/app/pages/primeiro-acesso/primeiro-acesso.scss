@@ -1,155 +1,190 @@
+// ===== VARIABLES =====
+$primary-blue: #3B82F6;
+$primary-blue-dark: #2563EB;
+$text-dark: #1F2937;
+$text-gray: #6B7280;
+$bg-light: #F9FAFB;
+$bg-white: #FFFFFF;
+$border-color: #E5E7EB;
+$error-bg: #FEF2F2;
+$error-border: #EF4444;
+$error-text: #DC2626;
+
+// ===== CONTAINER =====
 .primeiro-acesso-container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem 1rem;
-}
-
-.card {
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-  width: 100%;
-  max-width: 450px;
-  overflow: hidden;
+  flex-direction: column;
+  padding: 2rem;
+  background: $bg-light;
 }
 
 .header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 2rem;
+  margin-bottom: 3rem;
   text-align: center;
-  color: white;
+}
+
+.logo-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: $text-dark;
+  text-decoration: none;
+  transition: opacity 0.2s;
+
+  &:hover {
+    opacity: 0.8;
+  }
+
+  .logo-icon {
+    font-size: 2rem;
+  }
+}
+
+// ===== CARD =====
+.card {
+  background: $bg-white;
+  padding: 3rem 2rem;
+  border-radius: 12px;
+  border: 1px solid $border-color;
+  width: 100%;
+  max-width: 480px;
+  margin: auto;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.card-header {
+  margin-bottom: 2rem;
+  text-align: center;
 
   h1 {
     margin: 0 0 0.5rem 0;
-    font-size: 1.8rem;
-    font-weight: 600;
+    font-size: 2rem;
+    color: $text-dark;
+    font-weight: 800;
+    letter-spacing: -0.02em;
   }
 
   .subtitulo {
     margin: 0;
-    font-size: 0.95rem;
-    opacity: 0.95;
+    color: $text-gray;
+    font-size: 1rem;
   }
 }
 
-.form-container {
-  padding: 2rem;
-}
-
+// ===== INFO USUARIO =====
 .info-usuario {
-  background: #f0f4ff;
-  padding: 1rem;
+  background: rgba(59, 130, 246, 0.05);
+  border: 1px solid rgba(59, 130, 246, 0.2);
   border-radius: 8px;
+  padding: 1rem 1.25rem;
   margin-bottom: 1.5rem;
 
-  p {
-    margin: 0.25rem 0;
-    color: #333;
-    
-    &:first-child {
-      font-size: 1.1rem;
-      color: #667eea;
-    }
+  .welcome {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.125rem;
+    color: $text-dark;
+  }
+
+  .instruction {
+    margin: 0;
+    color: $text-gray;
+    font-size: 0.9375rem;
   }
 }
 
+// ===== FORM =====
 .form-group {
   margin-bottom: 1.5rem;
-
-  label {
-    display: block;
-    margin-bottom: 0.5rem;
-    color: #333;
-    font-weight: 500;
-    font-size: 0.9rem;
-  }
-
-  input {
-    width: 100%;
-    padding: 0.85rem;
-    border: 2px solid #e5e7eb;
-    border-radius: 8px;
-    font-size: 1rem;
-    transition: all 0.3s ease;
-    box-sizing: border-box;
-
-    &:focus {
-      outline: none;
-      border-color: #667eea;
-      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-    }
-
-    &:disabled {
-      background: #f9fafb;
-      cursor: not-allowed;
-    }
-
-    &::placeholder {
-      color: #9ca3af;
-    }
-  }
-
-  .hint {
-    margin: 0.5rem 0 0 0;
-    font-size: 0.85rem;
-    color: #6b7280;
-  }
 }
 
-.mensagem-erro {
-  background: #fee2e2;
-  color: #991b1b;
+label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: $text-dark;
+  font-size: 0.875rem;
+}
+
+input {
+  width: 100%;
   padding: 0.75rem 1rem;
+  border: 1px solid $border-color;
   border-radius: 8px;
-  margin-bottom: 1.5rem;
-  font-size: 0.9rem;
-  border-left: 4px solid #dc2626;
+  font-size: 1rem;
+  transition: all 0.2s;
+  box-sizing: border-box;
+  color: $text-dark;
+
+  &:focus {
+    outline: none;
+    border-color: $primary-blue;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+
+  &::placeholder {
+    color: #9CA3AF;
+  }
+
+  &:disabled {
+    background: #F3F4F6;
+    cursor: not-allowed;
+  }
 }
 
+.hint {
+  margin: 0.5rem 0 0 0;
+  font-size: 0.8125rem;
+  color: $text-gray;
+}
+
+// ===== BUTTONS =====
 .btn-primary {
   width: 100%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 0.875rem;
+  background: $primary-blue;
   color: white;
   border: none;
-  padding: 0.85rem;
   border-radius: 8px;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s;
+  margin-top: 0.5rem;
 
   &:hover:not(:disabled) {
+    background: $primary-blue-dark;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
   }
 
   &:disabled {
-    opacity: 0.6;
+    opacity: 0.5;
     cursor: not-allowed;
-    transform: none;
   }
 }
 
 .btn-secondary {
-  background: #f3f4f6;
-  color: #4b5563;
-  border: none;
-  padding: 0.85rem 1.5rem;
+  flex: 1;
+  padding: 0.875rem;
+  background: transparent;
+  color: $text-gray;
+  border: 1px solid $border-color;
   border-radius: 8px;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s;
 
   &:hover:not(:disabled) {
-    background: #e5e7eb;
+    border-color: $primary-blue;
+    color: $primary-blue;
   }
 
   &:disabled {
-    opacity: 0.6;
+    opacity: 0.5;
     cursor: not-allowed;
   }
 }
@@ -157,50 +192,54 @@
 .button-group {
   display: flex;
   gap: 1rem;
-  margin-top: 1.5rem;
-
-  .btn-secondary {
-    flex: 0 0 auto;
-  }
-
-  .btn-primary {
-    flex: 1;
-  }
+  margin-top: 0.5rem;
 }
 
+// ===== ERROR MESSAGE =====
+.mensagem-erro {
+  margin: 1rem 0;
+  padding: 0.875rem;
+  background: $error-bg;
+  border-left: 3px solid $error-border;
+  color: $error-text;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+// ===== LINKS =====
 .link-container {
-  text-align: center;
   margin-top: 1.5rem;
+  text-align: center;
 
   a {
-    color: #667eea;
+    color: $text-gray;
     text-decoration: none;
     font-size: 0.9rem;
-    transition: color 0.3s ease;
+    font-weight: 500;
+    transition: color 0.2s;
 
     &:hover {
-      color: #764ba2;
-      text-decoration: underline;
+      color: $primary-blue;
     }
   }
 }
 
-// ========== RESPONSIVE ==========
-
-@media (max-width: 480px) {
-  .header h1 {
-    font-size: 1.5rem;
+// ===== RESPONSIVE =====
+@media (max-width: 768px) {
+  .primeiro-acesso-container {
+    padding: 1rem;
   }
 
-  .form-container {
-    padding: 1.5rem;
+  .card {
+    padding: 2rem 1.5rem;
+  }
+
+  .card-header h1 {
+    font-size: 1.75rem;
   }
 
   .button-group {
     flex-direction: column;
-
-    .btn-secondary {
-      width: 100%;
-    }
   }
 }

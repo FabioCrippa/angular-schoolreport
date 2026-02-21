@@ -1,7 +1,16 @@
 <div class="login-container">
+    <div class="login-header">
+        <a href="/" class="logo-link">
+            <span class="logo-icon">📋</span>
+            <span class="logo-text">SchoolReport</span>
+        </a>
+    </div>
+
     <div class="login-card">
-        <h1>Sistema de Ocorrências</h1>
-        <p class="subtitle">Faça login para continuar</p>
+        <div class="card-header">
+            <h1>Entrar na plataforma</h1>
+            <p class="subtitle">Digite suas credenciais para acessar</p>
+        </div>
 
         <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
             <div class="form-group">
@@ -30,22 +39,14 @@
             </button>
         </form>
 
-        <div class="separator">
-            <span>ou</span>
-        </div>
-
-        <button 
-            type="button"
-            class="btn-google"
-            (click)="loginWithGoogle()"
-            [disabled]="loading">
-            Entrar com Google
-        </button>
-
         <div 
             class="error-message" 
             *ngIf="errorMessage">
             {{ errorMessage }}
+        </div>
+
+        <div class="login-footer">
+            <a href="/" class="back-link">← Voltar para home</a>
         </div>
     </div>
 </div>

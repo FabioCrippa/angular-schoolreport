@@ -1,11 +1,18 @@
 <div class="lista-container">
   
   <header class="lista-header">
+    <a routerLink="/dashboard" class="logo-link">
+      <span class="logo-icon">🎓</span>
+      <span class="logo-text">Ocorrências Escolares</span>
+    </a>
     <button class="btn-voltar" (click)="voltar()">← Voltar</button>
-    <h2>Minhas Ocorrências</h2>
   </header>
   
   <main class="lista-content">
+    <div class="page-header">
+      <h1>Minhas Ocorrências</h1>
+      <p>Visualize e gerencie todas as ocorrências registradas</p>
+    </div>
     
     <div class="ocorrencias-list" *ngIf="ocorrencias.length > 0; else semOcorrencias">
       

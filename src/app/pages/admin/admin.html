@@ -1,78 +1,92 @@
 <div class="admin-container">
-  <div class="admin-header">
-    <h1>Painel Administrativo</h1>
-    <button class="btn-adicionar" (click)="abrirModalNovaEscola()">
-      + Adicionar Escola
-    </button>
-  </div>
+  <header class="admin-header">
+    <div class="header-left">
+      <a routerLink="/dashboard" class="logo-link">
+        <span class="logo-icon">🎓</span>
+        <span class="logo-text">Ocorrências Escolares</span>
+      </a>
+    </div>
+    <div class="header-right">
+      <div class="user-info">
+        <span class="user-label">👤 {{ userEmail || 'Carregando...' }}</span>
+      </div>
+      <button class="btn-adicionar" (click)="abrirModalNovaEscola()">
+        + Nova Escola
+      </button>
+    </div>
+  </header>
 
-  <!-- Info do usuário logado -->
-  <div class="user-info">
-    <p>👤 Logado como: <strong>{{ userEmail || 'Carregando...' }}</strong></p>
-  </div>
+  <main class="admin-content">
+    <div class="page-header">
+      <h1>Painel Administrativo</h1>
+      <p>Gerencie escolas e usuários do sistema</p>
+    </div>
 
-  <!-- Loading -->
-  <div class="loading" *ngIf="carregandoEscolas">
-    <p>Carregando escolas...</p>
-  </div>
+    <!-- Loading -->
+    <div class="loading" *ngIf="carregandoEscolas">
+      <p>Carregando escolas...</p>
+    </div>
 
-  <!-- Erro -->
-  <div class="erro-mensagem" *ngIf="erroCarregar && !carregandoEscolas">
-    <p>⚠️ {{ erroCarregar }}</p>
-  </div>
+    <!-- Erro -->
+    <div class="erro-mensagem" *ngIf="erroCarregar && !carregandoEscolas">
+      <p>⚠️ {{ erroCarregar }}</p>
+    </div>
 
-  <!-- Tabela de Escolas -->
-  <div class="tabela-container" *ngIf="!carregandoEscolas">
-    <table class="tabela-escolas">
-      <thead>
-        <tr>
-          <th>Nome da Escola</th>
-          <th>Email Direção</th>
-          <th>Email Coordenação</th>
-          <th>Plano</th>
-          <th>Status</th>
-          <th>Data Criação</th>
-          <th>Ações</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let escola of escolas">
-          <td>{{ escola.nome }}</td>
-          <td>{{ escola.emailDirecao }}</td>
-          <td>{{ escola.emailCoordenacao || '-' }}</td>
-          <td>
-            <span class="badge badge-plano" [class.trial]="escola.plano === 'trial'">
-              {{ escola.plano === 'mensal' ? 'Mensal' : escola.plano === 'anual' ? 'Anual' : 'Trial' }}
-            </span>
-          </td>
-          <td>
-            <span class="badge badge-status" [class.inativo]="escola.status === 'inativo'">
-              {{ escola.status === 'ativo' ? 'Ativa' : 'Inativa' }}
-            </span>
-          </td>
-          <td>{{ escola.criadoEm | date: 'dd/MM/yyyy' }}</td>
-          <td>
-            <div class="btn-acoes">
-              <button class="btn-usuarios" (click)="abrirModalUsuarios(escola)" title="Gerenciar Usuários">
-                👥
-              </button>
-              <button class="btn-editar" (click)="abrirModalEditarEscola(escola)" title="Editar">
-                ✏️
-              </button>
-              <button class="btn-deletar" (click)="deletarEscola(escola)" title="Deletar">
-                🗑️
-              </button>
-            </div>
-          </td>
-        </tr>
-        <tr *ngIf="escolas.length === 0">
-          <td colspan="7" style="text-align: center; padding: 2rem;">
-            Nenhuma escola cadastrada ainda.
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+    <!-- Tabela de Escolas -->
+    <div class="tabela-wrapper" *ngIf="!carregandoEscolas">
+      <div class="tabela-container">
+        <table class="tabela-escolas">
+          <thead>
+            <tr>
+              <th>Nome da Escola</th>
+              <th>Email Direção</th>
+              <th>Email Coordenação</th>
+              <th>Plano</th>
+              <th>Status</th>
+              <th>Data Criação</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let escola of escolas">
+              <td>{{ escola.nome }}</td>
+              <td>{{ escola.emailDirecao }}</td>
+              <td>{{ escola.emailCoordenacao || '-' }}</td>
+              <td>
+                <span class="badge badge-plano" [class.trial]="escola.plano === 'trial'">
+                  {{ escola.plano === 'mensal' ? 'Mensal' : escola.plano === 'anual' ? 'Anual' : 'Trial' }}
+                </span>
+              </td>
+              <td>
+                <span class="badge badge-status" [class.inativo]="escola.status === 'inativo'">
+                  {{ escola.status === 'ativo' ? 'Ativa' : 'Inativa' }}
+                </span>
+              </td>
+              <td>{{ escola.criadoEm | date: 'dd/MM/yyyy' }}</td>
+              <td>
+                <div class="btn-acoes">
+                  <button class="btn-usuarios" (click)="abrirModalUsuarios(escola)" title="Gerenciar Usuários">
+                    👥
+                  </button>
+                  <button class="btn-editar" (click)="abrirModalEditarEscola(escola)" title="Editar">
+                    ✏️
+                  </button>
+                  <button class="btn-deletar" (click)="deletarEscola(escola)" title="Deletar">
+                    🗑️
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="escolas.length === 0">
+              <td colspan="7" style="text-align: center; padding: 2rem; color: #6B7280;">
+                Nenhuma escola cadastrada ainda.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
 
   <!-- Modal Nova/Editar Escola -->
   <div class="modal-overlay" *ngIf="mostrarModalNovaEscola" (click)="fecharModalNovaEscola()">

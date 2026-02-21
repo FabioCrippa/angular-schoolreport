@@ -1,214 +1,271 @@
+// ===== VARIABLES =====
+$primary-blue: #3B82F6;
+$primary-blue-dark: #2563EB;
+$text-dark: #1F2937;
+$text-gray: #6B7280;
+$bg-light: #F9FAFB;
+$bg-white: #FFFFFF;
+$border-color: #E5E7EB;
+$error-color: #DC2626;
+
+// ===== CONTAINER =====
 .registro-container {
   min-height: 100vh;
-  background: #f5f7fa;
+  background: $bg-light;
 }
 
+// ===== HEADER =====
 .registro-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, $primary-blue 0%, $primary-blue-dark 100%);
   color: white;
-  padding: 1.5rem;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  text-align: center;
-  position: relative;
+  padding: 1.25rem 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 
-  h2 {
-    margin: 0;
-    font-size: 1.5rem;
+.logo-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: white;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 1.25rem;
+  transition: opacity 0.2s;
+
+  &:hover {
+    opacity: 0.9;
+  }
+
+  .logo-icon {
+    font-size: 1.75rem;
   }
 }
 
 .btn-voltar {
-  position: absolute;
-  left: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.15);
   color: white;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.25);
   padding: 0.5rem 1rem;
   border-radius: 6px;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.2s;
+  font-weight: 600;
+  font-size: 0.875rem;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.25);
   }
 }
 
+// ===== CONTENT =====
 .registro-content {
-  padding: 2rem 1rem;
-  max-width: 800px;
+  padding: 3rem 2rem;
+  max-width: 900px;
   margin: 0 auto;
+}
 
-  // Responsividade - Desktop
-  @media (min-width: 768px) {
-    padding: 3rem 2rem;
+.page-header {
+  margin-bottom: 2.5rem;
+
+  h1 {
+    margin: 0 0 0.5rem 0;
+    color: $text-dark;
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+
+  p {
+    margin: 0;
+    color: $text-gray;
+    font-size: 1rem;
   }
 }
 
-// Formulário
+// ===== FORM =====
 form {
-  background: white;
-  padding: 2rem;
+  background: $bg-white;
+  padding: 2.5rem;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid $border-color;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
-// Grupo de campos
-.form-group {
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
   margin-bottom: 1.5rem;
+
+  @media (min-width: 768px) {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
-// Labels
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
 label {
   display: block;
   margin-bottom: 0.5rem;
-  font-weight: 500;
-  color: #333;
-  font-size: 0.9rem;
+  font-weight: 600;
+  color: $text-dark;
+  font-size: 0.875rem;
 }
 
-// Inputs e Selects
 input,
 select,
 textarea {
   width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #ddd;
-  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  border: 1px solid $border-color;
+  border-radius: 8px;
   font-size: 1rem;
-  transition: border-color 0.3s;
+  transition: all 0.2s;
   box-sizing: border-box;
+  color: $text-dark;
   font-family: inherit;
 
   &:focus {
     outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    border-color: $primary-blue;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
   }
 
   &::placeholder {
-    color: #999;
+    color: #9CA3AF;
+  }
+
+  &:disabled {
+    background: #F3F4F6;
+    cursor: not-allowed;
   }
 }
 
-// Select específico
 select {
   cursor: pointer;
   background-color: white;
 }
 
-// Textarea específico
 textarea {
   resize: vertical;
-  min-height: 100px;
+  min-height: 120px;
+  line-height: 1.6;
 }
 
-// Botão submit
+// ===== BUTTONS =====
 .btn-submit {
   width: 100%;
   padding: 0.875rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: $primary-blue;
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.2s;
+  margin-top: 1rem;
 
   &:hover:not(:disabled) {
+    background: $primary-blue-dark;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
   }
 
   &:disabled {
-    opacity: 0.6;
+    opacity: 0.5;
     cursor: not-allowed;
   }
 }
 
-// Modal overlay (fundo escuro)
+// ===== MODAL =====
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
-  animation: fadeIn 0.3s;
+  animation: fadeIn 0.2s;
 }
 
-// Conteúdo do modal
 .modal-content {
-  background: white;
-  padding: 2rem;
+  background: $bg-white;
+  padding: 2.5rem;
   border-radius: 12px;
   max-width: 500px;
   width: 90%;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
   animation: slideUp 0.3s;
 
   h3 {
     margin: 0 0 1rem 0;
-    color: #333;
+    color: $text-dark;
     font-size: 1.5rem;
+    font-weight: 700;
   }
 
   p {
-    margin: 0 0 1.5rem 0;
-    color: #666;
+    margin: 0 0 2rem 0;
+    color: $text-gray;
     line-height: 1.6;
 
     strong {
-      color: #d32f2f;
+      color: $error-color;
     }
   }
 }
 
-// Ações do modal (botões)
 .modal-actions {
   display: flex;
   gap: 1rem;
   justify-content: flex-end;
 }
 
-// Botão Cancelar
 .btn-cancel {
   padding: 0.75rem 1.5rem;
-  background: #f5f5f5;
-  color: #666;
-  border: 1px solid #ddd;
-  border-radius: 6px;
+  background: transparent;
+  color: $text-gray;
+  border: 1px solid $border-color;
+  border-radius: 8px;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.2s;
+  font-weight: 600;
 
   &:hover {
-    background: #e0e0e0;
+    border-color: $primary-blue;
+    color: $primary-blue;
   }
 }
 
-// Botão Confirmar
 .btn-confirm {
   padding: 0.75rem 1.5rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: $primary-blue;
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.2s;
+  font-weight: 600;
 
   &:hover {
+    background: $primary-blue-dark;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
   }
 }
 
-// Animações
+// ===== ANIMATIONS =====
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -216,11 +273,42 @@ textarea {
 
 @keyframes slideUp {
   from { 
-    transform: translateY(50px);
+    transform: translateY(20px);
     opacity: 0;
   }
   to { 
     transform: translateY(0);
     opacity: 1;
+  }
+}
+
+// ===== RESPONSIVE =====
+@media (max-width: 768px) {
+  .registro-header {
+    padding: 1rem 1.5rem;
+  }
+
+  .logo-link {
+    font-size: 1.125rem;
+
+    .logo-icon {
+      font-size: 1.5rem;
+    }
+  }
+
+  .registro-content {
+    padding: 2rem 1rem;
+  }
+
+  .page-header h1 {
+    font-size: 1.75rem;
+  }
+
+  form {
+    padding: 2rem 1.5rem;
+  }
+
+  .modal-content {
+    padding: 2rem;
   }
 }

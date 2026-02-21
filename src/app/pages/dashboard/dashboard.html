@@ -1,32 +1,35 @@
 <div class="dashboard-container">
-    <header class="dashboard-header">
-        <div class="user-info">
-            <h2>Olá, {{ userName }}</h2>
-            <p class="user-email">{{ userEmail }}</p>
-        </div>
-        <button class="btn-logout" (click)="logout()">
-            Sair
-        </button>
-    </header>
-
-    <main class="dashboard-content">
-        <h3 class="section-title">Ações Rápidas</h3>
-        
-        <div class="action-cards">
-          
-          <div class="card" (click)="goToRegistro()">
-            <div class="card-icon">📝</div>
-            <h4>Registrar Ocorrência</h4>
-            <p>Registre uma nova ocorrência de aluno</p>
-          </div>
-          
-          <div class="card" (click)="goToOcorrencias()">
-            <div class="card-icon">📋</div>
-            <h4>Minhas Ocorrências</h4>
-            <p>Visualize todas as ocorrências registradas</p>
-          </div>
-          
-        </div>
-      </main>
-      
+  <header class="dashboard-header">
+    <a routerLink="/" class="logo-link">
+      <span class="logo-icon">🎓</span>
+      <span class="logo-text">Ocorrências Escolares</span>
+    </a>
+    <div class="header-right">
+      <div class="user-info">
+        <span class="user-name">{{ userName }}</span>
+        <span class="user-email">{{ userEmail }}</span>
+      </div>
+      <button class="btn-logout" (click)="logout()">
+        Sair
+      </button>
     </div>
+  </header>
+
+  <main class="dashboard-content">
+    <h1 class="page-title">Ações Rápidas</h1>
+    
+    <div class="action-cards">
+      <div class="card" (click)="goToRegistro()">
+        <div class="card-icon">📝</div>
+        <h3>Registrar Ocorrência</h3>
+        <p>Registre uma nova ocorrência de aluno</p>
+      </div>
+      
+      <div class="card" (click)="goToOcorrencias()">
+        <div class="card-icon">📋</div>
+        <h3>Minhas Ocorrências</h3>
+        <p>Visualize todas as ocorrências registradas</p>
+      </div>
+    </div>
+  </main>
+</div>

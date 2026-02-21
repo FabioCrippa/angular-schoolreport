@@ -1,69 +1,104 @@
 <div class="registro-container">
   
   <header class="registro-header">
+    <a routerLink="/dashboard" class="logo-link">
+      <span class="logo-icon">🎓</span>
+      <span class="logo-text">Ocorrências Escolares</span>
+    </a>
     <button class="btn-voltar" (click)="voltar()">← Voltar</button>
-    <h2>Registrar Ocorrência</h2>
   </header>
   
   <main class="registro-content">
+    <div class="page-header">
+      <h1>Registrar Ocorrência</h1>
+      <p>Preencha todos os campos obrigatórios para registrar uma nova ocorrência</p>
+    </div>
+
     <form [formGroup]="ocorrenciaForm" (ngSubmit)="onSubmit()">
       
-      <div class="form-group">
-        <label for="nomeAluno">Nome do Aluno *</label>
-        <input 
-          type="text" 
-          id="nomeAluno" 
-          formControlName="nomeAluno"
-          placeholder="Digite o nome completo do aluno"
-        >
+      <div class="form-row">
+        <div class="form-group">
+          <label for="nomeAluno">Nome do Aluno *</label>
+          <input 
+            type="text" 
+            id="nomeAluno" 
+            formControlName="nomeAluno"
+            placeholder="Digite o nome completo do aluno"
+          >
+        </div>
       </div>
       
-      <div class="form-group">
-        <label for="tipoEnsino">Tipo de Ensino *</label>
-        <select 
-          id="tipoEnsino" 
-          formControlName="tipoEnsino"
-          (change)="onTipoEnsinoChange($any($event.target).value)"
-        >
-          <option value="">Selecione</option>
-          <option *ngFor="let tipo of tiposEnsino" [value]="tipo">
-            {{ tipo }}
-          </option>
-        </select>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="tipoEnsino">Tipo de Ensino *</label>
+          <select 
+            id="tipoEnsino" 
+            formControlName="tipoEnsino"
+            (change)="onTipoEnsinoChange($any($event.target).value)"
+          >
+            <option value="">Selecione</option>
+            <option *ngFor="let tipo of tiposEnsino" [value]="tipo">
+              {{ tipo }}
+            </option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="turma">Turma *</label>
+          <select 
+            id="turma" 
+            formControlName="turma"
+            [disabled]="turmasFiltradas.length === 0"
+          >
+            <option value="">Selecione</option>
+            <option *ngFor="let turma of turmasFiltradas" [value]="turma">
+              {{ turma }}
+            </option>
+          </select>
+        </div>
       </div>
       
-      <div class="form-group">
-        <label for="turma">Turma *</label>
-        <select 
-          id="turma" 
-          formControlName="turma"
-          [disabled]="turmasFiltradas.length === 0"
-        >
-          <option value="">Selecione</option>
-          <option *ngFor="let turma of turmasFiltradas" [value]="turma">
-            {{ turma }}
-          </option>
-        </select>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="tipoOcorrencia">Tipo de Ocorrência *</label>
+          <select id="tipoOcorrencia" formControlName="tipoOcorrencia">
+            <option value="">Selecione</option>
+            <option *ngFor="let tipo of tiposOcorrencia" [value]="tipo">
+              {{ tipo }}
+            </option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="gravidade">Gravidade *</label>
+          <select id="gravidade" formControlName="gravidade">
+            <option value="">Selecione</option>
+            <option *ngFor="let grav of gravidades" [value]="grav.value">
+              {{ grav.label }}
+            </option>
+          </select>
+        </div>
       </div>
       
-      <div class="form-group">
-        <label for="tipoOcorrencia">Tipo de Ocorrência *</label>
-        <select id="tipoOcorrencia" formControlName="tipoOcorrencia">
-          <option value="">Selecione</option>
-          <option *ngFor="let tipo of tiposOcorrencia" [value]="tipo">
-            {{ tipo }}
-          </option>
-        </select>
-      </div>
-      
-      <div class="form-group">
-        <label for="gravidade">Gravidade *</label>
-        <select id="gravidade" formControlName="gravidade">
-          <option value="">Selecione</option>
-          <option *ngFor="let grav of gravidades" [value]="grav.value">
-            {{ grav.label }}
-          </option>
-        </select>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="data">Data da Ocorrência *</label>
+          <input 
+            type="date" 
+            id="data" 
+            formControlName="data"
+          >
+        </div>
+        
+        <div class="form-group">
+          <label for="disciplina">Disciplina *</label>
+          <select id="disciplina" formControlName="disciplina">
+            <option value="">Selecione</option>
+            <option *ngFor="let disc of disciplinas" [value]="disc">
+              {{ disc }}
+            </option>
+          </select>
+        </div>
       </div>
       
       <div class="form-group">
@@ -74,25 +109,6 @@
           rows="5"
           placeholder="Descreva detalhadamente o que aconteceu (mínimo 10 caracteres)"
         ></textarea>
-      </div>
-      
-      <div class="form-group">
-        <label for="data">Data da Ocorrência *</label>
-        <input 
-          type="date" 
-          id="data" 
-          formControlName="data"
-        >
-      </div>
-      
-      <div class="form-group">
-        <label for="disciplina">Disciplina *</label>
-        <select id="disciplina" formControlName="disciplina">
-          <option value="">Selecione</option>
-          <option *ngFor="let disc of disciplinas" [value]="disc">
-            {{ disc }}
-          </option>
-        </select>
       </div>
       
       <button 
