@@ -22,6 +22,7 @@ export class RegistroOcorrencia {
   showConfirm = false;
   loading = false;
   isAdmin = false;
+  professorNome = 'Professor'; // Nome do professor logado
 
   private ADMIN_EMAILS = ['professor@escola.com'];
 
@@ -105,6 +106,23 @@ export class RegistroOcorrencia {
     const user = this.authService.getCurrentUser();
     if (user) {
       this.isAdmin = this.ADMIN_EMAILS.includes(user.email || '');
+      
+      // Buscar nome do usuário no Firestore
+      this.carregarNomeUsuario();
+    }
+  }
+  
+  async carregarNomeUsuario() {
+    try {
+      const user = this.authService.getCurrentUser();
+      if (!user) return;
+      
+      const usuario = await this.firestoreService.buscarUsuario(user.uid);
+      if (usuario && usuario.nome) {
+        this.professorNome = usuario.nome;
+      }
+    } catch (error) {
+      console.error('Erro ao buscar nome do usuário:', error);
     }
   }
 
@@ -131,6 +149,9 @@ export class RegistroOcorrencia {
         return;
       }
       
+      // Buscar dados da escola para enviar email
+      const escolaData = await this.firestoreService.buscarEscola(escolaId);
+      
       await this.firestoreService.adicionarOcorrencia({
         escolaId: escolaId,
         nomeAluno: formData.nomeAluno,
@@ -142,10 +163,14 @@ export class RegistroOcorrencia {
         gravidade: formData.gravidade,
         descricao: formData.descricao,
         professorEmail: user?.email || 'desconhecido@email.com',
-        professorNome: user?.displayName || 'Professor'
-      });
+        professorNome: this.professorNome
+      }, escolaData ? {
+        nome: escolaData.nome,
+        emailCoordenacao: escolaData.emailCoordenacao,
+        emailDirecao: escolaData.emailDirecao
+      } : undefined);
       
-      alert('Ocorrência registrada com sucesso!');
+      alert('Ocorrência registrada com sucesso! Email enviado para coordenação e direção.');
       this.ocorrenciaForm.reset();
       this.router.navigate(['/ocorrencias']);
       

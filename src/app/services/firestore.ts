@@ -60,12 +60,32 @@ export class FirestoreService {
   private firestore = inject(Firestore);
   private ocorrenciasCollection = collection(this.firestore, 'ocorrencias');
   
-  async adicionarOcorrencia(ocorrencia: Omit<Ocorrencia, 'id' | 'criadoEm'>): Promise<string> {
+  async adicionarOcorrencia(ocorrencia: Omit<Ocorrencia, 'id' | 'criadoEm'>, escolaData?: { nome: string, emailCoordenacao: string, emailDirecao: string }): Promise<string> {
     try {
-      const docRef = await addDoc(this.ocorrenciasCollection, {
+      // Prepara dados da ocorrência
+      const ocorrenciaData: any = {
         ...ocorrencia,
         criadoEm: Timestamp.now()
-      });
+      };
+      
+      // Se tiver dados da escola, adiciona campos de email para a extensão Firebase
+      if (escolaData) {
+        const emailsDestino = [];
+        
+        // Adiciona emails de coordenação e direção
+        if (escolaData.emailCoordenacao) emailsDestino.push(escolaData.emailCoordenacao);
+        if (escolaData.emailDirecao) emailsDestino.push(escolaData.emailDirecao);
+        
+        // Campos para Firebase Extension "Trigger Email"
+        ocorrenciaData.to = emailsDestino;
+        ocorrenciaData.message = {
+          subject: `Nova Ocorrência - ${ocorrencia.nomeAluno} - ${escolaData.nome}`,
+          text: this.gerarEmailTexto(ocorrencia, escolaData),
+          html: this.gerarEmailHTML(ocorrencia, escolaData)
+        };
+      }
+      
+      const docRef = await addDoc(this.ocorrenciasCollection, ocorrenciaData);
       
       console.log('Ocorrência salva com ID:', docRef.id);
       return docRef.id;
@@ -74,6 +94,108 @@ export class FirestoreService {
       console.error('Erro ao salvar ocorrência:', error);
       throw error;
     }
+  }
+  
+  // Gera email em texto simples
+  private gerarEmailTexto(occ: any, escola: any): string {
+    return `
+NOVA OCORRÊNCIA REGISTRADA
+
+Escola: ${escola.nome}
+Data: ${new Date(occ.data).toLocaleDateString('pt-BR')}
+
+ALUNO
+Nome: ${occ.nomeAluno}
+Turma: ${occ.turma}
+
+OCORRÊNCIA
+Tipo: ${occ.tipoOcorrencia}
+Gravidade: ${occ.gravidade}
+Disciplina: ${occ.disciplina}
+
+DESCRIÇÃO
+${occ.descricao}
+
+REGISTRADO POR
+${occ.professorNome}
+(${occ.professorEmail})
+
+Acesse o sistema para mais detalhes.
+    `;
+  }
+  
+  // Gera email em HTML
+  private gerarEmailHTML(occ: any, escola: any): string {
+    const gravidadeCor = {
+      'Leve': '#10b981',
+      'Moderada': '#f59e0b',
+      'Grave': '#ef4444',
+      'Gravíssima': '#991b1b'
+    }[occ.gravidade as string] || '#6b7280';
+    
+    return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    .header { background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%); color: white; padding: 20px; border-radius: 8px 8px 0 0; }
+    .header h1 { margin: 0; font-size: 24px; }
+    .content { background: #f9fafb; padding: 20px; border: 1px solid #e5e7eb; border-top: none; }
+    .card { background: white; padding: 15px; margin: 10px 0; border-radius: 6px; border-left: 4px solid #3B82F6; }
+    .badge { display: inline-block; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: bold; color: white; background: ${gravidadeCor}; }
+    .label { font-weight: bold; color: #6b7280; }
+    .value { color: #1f2937; }
+    .footer { text-align: center; padding: 20px; color: #6b7280; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🏫 Nova Ocorrência Registrada</h1>
+      <p style="margin: 5px 0 0 0;">${escola.nome}</p>
+    </div>
+    <div class="content">
+      <div class="card">
+        <p><span class="label">Data:</span> <span class="value">${new Date(occ.data).toLocaleDateString('pt-BR')}</span></p>
+        <p><span class="label">Hora:</span> <span class="value">${new Date().toLocaleTimeString('pt-BR')}</span></p>
+      </div>
+      
+      <div class="card">
+        <h3 style="margin-top: 0; color: #1f2937;">👨‍🎓 Aluno</h3>
+        <p><span class="label">Nome:</span> <span class="value">${occ.nomeAluno}</span></p>
+        <p><span class="label">Turma:</span> <span class="value">${occ.turma}</span></p>
+        <p><span class="label">Tipo de Ensino:</span> <span class="value">${occ.tipoEnsino}</span></p>
+      </div>
+      
+      <div class="card">
+        <h3 style="margin-top: 0; color: #1f2937;">📝 Ocorrência</h3>
+        <p><span class="label">Tipo:</span> <span class="value">${occ.tipoOcorrencia}</span></p>
+        <p><span class="label">Gravidade:</span> <span class="badge">${occ.gravidade}</span></p>
+        <p><span class="label">Disciplina:</span> <span class="value">${occ.disciplina}</span></p>
+      </div>
+      
+      <div class="card">
+        <h3 style="margin-top: 0; color: #1f2937;">Descrição</h3>
+        <p style="white-space: pre-wrap;">${occ.descricao}</p>
+      </div>
+      
+      <div class="card">
+        <h3 style="margin-top: 0; color: #1f2937;">👨‍🏫 Registrado por</h3>
+        <p><span class="value">${occ.professorNome}</span></p>
+        <p style="font-size: 14px; color: #6b7280;">${occ.professorEmail}</p>
+      </div>
+    </div>
+    <div class="footer">
+      <p>Sistema de Ocorrências Escolares</p>
+      <p>Este é um email automático, não responda.</p>
+    </div>
+  </div>
+</body>
+</html>
+    `;
   }
 
   async buscarOcorrencias(escolaId: string): Promise<Ocorrencia[]> {
@@ -163,6 +285,31 @@ export class FirestoreService {
   }
 
   // ========== MÉTODOS ADMIN - ESCOLAS ==========
+
+  async buscarEscola(escolaId: string): Promise<Escola | null> {
+    try {
+      const escolaDoc = await getDoc(doc(this.firestore, 'escolas', escolaId));
+      
+      if (escolaDoc.exists()) {
+        const data = escolaDoc.data();
+        return {
+          id: escolaDoc.id,
+          nome: data['nome'],
+          emailDirecao: data['emailDirecao'],
+          emailCoordenacao: data['emailCoordenacao'],
+          status: data['status'],
+          plano: data['plano'],
+          criadoEm: data['criadoEm']?.toDate()
+        } as Escola;
+      }
+      
+      return null;
+      
+    } catch (error) {
+      console.error('Erro ao buscar escola:', error);
+      throw error;
+    }
+  }
 
   async buscarTodasEscolas(): Promise<Escola[]> {
     try {

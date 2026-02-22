@@ -19,9 +19,14 @@
   </header>
 
   <main class="dashboard-content">
-    <h1 class="page-title">Ações Rápidas</h1>
+    <h1 class="page-title">{{ userRole === 'professor' ? 'Ações Rápidas' : 'Painel de Gestão' }}</h1>
     
-    <div class="action-cards">
+    <div class="loading" *ngIf="loading">
+      <p>Carregando...</p>
+    </div>
+    
+    <!-- Cards para Professor -->
+    <div class="action-cards" *ngIf="!loading && userRole === 'professor'">
       <div class="card" (click)="goToRegistro()">
         <div class="card-icon">📝</div>
         <h3>Registrar Ocorrência</h3>
@@ -31,7 +36,22 @@
       <div class="card" (click)="goToOcorrencias()">
         <div class="card-icon">📋</div>
         <h3>Minhas Ocorrências</h3>
-        <p>Visualize todas as ocorrências registradas</p>
+        <p>Visualize suas ocorrências registradas</p>
+      </div>
+    </div>
+    
+    <!-- Cards para Coordenação/Direção -->
+    <div class="action-cards" *ngIf="!loading && (userRole === 'coordenacao' || userRole === 'direcao')">
+      <div class="card" (click)="goToRegistro()">
+        <div class="card-icon">📝</div>
+        <h3>Registrar Ocorrência</h3>
+        <p>Registre uma nova ocorrência de aluno</p>
+      </div>
+      
+      <div class="card card-highlight" (click)="goToOcorrencias()">
+        <div class="card-icon">📊</div>
+        <h3>Todas as Ocorrências</h3>
+        <p>Visualize todas as ocorrências da escola</p>
       </div>
     </div>
   </main>
