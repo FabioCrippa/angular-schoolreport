@@ -4,6 +4,8 @@ import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { FirestoreService, Ocorrencia } from '../../services/firestore';
 import { AuthService } from '../../services/auth';
+import pdfMake from 'pdfmake/build/pdfmake';
+import pdfFonts from 'pdfmake/build/vfs_fonts';
 
 @Component({
   selector: 'app-lista-ocorrencias',
@@ -166,5 +168,260 @@ export class ListaOcorrencias implements OnInit {
     this.filtroProfessor = '';
     this.filtroGravidade = '';
     this.aplicarFiltros();
+  }
+  
+  async gerarPDF(ocorrencia: Ocorrencia) {
+    try {
+      // Configurar pdfMake com fontes
+      (pdfMake as any).vfs = pdfFonts;
+      
+      // Buscar dados da escola
+      const escola = await this.firestoreService.buscarEscola(ocorrencia.escolaId);
+      
+      if (!escola) {
+        alert('Erro ao buscar dados da escola');
+        return;
+      }
+      
+      // Converter data para formato local (evita problema de timezone)
+      const partes = ocorrencia.data.split('-');
+      const dataOcorrencia = new Date(Number(partes[0]), Number(partes[1]) - 1, Number(partes[2]));
+      const dataFormatada = dataOcorrencia.toLocaleDateString('pt-BR');
+      
+      // Definir cor da gravidade
+      const gravidadeCor: { [key: string]: string } = {
+        'Leve': '#10b981',
+        'Moderada': '#f59e0b',
+        'Grave': '#ef4444',
+        'Gravíssima': '#991b1b'
+      };
+      const corGravidade = gravidadeCor[ocorrencia.gravidade] || '#6b7280';
+      
+      // Gerar código único da ocorrência (primeiros 8 caracteres do ID)
+      const codigoOcorrencia = ocorrencia.id?.substring(0, 8).toUpperCase() || 'N/A';
+      
+      // Definir o documento PDF
+      const documentDefinition: any = {
+        pageSize: 'A4',
+        pageMargins: [40, 60, 40, 100],
+        
+        header: {
+          margin: [40, 20, 40, 0],
+          columns: [
+            {
+              text: escola.nome || 'Escola',
+              style: 'header',
+              alignment: 'left'
+            },
+            {
+              text: `Código: ${codigoOcorrencia}`,
+              style: 'headerRight',
+              alignment: 'right'
+            }
+          ]
+        },
+        
+        footer: (currentPage: number, pageCount: number) => {
+          return {
+            margin: [40, 0, 40, 20],
+            stack: [
+              { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 515, y2: 0, lineWidth: 1, lineColor: '#e5e7eb' }] },
+              { text: '\n' },
+              {
+                columns: [
+                  {
+                    width: '60%',
+                    stack: [
+                      { text: 'CIÊNCIA DO RESPONSÁVEL', style: 'assinaturaLabel' },
+                      { text: '\n' },
+                      { text: 'Assinatura: _________________________________________', style: 'assinaturaLinha' },
+                      { text: '\n' },
+                      { text: 'Data da ciência: ______ / ______ / __________', style: 'assinaturaLinha' }
+                    ]
+                  },
+                  {
+                    width: '40%',
+                    text: [
+                      { text: 'Documento gerado eletronicamente\n', style: 'footerInfo' },
+                      { text: `Página ${currentPage} de ${pageCount}`, style: 'footerInfo' }
+                    ],
+                    alignment: 'right'
+                  }
+                ]
+              }
+            ]
+          };
+        },
+        
+        content: [
+          { text: 'RELATÓRIO DE OCORRÊNCIA ESCOLAR', style: 'titulo' },
+          { text: '\n' },
+          
+          // Info da escola
+          {
+            table: {
+              widths: ['*'],
+              body: [
+                [{ text: 'DADOS DA INSTITUIÇÃO', style: 'secaoTitulo', fillColor: '#f3f4f6' }],
+                [
+                  {
+                    stack: [
+                      { text: `Escola: ${escola.nome}`, style: 'infoTexto' },
+                      { text: `Data do registro: ${dataFormatada}`, style: 'infoTexto' }
+                    ],
+                    margin: [10, 5, 10, 5]
+                  }
+                ]
+              ]
+            },
+            layout: 'lightHorizontalLines'
+          },
+          
+          { text: '\n' },
+          
+          // Dados do aluno
+          {
+            table: {
+              widths: ['*'],
+              body: [
+                [{ text: 'DADOS DO ALUNO', style: 'secaoTitulo', fillColor: '#f3f4f6' }],
+                [
+                  {
+                    stack: [
+                      { text: `Nome: ${ocorrencia.nomeAluno}`, style: 'infoTexto' },
+                      { text: `Turma: ${ocorrencia.turma}`, style: 'infoTexto' },
+                      { text: `Tipo de Ensino: ${ocorrencia.tipoEnsino}`, style: 'infoTexto' }
+                    ],
+                    margin: [10, 5, 10, 5]
+                  }
+                ]
+              ]
+            },
+            layout: 'lightHorizontalLines'
+          },
+          
+          { text: '\n' },
+          
+          // Detalhes da ocorrência
+          {
+            table: {
+              widths: ['*'],
+              body: [
+                [{ text: 'DETALHES DA OCORRÊNCIA', style: 'secaoTitulo', fillColor: '#f3f4f6' }],
+                [
+                  {
+                    stack: [
+                      { text: `Tipo: ${ocorrencia.tipoOcorrencia}`, style: 'infoTexto' },
+                      { 
+                        text: [
+                          { text: 'Gravidade: ', style: 'infoTexto' },
+                          { text: ocorrencia.gravidade, style: 'gravidade', color: corGravidade, bold: true }
+                        ]
+                      },
+                      { text: `Disciplina: ${ocorrencia.disciplina}`, style: 'infoTexto' },
+                      { text: '\n' },
+                      { text: 'Descrição:', style: 'infoLabel' },
+                      { text: ocorrencia.descricao, style: 'descricao' }
+                    ],
+                    margin: [10, 5, 10, 5]
+                  }
+                ]
+              ]
+            },
+            layout: 'lightHorizontalLines'
+          },
+          
+          { text: '\n' },
+          
+          // Professor responsável
+          {
+            table: {
+              widths: ['*'],
+              body: [
+                [{ text: 'REGISTRADO POR', style: 'secaoTitulo', fillColor: '#f3f4f6' }],
+                [
+                  {
+                    stack: [
+                      { text: `Professor(a): ${ocorrencia.professorNome}`, style: 'infoTexto' },
+                      { text: `E-mail: ${ocorrencia.professorEmail}`, style: 'infoTexto' }
+                    ],
+                    margin: [10, 5, 10, 5]
+                  }
+                ]
+              ]
+            },
+            layout: 'lightHorizontalLines'
+          }
+        ],
+        
+        styles: {
+          header: {
+            fontSize: 16,
+            bold: true,
+            color: '#1f2937'
+          },
+          headerRight: {
+            fontSize: 10,
+            color: '#6b7280'
+          },
+          titulo: {
+            fontSize: 18,
+            bold: true,
+            alignment: 'center',
+            color: '#1f2937',
+            margin: [0, 0, 0, 10]
+          },
+          secaoTitulo: {
+            fontSize: 12,
+            bold: true,
+            color: '#1f2937',
+            margin: [5, 5, 5, 5]
+          },
+          infoLabel: {
+            fontSize: 10,
+            bold: true,
+            color: '#374151',
+            margin: [0, 5, 0, 2]
+          },
+          infoTexto: {
+            fontSize: 10,
+            color: '#4b5563',
+            margin: [0, 2, 0, 2]
+          },
+          gravidade: {
+            fontSize: 11,
+            bold: true
+          },
+          descricao: {
+            fontSize: 10,
+            color: '#4b5563',
+            margin: [0, 5, 0, 5],
+            italics: true
+          },
+          assinaturaLabel: {
+            fontSize: 10,
+            bold: true,
+            color: '#374151'
+          },
+          assinaturaLinha: {
+            fontSize: 9,
+            color: '#6b7280'
+          },
+          footerInfo: {
+            fontSize: 8,
+            color: '#9ca3af',
+            italics: true
+          }
+        }
+      };
+      
+      // Gerar e baixar o PDF
+      const nomeArquivo = `Ocorrencia_${ocorrencia.nomeAluno.replace(/\s+/g, '_')}_${codigoOcorrencia}.pdf`;
+      pdfMake.createPdf(documentDefinition).download(nomeArquivo);
+      
+    } catch (erro) {
+      console.error('Erro ao gerar PDF:', erro);
+      alert('Erro ao gerar PDF. Tente novamente.');
+    }
   }
 }

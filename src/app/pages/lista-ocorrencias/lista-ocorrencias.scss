@@ -270,6 +270,28 @@ $border-color: #E5E7EB;
   gap: 1rem;
 }
 
+.btn-pdf {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  &:hover {
+    background: rgba(59, 130, 246, 0.1);
+    transform: scale(1.1);
+  }
+  
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
 .toggle-icon {
   font-size: 0.875rem;
   color: $primary-blue;

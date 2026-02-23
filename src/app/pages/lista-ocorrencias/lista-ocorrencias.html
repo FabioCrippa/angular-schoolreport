@@ -83,6 +83,13 @@
             </div>
           </div>
           <div class="header-actions">
+            <button 
+              *ngIf="userRole !== 'professor'" 
+              class="btn-pdf" 
+              (click)="gerarPDF(ocorrencia); $event.stopPropagation()"
+              title="Gerar PDF oficial">
+              📄
+            </button>
             <span class="badge" [class]="'badge-' + ocorrencia.gravidade.toLowerCase()">
               {{ ocorrencia.gravidade }}
             </span>

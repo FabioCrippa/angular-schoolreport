@@ -96,13 +96,19 @@ export class FirestoreService {
     }
   }
   
+  // Converte string de data para Date local (evita problema de timezone)
+  private converterDataLocal(dataString: string): Date {
+    const partes = dataString.split('-');
+    return new Date(Number(partes[0]), Number(partes[1]) - 1, Number(partes[2]));
+  }
+  
   // Gera email em texto simples
   private gerarEmailTexto(occ: any, escola: any): string {
     return `
 NOVA OCORRÊNCIA REGISTRADA
 
 Escola: ${escola.nome}
-Data: ${new Date(occ.data).toLocaleDateString('pt-BR')}
+Data: ${this.converterDataLocal(occ.data).toLocaleDateString('pt-BR')}
 
 ALUNO
 Nome: ${occ.nomeAluno}
@@ -159,7 +165,7 @@ Acesse o sistema para mais detalhes.
     </div>
     <div class="content">
       <div class="card">
-        <p><span class="label">Data:</span> <span class="value">${new Date(occ.data).toLocaleDateString('pt-BR')}</span></p>
+        <p><span class="label">Data:</span> <span class="value">${this.converterDataLocal(occ.data).toLocaleDateString('pt-BR')}</span></p>
         <p><span class="label">Hora:</span> <span class="value">${new Date().toLocaleTimeString('pt-BR')}</span></p>
       </div>
       
