@@ -27,14 +27,13 @@ export class RegistroOcorrencia {
   private ADMIN_EMAILS = ['professor@escola.com'];
 
   tiposOcorrencia = [
-    'Atraso',
     'Agressão física',
     'Agressão verbal',
     'Bullying',
     'Comportamento inadequado',
+    'Chegou depois do professor',
     'Desrespeito a colegas',
     'Desrespeito a professores',
-    'Falta',
     'Falta de material',
     'Indisciplina',
     'Uso de celular',
