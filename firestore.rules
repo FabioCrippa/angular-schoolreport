@@ -45,12 +45,14 @@ service cloud.firestore {
     
     // Regras para coleção 'ocorrencias'
     match /ocorrencias/{ocorrenciaId} {
-      // Usuários podem criar ocorrências apenas para sua escola
+      // Usuários podem criar ocorrências para sua escola OU emails (documentos com 'to' e 'message')
       allow create: if request.auth != null && 
-                      belongsToSchool(request.resource.data.escolaId);
+                      (belongsToSchool(request.resource.data.escolaId) || 
+                       (request.resource.data.keys().hasAny(['to', 'message'])));
       
-      // Usuários podem ler e atualizar ocorrências da sua escola
+      // Usuários podem ler e atualizar ocorrências da sua escola (não emails)
       allow read, update: if request.auth != null && 
+                            resource.data.escolaId != null &&
                             belongsToSchool(resource.data.escolaId);
       
       // Admins podem ler todas as ocorrências
@@ -68,6 +70,18 @@ service cloud.firestore {
     match /controleEntradaSaida/{controleId} {
       // Qualquer usuário autenticado pode ler, criar e atualizar
       allow read, write: if request.auth != null;
+    }
+    
+    // Regras para coleção 'mail' (Firebase Extension: Trigger Email)
+    match /mail/{mailId} {
+      // Permite criar documentos (enviar emails) se autenticado
+      allow create: if request.auth != null;
+      
+      // Não permite ler (segurança - conteúdo de emails é sensível)
+      allow read: if false;
+      
+      // Não permite atualizar ou deletar (Firebase Extension gerencia)
+      allow update, delete: if false;
     }
   }
 }

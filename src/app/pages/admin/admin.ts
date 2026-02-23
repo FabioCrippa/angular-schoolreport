@@ -52,6 +52,7 @@ export class Admin implements OnInit {
     role: 'professor' as 'professor' | 'coordenacao' | 'direcao' | 'secretaria',
     ativo: true
   };
+  enviarEmailAutomatico = true;
 
   ngOnInit() {
     // Observa o usuário autenticado e só carrega escolas quando Auth estiver pronto
@@ -254,6 +255,7 @@ export class Admin implements OnInit {
       role: 'professor',
       ativo: true
     };
+    this.enviarEmailAutomatico = true;
   }
 
   async salvarUsuario() {
@@ -286,9 +288,25 @@ export class Admin implements OnInit {
           escolaId: this.escolaSelecionada.id
         });
         
-        // Exibe link de primeiro acesso que deve ser enviado ao professor
-        const primeiroAcessoLink = `${window.location.origin}/primeiro-acesso`;
-        alert(`Usuário criado com sucesso!\n\nEnvie este link para ${this.novoUsuario.nome}:\n${primeiroAcessoLink}\n\nO professor deverá usar o email ${this.novoUsuario.email} para criar sua senha.`);
+        // Envia email automaticamente se checkbox estiver marcado
+        if (this.enviarEmailAutomatico) {
+          try {
+            await this.firestoreService.enviarEmailPrimeiroAcesso(
+              this.novoUsuario.email,
+              this.novoUsuario.nome,
+              this.escolaSelecionada.nome
+            );
+            alert(`Usuário criado com sucesso!\n\n✅ Email de primeiro acesso enviado para ${this.novoUsuario.email}`);
+          } catch (emailError) {
+            console.error('Erro ao enviar email:', emailError);
+            const primeiroAcessoLink = `${window.location.origin}/primeiro-acesso`;
+            alert(`Usuário criado com sucesso!\n\n⚠️ Não foi possível enviar o email automaticamente.\n\nEnvie este link manualmente para ${this.novoUsuario.nome}:\n${primeiroAcessoLink}\n\nO usuário deverá usar o email ${this.novoUsuario.email} para criar sua senha.`);
+          }
+        } else {
+          // Exibe link de primeiro acesso que deve ser enviado ao usuário manualmente
+          const primeiroAcessoLink = `${window.location.origin}/primeiro-acesso`;
+          alert(`Usuário criado com sucesso!\n\nEnvie este link para ${this.novoUsuario.nome}:\n${primeiroAcessoLink}\n\nO usuário deverá usar o email ${this.novoUsuario.email} para criar sua senha.`);
+        }
         
         console.log('Usuário adicionado com sucesso!');
       }

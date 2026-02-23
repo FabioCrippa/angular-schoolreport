@@ -25,9 +25,18 @@ export class Login {
     });
   }
 
+  get email() {
+    return this.loginForm.get('email');
+  }
+
+  get password() {
+    return this.loginForm.get('password');
+  }
+
   async onSubmit() {
     if (this.loginForm.invalid) {
       this.errorMessage = 'Preencha todos os campos corretamente.';
+      this.loginForm.markAllAsTouched();
       return;
     }
 
@@ -37,7 +46,9 @@ export class Login {
     try {
       const { email, password } = this.loginForm.value;
       await this.authService.loginWithEmail(email, password);
+      // Se chegar aqui, login foi bem-sucedido e vai navegar
     } catch (error: any) {
+      console.error('Erro no login:', error);
       this.errorMessage = 'Email ou senha incorretos.';
       this.loading = false;
     }
@@ -50,6 +61,7 @@ export class Login {
     try {
       await this.authService.loginWithGoogle();
     } catch (erro: any) {
+      console.error('Erro no login com Google:', erro);
       this.errorMessage = 'Erro ao fazer login com Google.';
       this.loading = false;
     }

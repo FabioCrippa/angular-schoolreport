@@ -23,6 +23,7 @@ export class RegistroOcorrencia {
   loading = false;
   isAdmin = false;
   professorNome = 'Professor'; // Nome do professor logado
+  tiposSelecionados: string[] = []; // Tipos de ocorrência selecionados
 
   private ADMIN_EMAILS = ['professor@escola.com'];
 
@@ -91,7 +92,6 @@ export class RegistroOcorrencia {
       tipoEnsino: ['', Validators.required],
       turma: ['', Validators.required],
       disciplina: ['', Validators.required],
-      tipoOcorrencia: ['', Validators.required],
       descricao: ['', [Validators.required, Validators.minLength(10)]],
     })
     
@@ -119,9 +119,24 @@ export class RegistroOcorrencia {
     }
   }
 
+  toggleTipoOcorrencia(tipo: string) {
+    const index = this.tiposSelecionados.indexOf(tipo);
+    if (index > -1) {
+      this.tiposSelecionados.splice(index, 1);
+    } else {
+      this.tiposSelecionados.push(tipo);
+    }
+  }
+
+  isTipoSelecionado(tipo: string): boolean {
+    return this.tiposSelecionados.includes(tipo);
+  }
+
   onSubmit() {
-    if (this.ocorrenciaForm.valid) {
+    if (this.ocorrenciaForm.valid && this.tiposSelecionados.length > 0) {
       this.showConfirm = true;
+    } else if (this.tiposSelecionados.length === 0) {
+      alert('Selecione pelo menos um tipo de ocorrência');
     }
   }
   
@@ -152,7 +167,7 @@ export class RegistroOcorrencia {
         tipoEnsino: formData.tipoEnsino,
         turma: formData.turma,
         disciplina: formData.disciplina,
-        tipoOcorrencia: formData.tipoOcorrencia,
+        tipoOcorrencia: this.tiposSelecionados.join(', '), // Múltiplos tipos separados por vírgula
         gravidade: 'leve', // Gravidade padrão - será classificada pela coordenação/direção
         descricao: formData.descricao,
         professorEmail: user?.email || 'desconhecido@email.com',
@@ -165,6 +180,7 @@ export class RegistroOcorrencia {
       
       alert('Ocorrência registrada com sucesso! Email enviado para coordenação e direção.');
       this.ocorrenciaForm.reset();
+      this.tiposSelecionados = []; // Limpar tipos selecionados
       this.router.navigate(['/ocorrencias']);
       
     } catch (erro) {

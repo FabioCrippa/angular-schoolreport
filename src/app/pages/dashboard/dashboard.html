@@ -64,6 +64,65 @@
         </div>
       </div>
 
+      <!-- Filtros de Período -->
+      <div class="filtros-periodo" *ngIf="estatisticas">
+        <h2 class="filtros-titulo">📊 Análise de Período</h2>
+        <div class="filtros-container">
+          <div class="filtro-botoes">
+            <button 
+              class="btn-filtro" 
+              [class.active]="periodoSelecionado === 'semana'"
+              (click)="periodoSelecionado = 'semana'; aplicarFiltroPeriodo()">
+              Última Semana
+            </button>
+            <button 
+              class="btn-filtro" 
+              [class.active]="periodoSelecionado === 'mes'"
+              (click)="periodoSelecionado = 'mes'; aplicarFiltroPeriodo()">
+              Último Mês
+            </button>
+            <button 
+              class="btn-filtro" 
+              [class.active]="periodoSelecionado === 'trimestre'"
+              (click)="periodoSelecionado = 'trimestre'; aplicarFiltroPeriodo()">
+              Último Trimestre
+            </button>
+            <button 
+              class="btn-filtro" 
+              [class.active]="periodoSelecionado === 'semestre'"
+              (click)="periodoSelecionado = 'semestre'; aplicarFiltroPeriodo()">
+              Último Semestre
+            </button>
+            <button 
+              class="btn-filtro" 
+              [class.active]="periodoSelecionado === 'customizado'"
+              (click)="periodoSelecionado = 'customizado'">
+              Período Customizado
+            </button>
+          </div>
+
+          <!-- Filtro Customizado -->
+          <div class="filtro-customizado" *ngIf="periodoSelecionado === 'customizado'">
+            <div class="data-inputs">
+              <div class="input-group">
+                <label>Data Início:</label>
+                <input 
+                  type="date" 
+                  [(ngModel)]="dataInicio"
+                  (change)="aplicarFiltroPeriodo()">
+              </div>
+              <div class="input-group">
+                <label>Data Fim:</label>
+                <input 
+                  type="date" 
+                  [(ngModel)]="dataFim"
+                  (change)="aplicarFiltroPeriodo()">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Gráficos -->
       <div class="charts-grid" *ngIf="estatisticas && !loadingEstatisticas">
         

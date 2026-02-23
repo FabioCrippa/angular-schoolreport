@@ -95,12 +95,29 @@ export class PrimeiroAcesso {
       this.mensagemErro = '';
       
       console.log('🔐 Criando conta no Firebase Auth...');
-      // 1. Cria conta no Firebase Auth
-      const uid = await this.authService.criarContaComEmail(this.email, this.senha);
-      console.log('✅ Conta Auth criada com UID:', uid);
+      // Tenta criar conta no Firebase Auth
+      let uid: string;
+      try {
+        uid = await this.authService.criarContaComEmail(this.email, this.senha);
+        console.log('✅ Conta Auth criada com UID:', uid);
+      } catch (createError: any) {
+        // Se a conta já existe, tenta fazer login
+        if (createError.code === 'auth/email-already-in-use') {
+          console.log('⚠️ Conta já existe, fazendo login...');
+          await this.authService.loginWithEmail(this.email, this.senha, false);
+          const user = this.authService.getCurrentUser();
+          if (!user) {
+            throw new Error('Login falhou após criação de conta');
+          }
+          uid = user.uid;
+          console.log('✅ Login realizado com UID:', uid);
+        } else {
+          throw createError; // Outro erro, propaga
+        }
+      }
       
-      console.log('� Criando documento no Firestore com UID correto...');
-      // 2. Cria documento do usuário no Firestore com o UID do Auth
+      console.log('📝 Criando documento no Firestore com UID:', uid);
+      // Cria/atualiza documento do usuário no Firestore com o UID do Auth
       await this.firestoreService.adicionarUsuarioComId(uid, {
         email: this.usuarioEncontrado.email,
         nome: this.usuarioEncontrado.nome,
@@ -110,68 +127,58 @@ export class PrimeiroAcesso {
       });
       console.log('✅ Documento Firestore criado');
       
-      console.log('🗑️ Removendo documento temporário...');
-      // 3. Remove o documento inicial criado pelo admin
-      await this.firestoreService.deletarUsuario(this.usuarioEncontrado.docId);
-      console.log('✅ Documento temporário removido');
+      // Remove o documento temporário criado pelo admin
+      if (this.usuarioEncontrado.docId) {
+        try {
+          console.log('🗑️ Removendo documento temporário...');
+          await this.firestoreService.deletarUsuario(this.usuarioEncontrado.docId);
+          console.log('✅ Documento temporário removido');
+        } catch (deleteError) {
+          console.log('⚠️ Documento temporário já foi removido ou não existe');
+        }
+      }
       
-      console.log('🔑 Fazendo login automático...');
-      // 4. Faz login automático (sem redirecionar ainda)
-      await this.authService.loginWithEmail(this.email, this.senha, false);
-      console.log('✅ Login automático realizado');
+      // Verifica se já está logado, senão faz login
+      let currentUser = this.authService.getCurrentUser();
+      if (!currentUser) {
+        console.log('🔑 Fazendo login...');
+        await this.authService.loginWithEmail(this.email, this.senha, false);
+        console.log('✅ Login realizado');
+      }
       
-      console.log('🎉 Conta criada com sucesso!');
+      console.log('🎉 Processo concluído com sucesso!');
       
-      // Redireciona para dashboard (já está logado)
-      alert('Conta criada com sucesso! Você já está logado.');
+      // Reseta loading antes de redirecionar
+      this.processando = false;
+      
+      // Redireciona para dashboard
+      alert('Conta configurada com sucesso! Você já está logado.');
       this.router.navigate(['/dashboard']);
       
     } catch (error: any) {
       console.error('❌ Erro ao criar conta:', error);
       console.error('Código completo:', error.code);
+      console.error('Mensagem completa:', error.message);
       
-      if (error.code === 'auth/email-already-in-use') {
-        console.log('⚠️ Email já tem conta. Tentando login e atualização...');
-        
-        try {
-          // Tenta fazer login
-          await this.authService.loginWithEmail(this.email, this.senha);
-          console.log('✅ Login realizado');
-          
-          // Pega o UID do usuário logado
-          const user = this.authService.getCurrentUser();
-          if (user) {
-            console.log('📝 Verificando se precisa criar documento...');
-            
-            // Tenta criar o documento com o UID
-            await this.firestoreService.adicionarUsuarioComId(user.uid, {
-              email: this.usuarioEncontrado.email,
-              nome: this.usuarioEncontrado.nome,
-              escolaId: this.usuarioEncontrado.escolaId,
-              role: this.usuarioEncontrado.role,
-              ativo: this.usuarioEncontrado.ativo
-            });
-            
-            // Remove documento temporário
-            await this.firestoreService.deletarUsuario(this.usuarioEncontrado.docId);
-            
-            console.log('🎉 Configuração concluída!');
-            alert('Conta já existia. Você já está logado!');
-            this.router.navigate(['/dashboard']);
-            return;
-          }
-        } catch (loginError: any) {
-          console.error('Erro no login alternativo:', loginError);
-          this.mensagemErro = 'Este email já possui uma conta, mas a senha está incorreta.';
-        }
-      } else if (error.code === 'auth/invalid-email') {
+      // Tratamento de erros específicos
+      if (error.code === 'auth/invalid-email') {
         this.mensagemErro = 'Email inválido.';
+        this.processando = false;
       } else if (error.code === 'auth/weak-password') {
         this.mensagemErro = 'Senha muito fraca. Use no mínimo 6 caracteres.';
+        this.processando = false;
+      } else if (error.code === 'auth/network-request-failed') {
+        this.mensagemErro = 'Erro de conexão. Verifique sua internet e tente novamente.';
+        this.processando = false;
+      } else if (error.code === 'auth/email-already-in-use') {
+        this.mensagemErro = 'Este email já possui uma conta. Tente fazer login na página inicial.';
+        this.processando = false;
       } else {
         this.mensagemErro = `Erro ao criar conta: ${error.message || 'Tente novamente.'}`;
+        this.processando = false;
       }
     } finally {
+      // Garantir que sempre reseta (caso não tenha sido resetado antes)
       this.processando = false;
     }
   }

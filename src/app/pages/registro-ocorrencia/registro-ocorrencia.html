@@ -64,14 +64,20 @@
       </div>
       
       <div class="form-row">
-        <div class="form-group">
-          <label for="tipoOcorrencia">Tipo de Ocorrência *</label>
-          <select id="tipoOcorrencia" formControlName="tipoOcorrencia">
-            <option value="">Selecione</option>
-            <option *ngFor="let tipo of tiposOcorrencia" [value]="tipo">
-              {{ tipo }}
-            </option>
-          </select>
+        <div class="form-group form-group-full">
+          <label>Tipos de Ocorrência * <span class="hint">(Selecione um ou mais)</span></label>
+          <div class="checkbox-grid">
+            <label *ngFor="let tipo of tiposOcorrencia" class="checkbox-item">
+              <input 
+                type="checkbox" 
+                [checked]="isTipoSelecionado(tipo)"
+                (change)="toggleTipoOcorrencia(tipo)">
+              <span>{{ tipo }}</span>
+            </label>
+          </div>
+          <div class="selected-count" *ngIf="tiposSelecionados.length > 0">
+            {{ tiposSelecionados.length }} tipo(s) selecionado(s)
+          </div>
         </div>
       </div>
       

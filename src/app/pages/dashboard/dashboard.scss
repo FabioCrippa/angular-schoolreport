@@ -178,6 +178,101 @@ $border-color: #E5E7EB;
   }
 }
 
+// ===== FILTROS DE PERÍODO =====
+.filtros-periodo {
+  margin: 3rem 0 2rem 0;
+  background: $bg-white;
+  padding: 2rem;
+  border-radius: 12px;
+  border: 1px solid $border-color;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.filtros-titulo {
+  margin: 0 0 1.5rem 0;
+  color: $text-dark;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.filtros-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.filtro-botoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.btn-filtro {
+  padding: 0.75rem 1.5rem;
+  background: $bg-light;
+  color: $text-dark;
+  border: 2px solid $border-color;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: rgba(59, 130, 246, 0.05);
+    border-color: rgba(59, 130, 246, 0.3);
+    transform: translateY(-1px);
+  }
+
+  &.active {
+    background: linear-gradient(135deg, $primary-blue 0%, $primary-blue-dark 100%);
+    color: white;
+    border-color: $primary-blue;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  }
+}
+
+.filtro-customizado {
+  padding: 1.25rem;
+  background: $bg-light;
+  border-radius: 8px;
+  border: 1px solid $border-color;
+}
+
+.data-inputs {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 200px;
+
+  label {
+    color: $text-dark;
+    font-weight: 600;
+    font-size: 0.9375rem;
+  }
+
+  input[type="date"] {
+    padding: 0.75rem 1rem;
+    border: 2px solid $border-color;
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: all 0.2s;
+
+    &:focus {
+      outline: none;
+      border-color: $primary-blue;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+  }
+}
+
 // ===== CHARTS GRID =====
 .charts-grid {
   display: grid;
@@ -332,6 +427,26 @@ $border-color: #E5E7EB;
   .chart-container {
     padding: 1.5rem;
     height: 350px;
+  }
+
+  .filtros-periodo {
+    padding: 1.5rem;
+    margin: 2rem 0 1.5rem 0;
+  }
+
+  .filtros-titulo {
+    font-size: 1.125rem;
+  }
+
+  .btn-filtro {
+    padding: 0.625rem 1rem;
+    font-size: 0.875rem;
+    flex: 1;
+    min-width: 140px;
+  }
+
+  .data-inputs {
+    flex-direction: column;
   }
 }
 

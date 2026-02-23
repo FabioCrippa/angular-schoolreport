@@ -1,7 +1,7 @@
 <div class="login-container">
     <div class="login-header">
         <a href="/" class="logo-link">
-            <span class="logo-icon">📋</span>
+            <img src="/logo.png" class="logo-icon" alt="SchoolReport Logo">
             <span class="logo-text">SchoolReport</span>
         </a>
     </div>
@@ -19,7 +19,12 @@
                     type="email"
                     id="email"
                     formControlName="email"
-                    placeholder="seuemail@exemplo.com">
+                    placeholder="seuemail@exemplo.com"
+                    [class.input-error]="email?.invalid && email?.touched">
+                <div class="field-error" *ngIf="email?.invalid && email?.touched">
+                    <span *ngIf="email?.errors?.['required']">Email é obrigatório</span>
+                    <span *ngIf="email?.errors?.['email']">Email inválido</span>
+                </div>
             </div>
 
             <div class="form-group">
@@ -28,7 +33,12 @@
                     type="password"
                     id="password"
                     formControlName="password"
-                    placeholder="Digite sua senha">
+                    placeholder="Digite sua senha"
+                    [class.input-error]="password?.invalid && password?.touched">
+                <div class="field-error" *ngIf="password?.invalid && password?.touched">
+                    <span *ngIf="password?.errors?.['required']">Senha é obrigatória</span>
+                    <span *ngIf="password?.errors?.['minlength']">Mínimo de 6 caracteres</span>
+                </div>
             </div>
 
             <button 

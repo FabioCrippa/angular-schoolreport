@@ -218,8 +218,22 @@
             </div>
           </div>
 
+          <div class="form-group-checkbox" *ngIf="!modoEdicaoUsuario">
+            <label class="checkbox-label">
+              <input 
+                type="checkbox" 
+                [(ngModel)]="enviarEmailAutomatico" 
+                name="enviarEmail"
+                id="enviarEmail">
+              <span class="checkbox-text">
+                <strong>📧 Enviar email automaticamente</strong>
+                <small>O usuário receberá um email com o link e instruções para criar a senha</small>
+              </span>
+            </label>
+          </div>
+
           <div class="info-primeiro-acesso" *ngIf="!modoEdicaoUsuario">
-            <p>ℹ️ <strong>Importante:</strong> Após criar o usuário, envie o link de <strong>Primeiro Acesso</strong> para o professor definir sua própria senha.</p>
+            <p>ℹ️ <strong>Importante:</strong> {{ enviarEmailAutomatico ? 'Um email será enviado automaticamente com o link de primeiro acesso.' : 'Você precisará enviar manualmente o link de Primeiro Acesso para o usuário definir sua senha.' }}</p>
           </div>
 
           <div class="form-actions">

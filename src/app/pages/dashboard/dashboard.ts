@@ -2,6 +2,7 @@ import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { AuthService } from '../../services/auth';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { FirestoreService, Ocorrencia } from '../../services/firestore';
 import { RelatoriosService, EstatisticasGerais } from '../../services/relatorios.service';
 import { BaseChartDirective } from 'ng2-charts';
@@ -9,7 +10,7 @@ import { ChartData, ChartOptions } from 'chart.js';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [CommonModule, RouterModule, BaseChartDirective],
+  imports: [CommonModule, RouterModule, BaseChartDirective, FormsModule],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
 })
@@ -27,6 +28,12 @@ export class Dashboard implements OnInit {
   userRole: 'professor' | 'coordenacao' | 'direcao' | 'secretaria' | null = null;
   loading = true;
   loadingEstatisticas = false;
+
+  // Filtros de período
+  periodoSelecionado: 'semana' | 'mes' | 'trimestre' | 'semestre' | 'customizado' = 'mes';
+  dataInicio: string = '';
+  dataFim: string = '';
+  todasOcorrencias: Ocorrencia[] = []; // Cache de todas as ocorrências
 
   // Estatísticas
   estatisticas: EstatisticasGerais | null = null;
@@ -167,14 +174,11 @@ export class Dashboard implements OnInit {
       const usuario = await this.firestoreService.buscarUsuario(user.uid);
       if (!usuario || !usuario.escolaId) return;
 
-      // Buscar ocorrências
-      const ocorrencias = await this.firestoreService.buscarOcorrencias(usuario.escolaId);
+      // Buscar e guardar todas as ocorrências
+      this.todasOcorrencias = await this.firestoreService.buscarOcorrencias(usuario.escolaId);
       
-      // Calcular estatísticas
-      this.estatisticas = this.relatoriosService.calcularEstatisticasOcorrencias(ocorrencias);
-      
-      // Preparar dados dos gráficos
-      this.prepararDadosGraficos();
+      // Aplicar filtro inicial (último mês)
+      this.aplicarFiltroPeriodo();
       
     } catch (error) {
       console.error('Erro ao carregar estatísticas:', error);
@@ -182,6 +186,61 @@ export class Dashboard implements OnInit {
       this.loadingEstatisticas = false;
       this.cdr.detectChanges();
     }
+  }
+
+  aplicarFiltroPeriodo() {
+    if (this.todasOcorrencias.length === 0) return;
+
+    let ocorrenciasFiltradas = [...this.todasOcorrencias];
+    const hoje = new Date();
+
+    // Período customizado
+    if (this.periodoSelecionado === 'customizado') {
+      if (this.dataInicio && this.dataFim) {
+        ocorrenciasFiltradas = this.todasOcorrencias.filter(o => {
+          return o.data >= this.dataInicio && o.data <= this.dataFim;
+        });
+      }
+      this.estatisticas = this.relatoriosService.calcularEstatisticasOcorrencias(ocorrenciasFiltradas);
+      this.prepararDadosGraficos();
+      return;
+    }
+
+    // Calcular data limite baseada no período selecionado
+    let dataLimite: Date;
+    switch (this.periodoSelecionado) {
+      case 'semana':
+        dataLimite = new Date(hoje);
+        dataLimite.setDate(hoje.getDate() - 7);
+        break;
+      case 'mes':
+        dataLimite = new Date(hoje);
+        dataLimite.setMonth(hoje.getMonth() - 1);
+        break;
+      case 'trimestre':
+        dataLimite = new Date(hoje);
+        dataLimite.setMonth(hoje.getMonth() - 3);
+        break;
+      case 'semestre':
+        dataLimite = new Date(hoje);
+        dataLimite.setMonth(hoje.getMonth() - 6);
+        break;
+      default:
+        dataLimite = new Date(hoje);
+        dataLimite.setMonth(hoje.getMonth() - 1);
+    }
+
+    // Filtrar por data limite
+    ocorrenciasFiltradas = this.todasOcorrencias.filter(o => {
+      const dataOcorrencia = new Date(o.data);
+      return dataOcorrencia >= dataLimite;
+    });
+
+    // Calcular estatísticas com dados filtrados
+    this.estatisticas = this.relatoriosService.calcularEstatisticasOcorrencias(ocorrenciasFiltradas);
+    
+    // Preparar dados dos gráficos
+    this.prepararDadosGraficos();
   }
 
   prepararDadosGraficos() {
