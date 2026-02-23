@@ -29,7 +29,6 @@ export class ListaOcorrencias implements OnInit {
   // Filtros
   filtroAluno = '';
   filtroProfessor = '';
-  filtroGravidade = '';
   professoresUnicos: string[] = [];
 
   private ADMIN_EMAILS = ['professor@escola.com'];
@@ -146,17 +145,12 @@ export class ListaOcorrencias implements OnInit {
       const matchProfessor = !this.filtroProfessor || 
         occ.professorNome === this.filtroProfessor;
       
-      // Filtro por gravidade
-      const matchGravidade = !this.filtroGravidade || 
-        occ.gravidade === this.filtroGravidade;
-      
-      return matchAluno && matchProfessor && matchGravidade;
+      return matchAluno && matchProfessor;
     });
     
     console.log('Filtros aplicados:', {
       aluno: this.filtroAluno,
       professor: this.filtroProfessor,
-      gravidade: this.filtroGravidade,
       resultados: this.ocorrenciasFiltradas.length
     });
   }
@@ -164,7 +158,6 @@ export class ListaOcorrencias implements OnInit {
   limparFiltros() {
     this.filtroAluno = '';
     this.filtroProfessor = '';
-    this.filtroGravidade = '';
     this.aplicarFiltros();
   }
   
@@ -314,12 +307,6 @@ export class ListaOcorrencias implements OnInit {
                   {
                     stack: [
                       { text: `Tipo: ${ocorrencia.tipoOcorrencia}`, style: 'infoTexto' },
-                      { 
-                        text: [
-                          { text: 'Gravidade: ', style: 'infoTexto' },
-                          { text: ocorrencia.gravidade, style: 'gravidade', color: corGravidade, bold: true }
-                        ]
-                      },
                       { text: `Disciplina: ${ocorrencia.disciplina}`, style: 'infoTexto' },
                       { text: '\n' },
                       { text: 'Descrição:', style: 'infoLabel' },
@@ -344,8 +331,7 @@ export class ListaOcorrencias implements OnInit {
                 [
                   {
                     stack: [
-                      { text: `Professor(a): ${ocorrencia.professorNome}`, style: 'infoTexto' },
-                      { text: `E-mail: ${ocorrencia.professorEmail}`, style: 'infoTexto' }
+                      { text: `Professor(a): ${ocorrencia.professorNome}`, style: 'infoTexto' }
                     ],
                     margin: [10, 5, 10, 5]
                   }
@@ -389,10 +375,6 @@ export class ListaOcorrencias implements OnInit {
             fontSize: 10,
             color: '#4b5563',
             margin: [0, 2, 0, 2]
-          },
-          gravidade: {
-            fontSize: 11,
-            bold: true
           },
           descricao: {
             fontSize: 10,

@@ -55,7 +55,10 @@ $border-color: #E5E7EB;
   }
   
   .logo-icon {
-    font-size: 1.5rem;
+    height: 2.5rem;
+    width: auto;
+    display: block;
+    filter: brightness(1.1) contrast(1.05);
   }
 }
 
@@ -410,7 +413,10 @@ $border-color: #E5E7EB;
   }
   
   .logo-icon {
-    font-size: 1.5rem;
+    height: 2.5rem;
+    width: auto;
+    display: block;
+    filter: brightness(1.1) contrast(1.05);
   }
 }
 

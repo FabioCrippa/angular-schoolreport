@@ -46,7 +46,7 @@ export class RegistrarAtraso implements OnInit {
   };
   
   turmasFiltradas: string[] = [];
-  aulasPermitidas = ['2ª aula', '3ª aula', '4ª aula', '5ª aula', '6ª aula'];
+  aulasPermitidas = ['1ª aula', '2ª aula', '3ª aula', '4ª aula', '5ª aula', '6ª aula'];
   
   constructor() {
     const hoje = new Date().toISOString().split('T')[0];

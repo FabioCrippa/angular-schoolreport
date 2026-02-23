@@ -3,7 +3,6 @@ import { Ocorrencia, ControleEntradaSaida } from './firestore';
 
 export interface EstatisticasGerais {
   totalOcorrencias: number;
-  ocorrenciasPorGravidade: { [key: string]: number };
   ocorrenciasPorMes: { mes: string; quantidade: number }[];
   ocorrenciasPorTurma: { turma: string; quantidade: number }[];
   topAlunos: { nome: string; quantidade: number }[];
@@ -29,12 +28,6 @@ export class RelatoriosService {
   
   calcularEstatisticasOcorrencias(ocorrencias: Ocorrencia[]): EstatisticasGerais {
     const totalOcorrencias = ocorrencias.length;
-    
-    // Ocorrências por gravidade
-    const ocorrenciasPorGravidade: { [key: string]: number } = {};
-    ocorrencias.forEach(o => {
-      ocorrenciasPorGravidade[o.gravidade] = (ocorrenciasPorGravidade[o.gravidade] || 0) + 1;
-    });
     
     // Ocorrências por mês (últimos 6 meses)
     const ocorrenciasPorMes = this.agruparPorMes(ocorrencias);
@@ -64,7 +57,6 @@ export class RelatoriosService {
     
     return {
       totalOcorrencias,
-      ocorrenciasPorGravidade,
       ocorrenciasPorMes,
       ocorrenciasPorTurma,
       topAlunos,
@@ -170,7 +162,7 @@ export class RelatoriosService {
   // ===== EXPORTAÇÃO =====
   
   exportarParaCSV(ocorrencias: Ocorrencia[], nomeArquivo: string = 'ocorrencias'): void {
-    const headers = ['Data', 'Aluno', 'Turma', 'Tipo Ensino', 'Disciplina', 'Tipo', 'Gravidade', 'Descrição', 'Professor'];
+    const headers = ['Data', 'Aluno', 'Turma', 'Tipo Ensino', 'Disciplina', 'Tipo', 'Descrição', 'Professor'];
     
     const rows = ocorrencias.map(o => [
       o.data,
@@ -179,7 +171,6 @@ export class RelatoriosService {
       o.tipoEnsino,
       o.disciplina,
       o.tipoOcorrencia,
-      o.gravidade,
       o.descricao.replace(/,/g, ';'), // Substituir vírgulas
       o.professorNome
     ]);

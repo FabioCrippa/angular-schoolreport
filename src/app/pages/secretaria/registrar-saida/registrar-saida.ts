@@ -59,7 +59,7 @@ export class RegistrarSaida implements OnInit {
       horario: [agora, Validators.required],
       motivo: ['', Validators.required],
       responsavel: ['', Validators.required],
-      documentoResponsavel: ['', Validators.required]
+      documentoResponsavel: ['']
     });
   }
   

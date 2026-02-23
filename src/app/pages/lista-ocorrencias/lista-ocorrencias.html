@@ -46,20 +46,6 @@
           </select>
         </div>
         
-        <div class="filtro-item">
-          <label for="filtroGravidade">Gravidade:</label>
-          <select 
-            id="filtroGravidade"
-            [(ngModel)]="filtroGravidade"
-            (ngModelChange)="aplicarFiltros()"
-          >
-            <option value="">Todas</option>
-            <option value="Leve">Leve</option>
-            <option value="Moderada">Moderada</option>
-            <option value="Grave">Grave</option>
-          </select>
-        </div>
-        
         <div class="filtro-item filtro-actions">
           <button class="btn-limpar" (click)="limparFiltros()">Limpar Filtros</button>
         </div>
@@ -90,9 +76,6 @@
               title="Gerar PDF oficial">
               📄
             </button>
-            <span class="badge" [class]="'badge-' + ocorrencia.gravidade.toLowerCase()">
-              {{ ocorrencia.gravidade }}
-            </span>
             <span class="toggle-icon">{{ ocorrencia.expandido ? '▲' : '▼' }}</span>
           </div>
         </div>
