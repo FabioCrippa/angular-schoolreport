@@ -12,6 +12,9 @@ import { environment } from '../environments/environment.development';
 
 import { routes } from './app.routes';
 
+// Configuração do Chart.js
+import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
+
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
@@ -25,6 +28,9 @@ export const appConfig: ApplicationConfig = {
     provideAuth(() => getAuth()),
     
     // Fornecer serviço de Firestore (banco de dados)
-    provideFirestore(() => getFirestore())
+    provideFirestore(() => getFirestore()),
+
+    // Configuração do Chart.js com todos os componentes padrão
+    provideCharts(withDefaultRegisterables())
   ]
 };

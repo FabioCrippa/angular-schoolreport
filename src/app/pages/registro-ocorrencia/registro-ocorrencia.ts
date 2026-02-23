@@ -36,15 +36,10 @@ export class RegistroOcorrencia {
     'Desrespeito a professores',
     'Falta de material',
     'Indisciplina',
+    'Não fez a atividade proposta',
     'Uso de celular',
     'Vandalismo',    
     'Outros',
-  ];
-
-  gravidades = [
-    { value: 'Leve', label: 'Leve' },
-    { value: 'Moderada', label: 'Moderada' },
-    { value: 'Grave', label: 'Grave' },
   ];
 
   tiposEnsino = [
@@ -97,7 +92,6 @@ export class RegistroOcorrencia {
       turma: ['', Validators.required],
       disciplina: ['', Validators.required],
       tipoOcorrencia: ['', Validators.required],
-      gravidade: ['', Validators.required],
       descricao: ['', [Validators.required, Validators.minLength(10)]],
     })
     
@@ -159,7 +153,7 @@ export class RegistroOcorrencia {
         turma: formData.turma,
         disciplina: formData.disciplina,
         tipoOcorrencia: formData.tipoOcorrencia,
-        gravidade: formData.gravidade,
+        gravidade: 'leve', // Gravidade padrão - será classificada pela coordenação/direção
         descricao: formData.descricao,
         professorEmail: user?.email || 'desconhecido@email.com',
         professorNome: this.professorNome

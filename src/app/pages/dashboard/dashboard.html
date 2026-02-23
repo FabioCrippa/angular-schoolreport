@@ -40,18 +40,66 @@
       </div>
     </div>
     
-    <!-- Cards para Coordenação/Direção -->
-    <div class="action-cards" *ngIf="!loading && (userRole === 'coordenacao' || userRole === 'direcao')">
-      <div class="card" (click)="goToRegistro()">
-        <div class="card-icon">📝</div>
-        <h3>Registrar Ocorrência</h3>
-        <p>Registre uma nova ocorrência de aluno</p>
+    <!-- Dashboard para Coordenação/Direção -->
+    <div *ngIf="!loading && (userRole === 'coordenacao' || userRole === 'direcao')">
+
+      <!-- Ações Rápidas -->
+      <div class="action-cards">
+        <div class="card" (click)="goToRegistro()">
+          <div class="card-icon">📝</div>
+          <h3>Registrar Ocorrência</h3>
+          <p>Registre uma nova ocorrência de aluno</p>
+        </div>
+        
+        <div class="card card-highlight" (click)="goToOcorrencias()">
+          <div class="card-icon">📋</div>
+          <h3>Todas as Ocorrências</h3>
+          <p>Visualize todas as ocorrências da escola</p>
+        </div>
+
+        <div class="card card-export" (click)="exportarCSV()" *ngIf="estatisticas">
+          <div class="card-icon">📤</div>
+          <h3>Exportar Relatório</h3>
+          <p>Baixe o relatório completo em CSV</p>
+        </div>
       </div>
-      
-      <div class="card card-highlight" (click)="goToOcorrencias()">
-        <div class="card-icon">📊</div>
-        <h3>Todas as Ocorrências</h3>
-        <p>Visualize todas as ocorrências da escola</p>
+
+      <!-- Gráficos -->
+      <div class="charts-grid" *ngIf="estatisticas && !loadingEstatisticas">
+        
+        <!-- Gráfico de Linha - Tendência -->
+        <div class="chart-container">
+          <canvas baseChart
+            [data]="lineChartData"
+            [options]="lineChartOptions"
+            type="line">
+          </canvas>
+        </div>
+
+        <!-- Gráfico de Barras - Top Turmas -->
+        <div class="chart-container">
+          <canvas baseChart
+            [data]="barChartData"
+            [options]="barChartOptions"
+            type="bar">
+          </canvas>
+        </div>
+
+        <!-- Top 10 Alunos -->
+        <div class="chart-container top-alunos" *ngIf="estatisticas.topAlunos.length > 0">
+          <h3 class="chart-title">Top 10 Alunos com Mais Ocorrências</h3>
+          <div class="top-list">
+            <div class="top-item" *ngFor="let aluno of estatisticas.topAlunos; let i = index">
+              <span class="rank">{{ i + 1 }}º</span>
+              <span class="name">{{ aluno.nome }}</span>
+              <span class="badge-count">{{ aluno.quantidade }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="loading" *ngIf="loadingEstatisticas">
+        <p>Carregando estatísticas...</p>
       </div>
     </div>
   </main>

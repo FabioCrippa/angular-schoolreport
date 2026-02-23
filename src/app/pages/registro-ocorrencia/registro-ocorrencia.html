@@ -73,16 +73,6 @@
             </option>
           </select>
         </div>
-        
-        <div class="form-group">
-          <label for="gravidade">Gravidade *</label>
-          <select id="gravidade" formControlName="gravidade">
-            <option value="">Selecione</option>
-            <option *ngFor="let grav of gravidades" [value]="grav.value">
-              {{ grav.label }}
-            </option>
-          </select>
-        </div>
       </div>
       
       <div class="form-row">
