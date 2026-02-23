@@ -62,5 +62,11 @@ service cloud.firestore {
       // Admins podem deletar qualquer ocorrência
       allow delete: if isAdmin();
     }
+    
+    // Regras para coleção 'controleEntradaSaida'
+    match /controleEntradaSaida/{controleId} {
+      // Qualquer usuário autenticado pode ler, criar e atualizar
+      allow read, write: if request.auth != null;
+    }
   }
 }

@@ -1,0 +1,160 @@
+<div class="relatorio-container">
+  
+  <!-- HEADER -->
+  <div class="relatorio-header">
+    <button class="btn-voltar" (click)="voltar()">← Voltar</button>
+    <div class="header-content">
+      <h1>Relatório do Dia</h1>
+      <p class="data-hoje">{{ dataHoje }}</p>
+    </div>
+  </div>
+
+  <!-- ESTATÍSTICAS -->
+  <div class="stats-wrapper" *ngIf="!loading">
+    <div class="stat-box atrasos">
+      <div class="stat-icon">🕐</div>
+      <div class="stat-info">
+        <span class="stat-number">{{ totalAtrasos }}</span>
+        <span class="stat-label">Atrasos</span>
+      </div>
+    </div>
+    
+    <div class="stat-box saidas">
+      <div class="stat-icon">🚪</div>
+      <div class="stat-info">
+        <span class="stat-number">{{ totalSaidas }}</span>
+        <span class="stat-label">Saídas</span>
+      </div>
+    </div>
+    
+    <div class="stat-box total">
+      <div class="stat-icon">📋</div>
+      <div class="stat-info">
+        <span class="stat-number">{{ registros.length }}</span>
+        <span class="stat-label">Total</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- FILTROS -->
+  <div class="filtros-section" *ngIf="!loading && registros.length > 0">
+    <h3>Filtros</h3>
+    
+    <div class="filtros-grid">
+      <div class="filtro-item">
+        <label>Tipo:</label>
+        <select [(ngModel)]="filtroTipo" (change)="aplicarFiltros()">
+          <option value="todos">Todos</option>
+          <option value="atraso">Atrasos</option>
+          <option value="saida">Saídas</option>
+        </select>
+      </div>
+      
+      <div class="filtro-item">
+        <label>Aluno:</label>
+        <input 
+          type="text" 
+          [(ngModel)]="filtroAluno" 
+          (input)="aplicarFiltros()" 
+          placeholder="Nome do aluno...">
+      </div>
+      
+      <div class="filtro-item">
+        <label>Turma:</label>
+        <input 
+          type="text" 
+          [(ngModel)]="filtroTurma" 
+          (input)="aplicarFiltros()" 
+          placeholder="Turma...">
+      </div>
+      
+      <div class="filtro-item">
+        <button class="btn-limpar" (click)="limparFiltros()">Limpar</button>
+      </div>
+    </div>
+    
+    <div class="filtros-resultado">
+      Exibindo {{ registrosFiltrados.length }} de {{ registros.length }} registros
+    </div>
+  </div>
+
+  <!-- LISTA DE REGISTROS -->
+  <div class="registros-list" *ngIf="!loading && registrosFiltrados.length > 0">
+    
+    <div class="registro-card" *ngFor="let registro of registrosFiltrados">
+      
+      <div class="card-header" (click)="toggleExpansao(registro)">
+        <div class="header-left">
+          <span class="tipo-icon">{{ getTipoIcon(registro.tipo) }}</span>
+          <div class="header-info">
+            <h3>{{ registro.alunoNome }}</h3>
+            <span class="turma-badge">{{ registro.turma }}</span>
+          </div>
+        </div>
+        
+        <div class="header-right">
+          <span class="tipo-badge" [class]="'badge-' + registro.tipo">
+            {{ getTipoLabel(registro.tipo) }}
+          </span>
+          <span class="horario">{{ registro.horario }}</span>
+          <span class="toggle-icon">{{ registro.expandido ? '▲' : '▼' }}</span>
+        </div>
+      </div>
+      
+      <div class="card-body" *ngIf="registro.expandido">
+        <div class="info-row">
+          <span class="label">Tipo de Ensino:</span>
+          <span class="value">{{ registro.tipoEnsino }}</span>
+        </div>
+        
+        <div class="info-row" *ngIf="registro.tipo === 'atraso' && registro.aulaPermitida">
+          <span class="label">Permitido a partir da:</span>
+          <span class="value">{{ registro.aulaPermitida }}</span>
+        </div>
+        
+        <div class="info-row" *ngIf="registro.tipo === 'saida' && registro.responsavel">
+          <span class="label">Responsável:</span>
+          <span class="value">{{ registro.responsavel }}</span>
+        </div>
+        
+        <div class="info-row" *ngIf="registro.tipo === 'saida' && registro.documentoResponsavel">
+          <span class="label">Documento:</span>
+          <span class="value">{{ registro.documentoResponsavel }}</span>
+        </div>
+        
+        <div class="info-row" *ngIf="registro.motivo">
+          <span class="label">Motivo:</span>
+          <p class="value-text">{{ registro.motivo }}</p>
+        </div>
+        
+        <div class="info-row registrado-por">
+          <span class="label">Registrado por:</span>
+          <span class="value">{{ registro.registradoPorNome }}</span>
+        </div>
+      </div>
+      
+    </div>
+    
+  </div>
+
+  <!-- EMPTY STATE -->
+  <div class="empty-state" *ngIf="!loading && registrosFiltrados.length === 0 && registros.length > 0">
+    <p>🔍</p>
+    <h3>Nenhum registro encontrado</h3>
+    <p>Tente ajustar os filtros</p>
+    <button class="btn-limpar-filtros" (click)="limparFiltros()">Limpar filtros</button>
+  </div>
+
+  <div class="empty-state" *ngIf="!loading && registros.length === 0">
+    <p>📋</p>
+    <h3>Nenhum registro hoje</h3>
+    <p>Não há atrasos ou saídas registrados para hoje</p>
+  </div>
+
+  <!-- LOADING -->
+  <div class="loading-container" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Carregando registros...</p>
+  </div>
+
+</div>

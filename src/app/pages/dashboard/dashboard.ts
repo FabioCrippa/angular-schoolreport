@@ -20,7 +20,7 @@ export class Dashboard implements OnInit {
   userName = '';
   userEmail = '';
   isAdmin = false;
-  userRole: 'professor' | 'coordenacao' | 'direcao' | null = null;
+  userRole: 'professor' | 'coordenacao' | 'direcao' | 'secretaria' | null = null;
   loading = true;
 
   // Lista de emails de administradores
@@ -56,6 +56,12 @@ export class Dashboard implements OnInit {
         this.userRole = usuario.role;
         this.userName = usuario.nome || this.userName;
         console.log('Role do usuário:', this.userRole);
+        
+        // Redirecionar secretaria para dashboard próprio
+        if (this.userRole === 'secretaria') {
+          this.router.navigate(['/secretaria/dashboard']);
+          return;
+        }
       }
     } catch (error) {
       console.error('Erro ao carregar dados do usuário:', error);

@@ -25,7 +25,7 @@ export class ListaOcorrencias implements OnInit {
   ocorrenciasFiltradas: Ocorrencia[] = [];
   loading = true;
   isAdmin = false;
-  userRole: 'professor' | 'coordenacao' | 'direcao' | null = null;
+  userRole: 'professor' | 'coordenacao' | 'direcao' | 'secretaria' | null = null;
   userName: string | null = null;
   
   // Filtros

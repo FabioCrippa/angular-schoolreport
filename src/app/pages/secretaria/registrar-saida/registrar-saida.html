@@ -1,0 +1,159 @@
+<div class="registro-container">
+  
+  <!-- HEADER -->
+  <div class="registro-header">
+    <button class="btn-voltar" (click)="voltar()">← Voltar</button>
+    <div class="header-content">
+      <h1>🚪 Registrar Saída Antecipada</h1>
+      <p class="subtitle">Registre alunos que precisam sair antes do término das aulas</p>
+    </div>
+  </div>
+
+  <!-- FORMULÁRIO -->
+  <div class="form-container" *ngIf="!loading">
+    <form [formGroup]="saidaForm">
+      
+      <!-- Dados do Aluno -->
+      <div class="form-section">
+        <h3 class="section-title">Dados do Aluno</h3>
+        
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label for="alunoNome">Nome do Aluno *</label>
+            <input 
+              type="text" 
+              id="alunoNome" 
+              formControlName="alunoNome"
+              placeholder="Digite o nome completo"
+              required>
+          </div>
+          
+          <div class="form-group">
+            <label for="turma">Turma *</label>
+            <input 
+              type="text" 
+              id="turma" 
+              formControlName="turma"
+              placeholder="Ex: 5º A, 7º B, 1º EM"
+              required>
+          </div>
+          
+          <div class="form-group">
+            <label for="tipoEnsino">Tipo de Ensino *</label>
+            <select id="tipoEnsino" formControlName="tipoEnsino" required>
+              <option value="">Selecione</option>
+              <option *ngFor="let tipo of tiposEnsino" [value]="tipo">{{ tipo }}</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Informações da Saída -->
+      <div class="form-section">
+        <h3 class="section-title">Informações da Saída</h3>
+        
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="data">Data *</label>
+            <input 
+              type="date" 
+              id="data" 
+              formControlName="data"
+              required>
+          </div>
+          
+          <div class="form-group">
+            <label for="horario">Horário de Saída *</label>
+            <input 
+              type="time" 
+              id="horario" 
+              formControlName="horario"
+              required>
+          </div>
+          
+          <div class="form-group full-width">
+            <label for="motivo">Motivo da Saída *</label>
+            <textarea 
+              id="motivo" 
+              formControlName="motivo"
+              rows="3"
+              placeholder="Descreva o motivo da saída antecipada..."
+              required></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dados do Responsável -->
+      <div class="form-section">
+        <h3 class="section-title">Dados do Responsável</h3>
+        
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="responsavel">Nome do Responsável *</label>
+            <input 
+              type="text" 
+              id="responsavel" 
+              formControlName="responsavel"
+              placeholder="Nome completo"
+              required>
+          </div>
+          
+          <div class="form-group">
+            <label for="documentoResponsavel">CPF ou RG *</label>
+            <input 
+              type="text" 
+              id="documentoResponsavel" 
+              formControlName="documentoResponsavel"
+              placeholder="Digite o documento"
+              required>
+          </div>
+        </div>
+      </div>
+
+      <!-- Botão de Enviar -->
+      <div class="form-actions">
+        <button 
+          type="button" 
+          class="btn-enviar" 
+          (click)="confirmar()"
+          [disabled]="!saidaForm.valid">
+          Registrar Saída
+        </button>
+      </div>
+      
+    </form>
+  </div>
+
+  <!-- LOADING STATE -->
+  <div class="loading-container" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Registrando saída...</p>
+  </div>
+
+  <!-- MODAL DE CONFIRMAÇÃO -->
+  <div class="modal-overlay" *ngIf="showConfirm" (click)="cancelarConfirmacao()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <h3>Confirmar Registro de Saída</h3>
+      
+      <div class="confirmacao-info">
+        <h4>Aluno</h4>
+        <p><strong>Nome:</strong> {{ saidaForm.value.alunoNome }}</p>
+        <p><strong>Turma:</strong> {{ saidaForm.value.turma }}</p>
+        
+        <h4>Saída</h4>
+        <p><strong>Horário:</strong> {{ saidaForm.value.horario }}</p>
+        <p><strong>Motivo:</strong> {{ saidaForm.value.motivo }}</p>
+        
+        <h4>Responsável</h4>
+        <p><strong>Nome:</strong> {{ saidaForm.value.responsavel }}</p>
+        <p><strong>Documento:</strong> {{ saidaForm.value.documentoResponsavel }}</p>
+      </div>
+      
+      <div class="modal-buttons">
+        <button class="btn-cancelar" (click)="cancelarConfirmacao()">Cancelar</button>
+        <button class="btn-confirmar" (click)="confirmarRegistro()">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+</div>

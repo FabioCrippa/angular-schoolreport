@@ -48,7 +48,7 @@ export class Admin implements OnInit {
   novoUsuario = {
     email: '',
     nome: '',
-    role: 'professor' as 'professor' | 'coordenacao' | 'direcao',
+    role: 'professor' as 'professor' | 'coordenacao' | 'direcao' | 'secretaria',
     ativo: true
   };
 

@@ -6,6 +6,10 @@ import { RegistroOcorrencia } from './pages/registro-ocorrencia/registro-ocorren
 import { ListaOcorrencias } from './pages/lista-ocorrencias/lista-ocorrencias';
 import { Admin } from './pages/admin/admin';
 import { PrimeiroAcesso } from './pages/primeiro-acesso/primeiro-acesso';
+import { DashboardSecretaria } from './pages/secretaria/dashboard-secretaria/dashboard-secretaria';
+import { RegistrarAtraso } from './pages/secretaria/registrar-atraso/registrar-atraso';
+import { RegistrarSaida } from './pages/secretaria/registrar-saida/registrar-saida';
+import { RelatorioDia } from './pages/secretaria/relatorio-dia/relatorio-dia';
 
 export const routes: Routes = [
     {
@@ -35,6 +39,22 @@ export const routes: Routes = [
     {
         path: 'primeiro-acesso',
         component: PrimeiroAcesso
+    },
+    {
+        path: 'secretaria/dashboard',
+        component: DashboardSecretaria
+    },
+    {
+        path: 'secretaria/registrar-atraso',
+        component: RegistrarAtraso
+    },
+    {
+        path: 'secretaria/registrar-saida',
+        component: RegistrarSaida
+    },
+    {
+        path: 'secretaria/relatorio-dia',
+        component: RelatorioDia
     },
     {
         path: '**',

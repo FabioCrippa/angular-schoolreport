@@ -30,7 +30,7 @@ export interface Usuario {
   email: string;
   nome: string;
   escolaId: string;
-  role: 'professor' | 'coordenacao' | 'direcao';
+  role: 'professor' | 'coordenacao' | 'direcao' | 'secretaria';
   ativo: boolean;
   criadoEm?: Date;
 }
@@ -48,6 +48,25 @@ export interface Ocorrencia {
   descricao: string;
   professorNome: string;
   professorEmail: string;
+  criadoEm?: Date;
+  expandido?: boolean;
+}
+
+export interface ControleEntradaSaida {
+  id?: string;
+  escolaId: string;
+  tipo: 'atraso' | 'saida';
+  alunoNome: string;
+  turma: string;
+  tipoEnsino: string;
+  data: string;
+  horario: string;
+  motivo?: string;
+  aulaPermitida?: string; // Para atrasos: "2ª aula", "3ª aula", etc
+  responsavel?: string; // Para saídas: nome do responsável
+  documentoResponsavel?: string; // Para saídas: CPF ou RG
+  registradoPor: string; // email da secretaria
+  registradoPorNome: string; // nome da secretaria
   criadoEm?: Date;
   expandido?: boolean;
 }
@@ -472,6 +491,105 @@ Acesse o sistema para mais detalhes.
       console.log('Usuário deletado:', userId);
     } catch (error) {
       console.error('Erro ao deletar usuário:', error);
+      throw error;
+    }
+  }
+
+  // ===== CONTROLE DE ENTRADA/SAÍDA =====
+  
+  async adicionarControle(controle: Omit<ControleEntradaSaida, 'id' | 'criadoEm'>): Promise<string> {
+    try {
+      console.log('📝 Tentando adicionar controle:', controle);
+      const controleCollection = collection(this.firestore, 'controleEntradaSaida');
+      const docRef = await addDoc(controleCollection, {
+        ...controle,
+        criadoEm: Timestamp.now()
+      });
+      console.log('✅ Controle de entrada/saída adicionado:', docRef.id);
+      return docRef.id;
+    } catch (error) {
+      console.error('❌ Erro ao adicionar controle:', error);
+      throw error;
+    }
+  }
+  
+  async buscarControles(escolaId: string, data?: string): Promise<ControleEntradaSaida[]> {
+    try {
+      const controleCollection = collection(this.firestore, 'controleEntradaSaida');
+      let q;
+      
+      if (data) {
+        // Buscar apenas da data específica
+        q = query(
+          controleCollection,
+          where('escolaId', '==', escolaId),
+          where('data', '==', data)
+        );
+      } else {
+        // Buscar todos da escola
+        q = query(
+          controleCollection,
+          where('escolaId', '==', escolaId)
+        );
+      }
+      
+      const querySnapshot = await getDocs(q);
+      const controles: ControleEntradaSaida[] = [];
+      
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        controles.push({
+          id: doc.id,
+          ...data,
+          criadoEm: data['criadoEm']?.toDate()
+        } as ControleEntradaSaida);
+      });
+      
+      console.log(`Buscou ${controles.length} registros de controle`);
+      return controles;
+      
+    } catch (error) {
+      console.error('Erro ao buscar controles:', error);
+      throw error;
+    }
+  }
+  
+  async buscarControlesPorTipo(escolaId: string, tipo: 'atraso' | 'saida', data?: string): Promise<ControleEntradaSaida[]> {
+    try {
+      const controleCollection = collection(this.firestore, 'controleEntradaSaida');
+      let q;
+      
+      if (data) {
+        q = query(
+          controleCollection,
+          where('escolaId', '==', escolaId),
+          where('tipo', '==', tipo),
+          where('data', '==', data)
+        );
+      } else {
+        q = query(
+          controleCollection,
+          where('escolaId', '==', escolaId),
+          where('tipo', '==', tipo)
+        );
+      }
+      
+      const querySnapshot = await getDocs(q);
+      const controles: ControleEntradaSaida[] = [];
+      
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        controles.push({
+          id: doc.id,
+          ...data,
+          criadoEm: data['criadoEm']?.toDate()
+        } as ControleEntradaSaida);
+      });
+      
+      return controles;
+      
+    } catch (error) {
+      console.error('Erro ao buscar controles por tipo:', error);
       throw error;
     }
   }
