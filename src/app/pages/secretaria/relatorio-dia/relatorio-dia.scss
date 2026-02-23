@@ -280,10 +280,23 @@ $bg-gradient-end: #E0EAFF;
       }
     }
 
-    .horario {
-      font-size: 1.125rem;
-      font-weight: 600;
-      color: $text-dark;
+    .data-horario {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0.5rem;
+
+      .data {
+        font-size: 0.875rem;
+        color: #6B7280;
+        font-weight: 500;
+      }
+
+      .horario {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: $text-dark;
+      }
     }
 
     .toggle-icon {

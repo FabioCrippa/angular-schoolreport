@@ -96,7 +96,10 @@
           <span class="tipo-badge" [class]="'badge-' + registro.tipo">
             {{ getTipoLabel(registro.tipo) }}
           </span>
-          <span class="horario">{{ registro.horario }}</span>
+          <span class="data-horario">
+            <span class="data">{{ formatarData(registro.data) }}</span>
+            <span class="horario">{{ registro.horario }}</span>
+          </span>
           <span class="toggle-icon">{{ registro.expandido ? '▲' : '▼' }}</span>
         </div>
       </div>

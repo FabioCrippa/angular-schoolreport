@@ -29,20 +29,30 @@
           </div>
           
           <div class="form-group">
-            <label for="turma">Turma *</label>
-            <input 
-              type="text" 
-              id="turma" 
-              formControlName="turma"
-              placeholder="Ex: 5º A, 7º B, 1º EM"
+            <label for="tipoEnsino">Tipo de Ensino *</label>
+            <select 
+              id="tipoEnsino" 
+              formControlName="tipoEnsino"
+              (change)="onTipoEnsinoChange($any($event.target).value)"
               required>
+              <option value="">Selecione</option>
+              <option *ngFor="let tipo of tiposEnsino" [value]="tipo">{{ tipo }}</option>
+            </select>
           </div>
           
           <div class="form-group">
-            <label for="tipoEnsino">Tipo de Ensino *</label>
-            <select id="tipoEnsino" formControlName="tipoEnsino" required>
-              <option value="">Selecione</option>
-              <option *ngFor="let tipo of tiposEnsino" [value]="tipo">{{ tipo }}</option>
+            <label for="turma">Turma *</label>
+            <select 
+              id="turma" 
+              formControlName="turma"
+              [disabled]="turmasFiltradas.length === 0"
+              required>
+              <option value="">
+                {{ turmasFiltradas.length === 0 ? 'Selecione primeiro o tipo de ensino' : 'Selecione a turma' }}
+              </option>
+              <option *ngFor="let turma of turmasFiltradas" [value]="turma">
+                {{ turma }}
+              </option>
             </select>
           </div>
         </div>

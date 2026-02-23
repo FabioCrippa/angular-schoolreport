@@ -109,6 +109,12 @@ export class RelatorioDia implements OnInit {
     return tipo === 'atraso' ? '🕐' : '🚪';
   }
   
+  formatarData(data: string): string {
+    // Converte 'YYYY-MM-DD' para 'DD/MM/YYYY'
+    const [ano, mes, dia] = data.split('-');
+    return `${dia}/${mes}/${ano}`;
+  }
+  
   voltar() {
     this.router.navigate(['/secretaria/dashboard']);
   }

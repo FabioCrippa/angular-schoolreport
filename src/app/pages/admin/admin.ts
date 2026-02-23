@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -15,6 +15,7 @@ export class Admin implements OnInit {
   private firestoreService = inject(FirestoreService);
   authService = inject(AuthService);
   private router = inject(Router);
+  private cdr = inject(ChangeDetectorRef);
   
   escolas: Escola[] = [];
   carregandoEscolas = false;
@@ -57,11 +58,11 @@ export class Admin implements OnInit {
     this.authService.user$.subscribe(user => {
       this.userEmail = user?.email || null;
       
-      // Só carrega escolas se o usuário estiver autenticado
-      if (user) {
+      // Só carrega escolas se o usuário estiver autenticado E ainda não tiver carregado
+      if (user && this.escolas.length === 0 && !this.carregandoEscolas) {
         console.log('Usuário autenticado, carregando escolas...', user.email);
         this.carregarEscolas();
-      } else {
+      } else if (!user) {
         console.log('Usuário NÃO autenticado');
         this.erroCarregar = 'Você precisa estar logado para acessar o painel admin.';
       }
@@ -92,6 +93,7 @@ export class Admin implements OnInit {
       this.erroCarregar = `Erro ao carregar escolas: ${error.code || 'Desconhecido'}`;
     } finally {
       this.carregandoEscolas = false;
+      this.cdr.detectChanges();
     }
   }
 
@@ -159,6 +161,7 @@ export class Admin implements OnInit {
       console.error('Erro ao salvar escola:', error);
     } finally {
       this.salvandoEscola = false;
+      this.cdr.detectChanges();
     }
   }
 
@@ -213,6 +216,7 @@ export class Admin implements OnInit {
       console.error('❌ Erro ao carregar usuários:', error);
     } finally {
       this.carregandoUsuarios = false;
+      this.cdr.detectChanges();
     }
   }
 
@@ -296,6 +300,7 @@ export class Admin implements OnInit {
       alert(`Erro ao salvar usuário: ${error.message || 'Erro desconhecido'}`);
     } finally {
       this.salvandoUsuario = false;
+      this.cdr.detectChanges();
     }
   }
 

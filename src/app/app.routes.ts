@@ -1,60 +1,65 @@
 import { Routes } from '@angular/router';
-import { Home } from './pages/home/home';
-import { Login } from './pages/login/login';
-import { Dashboard } from './pages/dashboard/dashboard';
-import { RegistroOcorrencia } from './pages/registro-ocorrencia/registro-ocorrencia';
-import { ListaOcorrencias } from './pages/lista-ocorrencias/lista-ocorrencias';
-import { Admin } from './pages/admin/admin';
-import { PrimeiroAcesso } from './pages/primeiro-acesso/primeiro-acesso';
-import { DashboardSecretaria } from './pages/secretaria/dashboard-secretaria/dashboard-secretaria';
-import { RegistrarAtraso } from './pages/secretaria/registrar-atraso/registrar-atraso';
-import { RegistrarSaida } from './pages/secretaria/registrar-saida/registrar-saida';
-import { RelatorioDia } from './pages/secretaria/relatorio-dia/relatorio-dia';
+import { authGuard } from './guards/auth.guard';
+import { adminGuard } from './guards/admin.guard';
+import { roleGuard } from './guards/role.guard';
 
 export const routes: Routes = [
     {
         path: '',
-        component: Home
+        loadComponent: () => import('./pages/home/home').then(m => m.Home)
     },
     {
         path: 'login',
-        component: Login
-    },
-    {
-        path: 'dashboard',
-        component: Dashboard
-    },
-    {
-        path: 'registro',
-        component: RegistroOcorrencia
-    },
-    {
-        path: 'ocorrencias',
-        component: ListaOcorrencias
-    },
-    {
-        path: 'admin',
-        component: Admin
+        loadComponent: () => import('./pages/login/login').then(m => m.Login)
     },
     {
         path: 'primeiro-acesso',
-        component: PrimeiroAcesso
+        loadComponent: () => import('./pages/primeiro-acesso/primeiro-acesso').then(m => m.PrimeiroAcesso)
+    },
+    {
+        path: 'dashboard',
+        loadComponent: () => import('./pages/dashboard/dashboard').then(m => m.Dashboard),
+        canActivate: [authGuard]
+    },
+    {
+        path: 'registro',
+        loadComponent: () => import('./pages/registro-ocorrencia/registro-ocorrencia').then(m => m.RegistroOcorrencia),
+        canActivate: [authGuard, roleGuard],
+        data: { roles: ['professor', 'coordenacao', 'direcao'] }
+    },
+    {
+        path: 'ocorrencias',
+        loadComponent: () => import('./pages/lista-ocorrencias/lista-ocorrencias').then(m => m.ListaOcorrencias),
+        canActivate: [authGuard]
+    },
+    {
+        path: 'admin',
+        loadComponent: () => import('./pages/admin/admin').then(m => m.Admin),
+        canActivate: [authGuard, adminGuard]
     },
     {
         path: 'secretaria/dashboard',
-        component: DashboardSecretaria
+        loadComponent: () => import('./pages/secretaria/dashboard-secretaria/dashboard-secretaria').then(m => m.DashboardSecretaria),
+        canActivate: [authGuard, roleGuard],
+        data: { roles: ['secretaria'] }
     },
     {
         path: 'secretaria/registrar-atraso',
-        component: RegistrarAtraso
+        loadComponent: () => import('./pages/secretaria/registrar-atraso/registrar-atraso').then(m => m.RegistrarAtraso),
+        canActivate: [authGuard, roleGuard],
+        data: { roles: ['secretaria'] }
     },
     {
         path: 'secretaria/registrar-saida',
-        component: RegistrarSaida
+        loadComponent: () => import('./pages/secretaria/registrar-saida/registrar-saida').then(m => m.RegistrarSaida),
+        canActivate: [authGuard, roleGuard],
+        data: { roles: ['secretaria'] }
     },
     {
         path: 'secretaria/relatorio-dia',
-        component: RelatorioDia
+        loadComponent: () => import('./pages/secretaria/relatorio-dia/relatorio-dia').then(m => m.RelatorioDia),
+        canActivate: [authGuard, roleGuard],
+        data: { roles: ['secretaria'] }
     },
     {
         path: '**',
