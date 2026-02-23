@@ -4,8 +4,6 @@ import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { FirestoreService, Ocorrencia } from '../../services/firestore';
 import { AuthService } from '../../services/auth';
-import pdfMake from 'pdfmake/build/pdfmake';
-import pdfFonts from 'pdfmake/build/vfs_fonts';
 
 @Component({
   selector: 'app-lista-ocorrencias',
@@ -172,8 +170,12 @@ export class ListaOcorrencias implements OnInit {
   
   async gerarPDF(ocorrencia: Ocorrencia) {
     try {
+      // Importar pdfMake dinamicamente (evita problemas com SSR)
+      const pdfMake = await import('pdfmake/build/pdfmake');
+      const pdfFonts = await import('pdfmake/build/vfs_fonts');
+      
       // Configurar pdfMake com fontes
-      (pdfMake as any).vfs = pdfFonts;
+      (pdfMake as any).default.vfs = (pdfFonts as any).default;
       
       // Buscar dados da escola
       const escola = await this.firestoreService.buscarEscola(ocorrencia.escolaId);
@@ -417,7 +419,7 @@ export class ListaOcorrencias implements OnInit {
       
       // Gerar e baixar o PDF
       const nomeArquivo = `Ocorrencia_${ocorrencia.nomeAluno.replace(/\s+/g, '_')}_${codigoOcorrencia}.pdf`;
-      pdfMake.createPdf(documentDefinition).download(nomeArquivo);
+      (pdfMake as any).default.createPdf(documentDefinition).download(nomeArquivo);
       
     } catch (erro) {
       console.error('Erro ao gerar PDF:', erro);
