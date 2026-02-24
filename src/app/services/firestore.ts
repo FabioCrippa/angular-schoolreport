@@ -44,7 +44,6 @@ export interface Ocorrencia {
   turma: string;
   disciplina: string;
   tipoOcorrencia: string;
-  gravidade: string;
   descricao: string;
   professorNome: string;
   professorEmail: string;
@@ -96,20 +95,26 @@ export class FirestoreService {
         const emailsDestino = [];
         
         // Adiciona emails de coordenação e direção
-        if (escolaData.emailCoordenacao) emailsDestino.push(escolaData.emailCoordenacao);
-        if (escolaData.emailDirecao) emailsDestino.push(escolaData.emailDirecao);
+        if (escolaData.emailCoordenacao) {
+          emailsDestino.push(escolaData.emailCoordenacao);
+        }
+        if (escolaData.emailDirecao) {
+          emailsDestino.push(escolaData.emailDirecao);
+        }
         
         if (emailsDestino.length > 0) {
-          // Cria documento separado na coleção 'ocorrencias' só para email
-          await addDoc(this.ocorrenciasCollection, {
+          const emailData = {
             to: emailsDestino,
             message: {
               subject: `Nova Ocorrência - ${ocorrencia.nomeAluno} - ${escolaData.nome}`,
               text: this.gerarEmailTexto(ocorrencia, escolaData),
               html: this.gerarEmailHTML(ocorrencia, escolaData)
             }
-          });
-          console.log('✅ Email de ocorrência enviado para:', emailsDestino.join(', '));
+          };
+          
+          // Cria documento separado na coleção 'ocorrencias' só para email
+          await addDoc(this.ocorrenciasCollection, emailData);
+          console.log('Email de ocorrência enviado para:', emailsDestino.join(', '));
         }
       }
       
@@ -141,7 +146,6 @@ Turma: ${occ.turma}
 
 OCORRÊNCIA
 Tipo: ${occ.tipoOcorrencia}
-Gravidade: ${occ.gravidade}
 Disciplina: ${occ.disciplina}
 
 DESCRIÇÃO
@@ -157,13 +161,6 @@ Acesse o sistema para mais detalhes.
   
   // Gera email em HTML
   private gerarEmailHTML(occ: any, escola: any): string {
-    const gravidadeCor = {
-      'Leve': '#10b981',
-      'Moderada': '#f59e0b',
-      'Grave': '#ef4444',
-      'Gravíssima': '#991b1b'
-    }[occ.gravidade as string] || '#6b7280';
-    
     return `
 <!DOCTYPE html>
 <html>
@@ -176,7 +173,7 @@ Acesse o sistema para mais detalhes.
     .header h1 { margin: 0; font-size: 24px; }
     .content { background: #f9fafb; padding: 20px; border: 1px solid #e5e7eb; border-top: none; }
     .card { background: white; padding: 15px; margin: 10px 0; border-radius: 6px; border-left: 4px solid #3B82F6; }
-    .badge { display: inline-block; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: bold; color: white; background: ${gravidadeCor}; }
+    .badge { display: inline-block; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: bold; color: white; background: #3B82F6; }
     .label { font-weight: bold; color: #6b7280; }
     .value { color: #1f2937; }
     .footer { text-align: center; padding: 20px; color: #6b7280; font-size: 12px; }
@@ -204,7 +201,6 @@ Acesse o sistema para mais detalhes.
       <div class="card">
         <h3 style="margin-top: 0; color: #1f2937;">📝 Ocorrência</h3>
         <p><span class="label">Tipo:</span> <span class="value">${occ.tipoOcorrencia}</span></p>
-        <p><span class="label">Gravidade:</span> <span class="badge">${occ.gravidade}</span></p>
         <p><span class="label">Disciplina:</span> <span class="value">${occ.disciplina}</span></p>
       </div>
       

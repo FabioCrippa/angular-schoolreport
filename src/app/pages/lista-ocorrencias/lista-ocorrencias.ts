@@ -183,15 +183,6 @@ export class ListaOcorrencias implements OnInit {
       const dataOcorrencia = new Date(Number(partes[0]), Number(partes[1]) - 1, Number(partes[2]));
       const dataFormatada = dataOcorrencia.toLocaleDateString('pt-BR');
       
-      // Definir cor da gravidade
-      const gravidadeCor: { [key: string]: string } = {
-        'Leve': '#10b981',
-        'Moderada': '#f59e0b',
-        'Grave': '#ef4444',
-        'Gravíssima': '#991b1b'
-      };
-      const corGravidade = gravidadeCor[ocorrencia.gravidade] || '#6b7280';
-      
       // Gerar código único da ocorrência (primeiros 8 caracteres do ID)
       const codigoOcorrencia = ocorrencia.id?.substring(0, 8).toUpperCase() || 'N/A';
       

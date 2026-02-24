@@ -168,7 +168,6 @@ export class RegistroOcorrencia {
         turma: formData.turma,
         disciplina: formData.disciplina,
         tipoOcorrencia: this.tiposSelecionados.join(', '), // Múltiplos tipos separados por vírgula
-        gravidade: 'leve', // Gravidade padrão - será classificada pela coordenação/direção
         descricao: formData.descricao,
         professorEmail: user?.email || 'desconhecido@email.com',
         professorNome: this.professorNome
