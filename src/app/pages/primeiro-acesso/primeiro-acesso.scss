@@ -39,7 +39,14 @@ $error-text: #DC2626;
   }
 
   .logo-icon {
-    font-size: 2rem;
+    height: 3rem;
+    width: auto;
+    display: block;
+    filter: brightness(1.2) saturate(1.1);
+    
+    @media (min-width: 768px) {
+      height: 4rem;
+    }
   }
 }
 

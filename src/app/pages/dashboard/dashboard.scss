@@ -39,9 +39,14 @@ $border-color: #E5E7EB;
   }
 
   .logo-icon {
-    height: 1.75rem;
+    height: 2rem;
     width: auto;
     display: block;
+    filter: brightness(1.2) saturate(1.1);
+    
+    @media (min-width: 768px) {
+      height: 3rem;
+    }
   }
 }
 

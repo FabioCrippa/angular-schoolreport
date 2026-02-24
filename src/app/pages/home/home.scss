@@ -55,10 +55,14 @@ $border-color: #E5E7EB;
   }
   
   .logo-icon {
-    height: 2.5rem;
+    height: 3.5rem;
     width: auto;
     display: block;
-    filter: brightness(1.1) contrast(1.05);
+    filter: brightness(1.2) saturate(1.1);
+    
+    @media (min-width: 768px) {
+      height: 6rem;
+    }
   }
 }
 
@@ -413,10 +417,14 @@ $border-color: #E5E7EB;
   }
   
   .logo-icon {
-    height: 2.5rem;
+    height: 3rem;
     width: auto;
     display: block;
-    filter: brightness(1.1) contrast(1.05);
+    filter: brightness(1.2) saturate(1.1);
+    
+    @media (min-width: 768px) {
+      height: 4.5rem;
+    }
   }
 }
 
