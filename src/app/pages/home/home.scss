@@ -417,13 +417,13 @@ $border-color: #E5E7EB;
   }
   
   .logo-icon {
-    height: 3rem;
+    height: 4rem;
     width: auto;
     display: block;
     filter: brightness(1.2) saturate(1.1);
     
     @media (min-width: 768px) {
-      height: 4.5rem;
+      height: 5.5rem;
     }
   }
 }
