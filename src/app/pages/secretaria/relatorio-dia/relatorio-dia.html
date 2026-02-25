@@ -120,9 +120,9 @@
           <span class="value">{{ registro.responsavel }}</span>
         </div>
         
-        <div class="info-row" *ngIf="registro.tipo === 'saida' && registro.documentoResponsavel">
-          <span class="label">Documento:</span>
-          <span class="value">{{ registro.documentoResponsavel }}</span>
+        <div class="info-row" *ngIf="registro.tipo === 'saida' && registro.telefoneResponsavel">
+          <span class="label">Telefone:</span>
+          <span class="value">{{ registro.telefoneResponsavel }}</span>
         </div>
         
         <div class="info-row" *ngIf="registro.motivo">

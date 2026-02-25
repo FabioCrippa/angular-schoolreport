@@ -59,7 +59,7 @@ export class RegistrarSaida implements OnInit {
       horario: [agora, Validators.required],
       motivo: ['', Validators.required],
       responsavel: ['', Validators.required],
-      documentoResponsavel: ['']
+      telefoneResponsavel: ['']
     });
   }
   
@@ -127,14 +127,26 @@ export class RegistrarSaida implements OnInit {
         horario: formData.horario,
         motivo: formData.motivo,
         responsavel: formData.responsavel,
-        documentoResponsavel: formData.documentoResponsavel,
+        telefoneResponsavel: formData.telefoneResponsavel,
         registradoPor: user?.email || 'secretaria@escola.com',
         registradoPorNome: this.secretariaNome
       };
       
       await this.firestoreService.adicionarControle(saida);
       
-      alert('Saída registrada com sucesso!');
+      // Buscar dados da escola para enviar email
+      const escolaData = await this.firestoreService.buscarEscola(escolaId);
+      
+      // Enviar email para coordenação e direção
+      if (escolaData && (escolaData.emailCoordenacao || escolaData.emailDirecao)) {
+        await this.firestoreService.enviarEmailSaida(saida as any, {
+          nome: escolaData.nome,
+          emailCoordenacao: escolaData.emailCoordenacao,
+          emailDirecao: escolaData.emailDirecao
+        });
+      }
+      
+      alert('Saída registrada com sucesso!' + (escolaData && (escolaData.emailCoordenacao || escolaData.emailDirecao) ? ' Email enviado para coordenação e direção.' : ''));
       this.saidaForm.reset({
         data: new Date().toISOString().split('T')[0],
         horario: new Date().toTimeString().substring(0, 5),

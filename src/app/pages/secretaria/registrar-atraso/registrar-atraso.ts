@@ -133,7 +133,19 @@ export class RegistrarAtraso implements OnInit {
       
       await this.firestoreService.adicionarControle(atraso);
       
-      alert('Atraso registrado com sucesso!');
+      // Buscar dados da escola para enviar email
+      const escolaData = await this.firestoreService.buscarEscola(escolaId);
+      
+      // Enviar email para coordenação e direção
+      if (escolaData && (escolaData.emailCoordenacao || escolaData.emailDirecao)) {
+        await this.firestoreService.enviarEmailAtraso(atraso as any, {
+          nome: escolaData.nome,
+          emailCoordenacao: escolaData.emailCoordenacao,
+          emailDirecao: escolaData.emailDirecao
+        });
+      }
+      
+      alert('Atraso registrado com sucesso!' + (escolaData && (escolaData.emailCoordenacao || escolaData.emailDirecao) ? ' Email enviado para coordenação e direção.' : ''));
       this.atrasoForm.reset({
         data: new Date().toISOString().split('T')[0],
         horario: new Date().toTimeString().substring(0, 5),

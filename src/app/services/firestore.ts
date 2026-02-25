@@ -20,6 +20,7 @@ export interface Escola {
   nome: string;
   emailDirecao: string;
   emailCoordenacao: string;
+  emailSecretaria?: string;
   status: 'ativo' | 'inativo';
   plano: 'mensal' | 'anual' | 'trial';
   criadoEm?: Date;
@@ -63,7 +64,7 @@ export interface ControleEntradaSaida {
   motivo?: string;
   aulaPermitida?: string; // Para atrasos: "2ª aula", "3ª aula", etc
   responsavel?: string; // Para saídas: nome do responsável
-  documentoResponsavel?: string; // Para saídas: CPF ou RG
+  telefoneResponsavel?: string; // Para saídas: telefone do responsável
   registradoPor: string; // email da secretaria
   registradoPorNome: string; // nome da secretaria
   criadoEm?: Date;
@@ -170,7 +171,7 @@ Acesse o sistema para mais detalhes.
     `;
   }
   
-  // Gera email em HTML
+  // Gera email em HTML para ocorrências
   private gerarEmailHTML(occ: any, escola: any): string {
     return `
 <!DOCTYPE html>
@@ -228,6 +229,254 @@ Acesse o sistema para mais detalhes.
     </div>
     <div class="footer">
       <p>Sistema de Ocorrências Escolares</p>
+      <p>Este é um email automático, não responda.</p>
+    </div>
+  </div>
+</body>
+</html>
+    `;
+  }
+
+  // ===== ENVIO DE EMAILS PARA ATRASO E SAÍDA ANTECIPADA =====
+
+  async enviarEmailAtraso(atraso: ControleEntradaSaida, escolaData: { nome: string, emailCoordenacao?: string, emailDirecao?: string }): Promise<void> {
+    try {
+      const emailsDestino: string[] = [];
+      
+      // Adiciona emails de coordenação e direção
+      if (escolaData.emailCoordenacao) {
+        emailsDestino.push(escolaData.emailCoordenacao);
+      }
+      if (escolaData.emailDirecao) {
+        emailsDestino.push(escolaData.emailDirecao);
+      }
+      
+      if (emailsDestino.length === 0) {
+        console.log('⚠️ Nenhum email de coordenação/direção cadastrado para envio');
+        return;
+      }
+      
+      const emailData = {
+        to: emailsDestino,
+        message: {
+          subject: `⏰ Registro de Atraso - ${atraso.alunoNome} - ${escolaData.nome}`,
+          text: this.gerarEmailTextoAtraso(atraso, escolaData),
+          html: this.gerarEmailHTMLAtraso(atraso, escolaData)
+        }
+      };
+      
+      await addDoc(this.ocorrenciasCollection, emailData);
+      console.log('✅ Email de atraso enviado para:', emailsDestino.join(', '));
+      
+    } catch (error) {
+      console.error('❌ Erro ao enviar email de atraso:', error);
+      // Não lança erro para não bloquear o registro
+    }
+  }
+
+  async enviarEmailSaida(saida: ControleEntradaSaida, escolaData: { nome: string, emailCoordenacao?: string, emailDirecao?: string }): Promise<void> {
+    try {
+      const emailsDestino: string[] = [];
+      
+      // Adiciona emails de coordenação e direção
+      if (escolaData.emailCoordenacao) {
+        emailsDestino.push(escolaData.emailCoordenacao);
+      }
+      if (escolaData.emailDirecao) {
+        emailsDestino.push(escolaData.emailDirecao);
+      }
+      
+      if (emailsDestino.length === 0) {
+        console.log('⚠️ Nenhum email de coordenação/direção cadastrado para envio');
+        return;
+      }
+      
+      const emailData = {
+        to: emailsDestino,
+        message: {
+          subject: `🚪 Saída Antecipada - ${saida.alunoNome} - ${escolaData.nome}`,
+          text: this.gerarEmailTextoSaida(saida, escolaData),
+          html: this.gerarEmailHTMLSaida(saida, escolaData)
+        }
+      };
+      
+      await addDoc(this.ocorrenciasCollection, emailData);
+      console.log('✅ Email de saída enviado para:', emailsDestino.join(', '));
+      
+    } catch (error) {
+      console.error('❌ Erro ao enviar email de saída:', error);
+      // Não lança erro para não bloquear o registro
+    }
+  }
+
+  private gerarEmailTextoAtraso(atraso: ControleEntradaSaida, escola: any): string {
+    return `
+REGISTRO DE ATRASO
+
+Escola: ${escola.nome}
+Data: ${new Date(atraso.data).toLocaleDateString('pt-BR')}
+
+ALUNO
+Nome: ${atraso.alunoNome}
+Turma: ${atraso.turma}
+Tipo de Ensino: ${atraso.tipoEnsino}
+
+INFORMAÇÕES DO ATRASO
+Horário de chegada: ${atraso.horario}
+Aula permitida: ${atraso.aulaPermitida || 'Não especificada'}
+${atraso.motivo ? `Motivo: ${atraso.motivo}` : ''}
+
+REGISTRADO POR
+${atraso.registradoPorNome}
+(${atraso.registradoPor})
+
+Acesse o sistema para mais detalhes.
+    `;
+  }
+
+  private gerarEmailHTMLAtraso(atraso: ControleEntradaSaida, escola: any): string {
+    return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    .header { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; padding: 20px; border-radius: 8px 8px 0 0; }
+    .header h1 { margin: 0; font-size: 24px; }
+    .content { background: #f9fafb; padding: 20px; border: 1px solid #e5e7eb; border-top: none; }
+    .card { background: white; padding: 15px; margin: 10px 0; border-radius: 6px; border-left: 4px solid #f59e0b; }
+    .label { font-weight: bold; color: #6b7280; }
+    .value { color: #1f2937; }
+    .footer { text-align: center; padding: 20px; color: #6b7280; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>⏰ Registro de Atraso</h1>
+      <p style="margin: 5px 0 0 0;">${escola.nome}</p>
+    </div>
+    <div class="content">
+      <div class="card">
+        <p><span class="label">Data:</span> <span class="value">${new Date(atraso.data).toLocaleDateString('pt-BR')}</span></p>
+        <p><span class="label">Horário de chegada:</span> <span class="value">${atraso.horario}</span></p>
+      </div>
+      
+      <div class="card">
+        <h3 style="margin-top: 0; color: #1f2937;">👨‍🎓 Aluno</h3>
+        <p><span class="label">Nome:</span> <span class="value">${atraso.alunoNome}</span></p>
+        <p><span class="label">Turma:</span> <span class="value">${atraso.turma}</span></p>
+        <p><span class="label">Tipo de Ensino:</span> <span class="value">${atraso.tipoEnsino}</span></p>
+      </div>
+      
+      <div class="card">
+        <h3 style="margin-top: 0; color: #1f2937;">📋 Informações</h3>
+        <p><span class="label">Aula permitida:</span> <span class="value">${atraso.aulaPermitida || 'Não especificada'}</span></p>
+        ${atraso.motivo ? `<p><span class="label">Motivo:</span> <span class="value">${atraso.motivo}</span></p>` : ''}
+      </div>
+      
+      <div class="card">
+        <h3 style="margin-top: 0; color: #1f2937;">👤 Registrado por</h3>
+        <p><span class="value">${atraso.registradoPorNome}</span></p>
+        <p style="font-size: 14px; color: #6b7280;">${atraso.registradoPor}</p>
+      </div>
+    </div>
+    <div class="footer">
+      <p>Sistema de Controle Escolar</p>
+      <p>Este é um email automático, não responda.</p>
+    </div>
+  </div>
+</body>
+</html>
+    `;
+  }
+
+  private gerarEmailTextoSaida(saida: ControleEntradaSaida, escola: any): string {
+    return `
+SAÍDA ANTECIPADA
+
+Escola: ${escola.nome}
+Data: ${new Date(saida.data).toLocaleDateString('pt-BR')}
+
+ALUNO
+Nome: ${saida.alunoNome}
+Turma: ${saida.turma}
+Tipo de Ensino: ${saida.tipoEnsino}
+
+INFORMAÇÕES DA SAÍDA
+Horário de saída: ${saida.horario}
+Motivo: ${saida.motivo}
+
+RESPONSÁVEL
+Nome: ${saida.responsavel || 'Não informado'}
+${saida.telefoneResponsavel ? `Telefone: ${saida.telefoneResponsavel}` : ''}
+
+REGISTRADO POR
+${saida.registradoPorNome}
+(${saida.registradoPor})
+
+Acesse o sistema para mais detalhes.
+    `;
+  }
+
+  private gerarEmailHTMLSaida(saida: ControleEntradaSaida, escola: any): string {
+    return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    .header { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; padding: 20px; border-radius: 8px 8px 0 0; }
+    .header h1 { margin: 0; font-size: 24px; }
+    .content { background: #f9fafb; padding: 20px; border: 1px solid #e5e7eb; border-top: none; }
+    .card { background: white; padding: 15px; margin: 10px 0; border-radius: 6px; border-left: 4px solid #ef4444; }
+    .label { font-weight: bold; color: #6b7280; }
+    .value { color: #1f2937; }
+    .footer { text-align: center; padding: 20px; color: #6b7280; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🚪 Saída Antecipada</h1>
+      <p style="margin: 5px 0 0 0;">${escola.nome}</p>
+    </div>
+    <div class="content">
+      <div class="card">
+        <p><span class="label">Data:</span> <span class="value">${new Date(saida.data).toLocaleDateString('pt-BR')}</span></p>
+        <p><span class="label">Horário de saída:</span> <span class="value">${saida.horario}</span></p>
+      </div>
+      
+      <div class="card">
+        <h3 style="margin-top: 0; color: #1f2937;">👨‍🎓 Aluno</h3>
+        <p><span class="label">Nome:</span> <span class="value">${saida.alunoNome}</span></p>
+        <p><span class="label">Turma:</span> <span class="value">${saida.turma}</span></p>
+        <p><span class="label">Tipo de Ensino:</span> <span class="value">${saida.tipoEnsino}</span></p>
+      </div>
+      
+      <div class="card">
+        <h3 style="margin-top: 0; color: #1f2937;">📋 Informações</h3>
+        <p><span class="label">Motivo:</span> <span class="value">${saida.motivo}</span></p>
+      </div>
+      
+      <div class="card">
+        <h3 style="margin-top: 0; color: #1f2937;">👥 Responsável</h3>
+        <p><span class="label">Nome:</span> <span class="value">${saida.responsavel || 'Não informado'}</span></p>
+        ${saida.telefoneResponsavel ? `<p><span class="label">Telefone:</span> <span class="value">${saida.telefoneResponsavel}</span></p>` : ''}
+      </div>
+      
+      <div class="card">
+        <h3 style="margin-top: 0; color: #1f2937;">👤 Registrado por</h3>
+        <p><span class="value">${saida.registradoPorNome}</span></p>
+        <p style="font-size: 14px; color: #6b7280;">${saida.registradoPor}</p>
+      </div>
+    </div>
+    <div class="footer">
+      <p>Sistema de Controle Escolar</p>
       <p>Este é um email automático, não responda.</p>
     </div>
   </div>

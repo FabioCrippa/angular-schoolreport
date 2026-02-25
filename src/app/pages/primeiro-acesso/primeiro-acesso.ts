@@ -117,7 +117,20 @@ export class PrimeiroAcesso {
       }
       
       console.log('📝 Criando documento no Firestore com UID:', uid);
-      // Cria/atualiza documento do usuário no Firestore com o UID do Auth
+      
+      // Remove o documento temporário ANTES de criar o novo (evita duplicação)
+      if (this.usuarioEncontrado.docId && this.usuarioEncontrado.docId !== uid) {
+        try {
+          console.log('🗑️ Removendo documento temporário:', this.usuarioEncontrado.docId);
+          await this.firestoreService.deletarUsuario(this.usuarioEncontrado.docId);
+          console.log('✅ Documento temporário removido com sucesso');
+        } catch (deleteError) {
+          console.error('⚠️ Erro ao remover documento temporário:', deleteError);
+          // Continua mesmo se falhar a exclusão
+        }
+      }
+      
+      // Cria documento definitivo com o UID do Auth
       await this.firestoreService.adicionarUsuarioComId(uid, {
         email: this.usuarioEncontrado.email,
         nome: this.usuarioEncontrado.nome,
@@ -125,18 +138,7 @@ export class PrimeiroAcesso {
         role: this.usuarioEncontrado.role,
         ativo: this.usuarioEncontrado.ativo
       });
-      console.log('✅ Documento Firestore criado');
-      
-      // Remove o documento temporário criado pelo admin
-      if (this.usuarioEncontrado.docId) {
-        try {
-          console.log('🗑️ Removendo documento temporário...');
-          await this.firestoreService.deletarUsuario(this.usuarioEncontrado.docId);
-          console.log('✅ Documento temporário removido');
-        } catch (deleteError) {
-          console.log('⚠️ Documento temporário já foi removido ou não existe');
-        }
-      }
+      console.log('✅ Documento definitivo criado com UID:', uid)
       
       // Verifica se já está logado, senão faz login
       let currentUser = this.authService.getCurrentUser();
