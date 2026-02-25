@@ -18,7 +18,7 @@ export class Home {
   solicitarDemo() {
     // Altere o número do WhatsApp para o seu
     const telefone = '5511999999999'; // Formato: 55 (país) + DDD + número
-    const mensagem = encodeURIComponent('Olá! Gostaria de solicitar uma demonstração do SchoolReport.');
+    const mensagem = encodeURIComponent('Olá! Gostaria de solicitar uma demonstração do escu.');
     window.open(`https://wa.me/${telefone}?text=${mensagem}`, '_blank');
   }
 }

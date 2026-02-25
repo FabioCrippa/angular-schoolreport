@@ -550,7 +550,7 @@ Acesse o sistema para mais detalhes.
       const mailData = {
         to: [email],
         message: {
-          subject: `Bem-vindo ao SchoolReport - ${escolaNome}`,
+          subject: `Bem-vindo ao escu - ${escolaNome}`,
           text: this.gerarEmailPrimeiroAcessoTexto(nome, email, escolaNome, primeiroAcessoLink),
           html: this.gerarEmailPrimeiroAcessoHTML(nome, email, escolaNome, primeiroAcessoLink)
         }
@@ -576,7 +576,7 @@ Acesse o sistema para mais detalhes.
     return `
 Olá ${nome}!
 
-Você foi cadastrado no sistema SchoolReport da escola ${escolaNome}.
+Você foi cadastrado no sistema escu da escola ${escolaNome}.
 
 Para criar sua senha e acessar o sistema, clique no link abaixo:
 ${link}
@@ -586,7 +586,7 @@ Utilize o email: ${email}
 Após acessar o link, você poderá criar sua senha e fazer login no sistema.
 
 Atenciosamente,
-Equipe SchoolReport
+Equipe escu
     `;
   }
 
@@ -614,12 +614,12 @@ Equipe SchoolReport
 <body>
   <div class="container">
     <div class="header">
-      <h1>📋 Bem-vindo ao SchoolReport!</h1>
+      <h1>📋 Bem-vindo ao escu!</h1>
     </div>
     <div class="content">
       <p style="font-size: 18px; color: #1f2937;">Olá <strong>${nome}</strong>!</p>
       
-      <p>Você foi cadastrado no sistema SchoolReport da escola <strong>${escolaNome}</strong>.</p>
+      <p>Você foi cadastrado no sistema escu da escola <strong>${escolaNome}</strong>.</p>
       
       <div class="card">
         <h3 style="margin-top: 0; color: #1f2937;">🔐 Criar sua senha</h3>
@@ -650,7 +650,7 @@ Equipe SchoolReport
       </p>
     </div>
     <div class="footer">
-      <p><strong>SchoolReport</strong> - Sistema de Gestão Escolar</p>
+      <p><strong>escu</strong> - Sistema de Gestão Escolar</p>
       <p>Este é um email automático, não responda.</p>
     </div>
   </div>
