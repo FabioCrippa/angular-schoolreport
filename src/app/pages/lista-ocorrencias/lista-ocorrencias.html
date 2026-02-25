@@ -15,8 +15,16 @@
   
   <main class="lista-content">
     <div class="page-header">
-      <h1>{{ userRole === 'professor' ? 'Minhas Ocorrências' : 'Ocorrências da Escola' }}</h1>
-      <p>{{ userRole === 'professor' ? 'Visualize e gerencie suas ocorrências registradas' : 'Visualize todas as ocorrências registradas pelos professores' }}</p>
+      <div>
+        <h1>{{ userRole === 'professor' ? 'Minhas Ocorrências' : 'Ocorrências da Escola' }}</h1>
+        <p>{{ userRole === 'professor' ? 'Visualize e gerencie suas ocorrências registradas' : 'Visualize todas as ocorrências registradas pelos professores' }}</p>
+      </div>
+      <button 
+        class="btn-exportar" 
+        (click)="exportarExcel()"
+        *ngIf="!loading && (userRole === 'professor' ? ocorrencias : ocorrenciasFiltradas).length > 0">
+        📊 Exportar Excel
+      </button>
     </div>
     
     <!-- Filtros (apenas para coordenação/direção) -->
@@ -70,6 +78,13 @@
           </div>
           <div class="header-actions">
             <button 
+              *ngIf="userRole === 'coordenacao' || userRole === 'direcao'" 
+              class="btn-deletar" 
+              (click)="abrirModalExclusao(ocorrencia); $event.stopPropagation()"
+              title="Excluir ocorrência">
+              🗑️
+            </button>
+            <button 
               *ngIf="userRole !== 'professor'" 
               class="btn-pdf" 
               (click)="gerarPDF(ocorrencia); $event.stopPropagation()"
@@ -120,5 +135,36 @@
     </ng-template>
     
   </main>
+
+  <!-- MODAL DE CONFIRMAÇÃO DE EXCLUSÃO -->
+  <div class="modal-overlay" *ngIf="modalExclusaoAberto" (click)="fecharModalExclusao()">
+    <div class="modal-content modal-confirmacao" (click)="$event.stopPropagation()">
+      <div class="modal-header modal-header-danger">
+        <h2>⚠️ Confirmar Exclusão</h2>
+        <button class="btn-close" (click)="fecharModalExclusao()">×</button>
+      </div>
+      
+      <div class="modal-body" *ngIf="ocorrenciaExcluindo">
+        <p class="confirmacao-texto">
+          Tem certeza que deseja <strong>excluir permanentemente</strong> esta ocorrência?
+        </p>
+        
+        <div class="info-ocorrencia">
+          <p><strong>Aluno:</strong> {{ ocorrenciaExcluindo.nomeAluno }}</p>
+          <p><strong>Data:</strong> {{ ocorrenciaExcluindo.data | date: 'dd/MM/yyyy' }}</p>
+          <p><strong>Tipo:</strong> {{ ocorrenciaExcluindo.tipoOcorrencia }}</p>
+        </div>
+        
+        <p class="aviso-exclusao">
+          ⚠️ Esta ação não pode ser desfeita!
+        </p>
+      </div>
+      
+      <div class="modal-footer">
+        <button class="btn-cancelar" (click)="fecharModalExclusao()">Cancelar</button>
+        <button class="btn-deletar-confirmar" (click)="confirmarExclusao()">Sim, Excluir</button>
+      </div>
+    </div>
+  </div>
   
 </div>

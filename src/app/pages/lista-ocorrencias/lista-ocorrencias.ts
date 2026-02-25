@@ -4,6 +4,7 @@ import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { FirestoreService, Ocorrencia } from '../../services/firestore';
 import { AuthService } from '../../services/auth';
+import * as XLSX from 'xlsx';
 
 @Component({
   selector: 'app-lista-ocorrencias',
@@ -30,6 +31,10 @@ export class ListaOcorrencias implements OnInit {
   filtroAluno = '';
   filtroProfessor = '';
   professoresUnicos: string[] = [];
+  
+  // Modal de confirmação de exclusão
+  modalExclusaoAberto = false;
+  ocorrenciaExcluindo: Ocorrencia | null = null;
 
   private ADMIN_EMAILS = ['professor@escola.com'];
   
@@ -397,6 +402,93 @@ export class ListaOcorrencias implements OnInit {
     } catch (erro) {
       console.error('Erro ao gerar PDF:', erro);
       alert('Erro ao gerar PDF. Tente novamente.');
+    }
+  }
+
+  exportarExcel() {
+    const ocorrenciasParaExportar = this.userRole === 'professor' ? this.ocorrencias : this.ocorrenciasFiltradas;
+    
+    if (ocorrenciasParaExportar.length === 0) {
+      alert('Não há ocorrências para exportar.');
+      return;
+    }
+
+    // Criar workbook
+    const workbook = XLSX.utils.book_new();
+
+    // Preparar dados para exportação
+    const dadosExcel = ocorrenciasParaExportar.map(o => ({
+      'Data': this.formatarData(o.data),
+      'Aluno': o.nomeAluno,
+      'Turma': o.turma,
+      'Tipo de Ensino': o.tipoEnsino,
+      'Tipo de Ocorrência': o.tipoOcorrencia,
+      'Disciplina': o.disciplina,
+      'Professor': o.professorNome,
+      'Email Professor': o.professorEmail,
+      'Descrição': o.descricao
+    }));
+
+    // Criar worksheet
+    const worksheet = XLSX.utils.json_to_sheet(dadosExcel);
+    
+    // Definir larguras das colunas
+    worksheet['!cols'] = [
+      { wch: 12 }, // Data
+      { wch: 30 }, // Aluno
+      { wch: 10 }, // Turma
+      { wch: 18 }, // Tipo Ensino
+      { wch: 35 }, // Tipo Ocorrência
+      { wch: 20 }, // Disciplina
+      { wch: 25 }, // Professor
+      { wch: 30 }, // Email Professor
+      { wch: 50 }  // Descrição
+    ];
+
+    // Adicionar worksheet ao workbook
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Ocorrências');
+
+    // Gerar nome do arquivo
+    const tipoRelatorio = this.userRole === 'professor' ? 'minhas-ocorrencias' : 'todas-ocorrencias';
+    const data = new Date().toISOString().split('T')[0];
+    const nomeArquivo = `${tipoRelatorio}-${data}.xlsx`;
+
+    // Salvar arquivo
+    XLSX.writeFile(workbook, nomeArquivo);
+  }
+
+  private formatarData(data: string): string {
+    const partes = data.split('-');
+    return `${partes[2]}/${partes[1]}/${partes[0]}`;
+  }
+
+// ===== EXCLUSÃO DE OCORRÊNCIA =====
+  
+  abrirModalExclusao(ocorrencia: Ocorrencia) {
+    this.ocorrenciaExcluindo = ocorrencia;
+    this.modalExclusaoAberto = true;
+  }
+
+  fecharModalExclusao() {
+    this.modalExclusaoAberto = false;
+    this.ocorrenciaExcluindo = null;
+  }
+
+  async confirmarExclusao() {
+    if (!this.ocorrenciaExcluindo || !this.ocorrenciaExcluindo.id) return;
+
+    try {
+      await this.firestoreService.deletarOcorrencia(this.ocorrenciaExcluindo.id);
+      
+      alert('✅ Ocorrência excluída com sucesso!');
+      this.fecharModalExclusao();
+      
+      // Recarregar lista
+      this.carregarDadosUsuario();
+      
+    } catch (error) {
+      console.error('Erro ao excluir ocorrência:', error);
+      alert('❌ Erro ao excluir ocorrência. Tente novamente.');
     }
   }
 }

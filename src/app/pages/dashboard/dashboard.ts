@@ -7,6 +7,7 @@ import { FirestoreService, Ocorrencia } from '../../services/firestore';
 import { RelatoriosService, EstatisticasGerais } from '../../services/relatorios.service';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartData, ChartOptions } from 'chart.js';
+import * as XLSX from 'xlsx';
 
 @Component({
   selector: 'app-dashboard',
@@ -272,6 +273,135 @@ export class Dashboard implements OnInit {
         }
       ]
     };
+  }
+
+  exportarExcel() {
+    if (!this.estatisticas) return;
+
+    // Calcular dados adicionais
+    const alunosUnicos = new Set(this.todasOcorrencias.map(o => o.nomeAluno));
+    const professoresUnicos = new Set(this.todasOcorrencias.map(o => o.professorNome));
+    
+    // Contar tipos de ocorrência
+    const tiposMap = new Map<string, number>();
+    this.todasOcorrencias.forEach(o => {
+      const tipos = o.tipoOcorrencia.split(',').map(t => t.trim());
+      tipos.forEach(tipo => {
+        tiposMap.set(tipo, (tiposMap.get(tipo) || 0) + 1);
+      });
+    });
+    const tiposOrdenados = Array.from(tiposMap.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10);
+
+    // Preparar dados para Excel
+    const workbook = XLSX.utils.book_new();
+
+    // SHEET 1: Resumo Estatístico
+    const resumoData = [
+      ['RELATÓRIO DE OCORRÊNCIAS ESCOLARES'],
+      ['Data do Relatório:', new Date().toLocaleDateString('pt-BR')],
+      ['Período:', this.getPeriodoTexto()],
+      [],
+      ['ESTATÍSTICAS GERAIS'],
+      ['Total de Ocorrências:', this.estatisticas.totalOcorrencias],
+      ['Total de Alunos:', alunosUnicos.size],
+      ['Total de Professores:', professoresUnicos.size],
+      [],
+      ['TIPOS DE OCORRÊNCIA MAIS FREQUENTES'],
+      ['Tipo', 'Quantidade']
+    ];
+
+    tiposOrdenados.forEach(([tipo, quantidade]) => {
+      resumoData.push([tipo, quantidade]);
+    });
+
+    const wsResumo = XLSX.utils.aoa_to_sheet(resumoData);
+    
+    // Definir larguras das colunas
+    wsResumo['!cols'] = [{ wch: 35 }, { wch: 20 }];
+    
+    XLSX.utils.book_append_sheet(workbook, wsResumo, 'Resumo');
+
+    // SHEET 2: Ocorrências Detalhadas
+    const ocorrenciasFiltradas = this.todasOcorrencias.filter(o => {
+      if (this.periodoSelecionado === 'customizado' && this.dataInicio && this.dataFim) {
+        const dataOcorrencia = new Date(o.data);
+        return dataOcorrencia >= new Date(this.dataInicio) && dataOcorrencia <= new Date(this.dataFim);
+      }
+      return true;
+    });
+
+    const ocorrenciasData = ocorrenciasFiltradas.map(o => ({
+      'Data': this.formatarData(o.data),
+      'Aluno': o.nomeAluno,
+      'Turma': o.turma,
+      'Tipo de Ensino': o.tipoEnsino,
+      'Tipo de Ocorrência': o.tipoOcorrencia,
+      'Disciplina': o.disciplina,
+      'Professor': o.professorNome,
+      'Descrição': o.descricao
+    }));
+
+    const wsOcorrencias = XLSX.utils.json_to_sheet(ocorrenciasData);
+    
+    // Definir larguras das colunas para ocorrências
+    wsOcorrencias['!cols'] = [
+      { wch: 12 }, // Data
+      { wch: 25 }, // Aluno
+      { wch: 10 }, // Turma
+      { wch: 18 }, // Tipo Ensino
+      { wch: 30 }, // Tipo Ocorrência
+      { wch: 20 }, // Disciplina
+      { wch: 25 }, // Professor
+      { wch: 50 }  // Descrição
+    ];
+
+    XLSX.utils.book_append_sheet(workbook, wsOcorrencias, 'Ocorrências');
+
+    // SHEET 3: Ranking de Turmas
+    const turmasData = this.estatisticas.ocorrenciasPorTurma.map(t => ({
+      'Turma': t.turma,
+      'Quantidade de Ocorrências': t.quantidade
+    }));
+
+    const wsTurmas = XLSX.utils.json_to_sheet(turmasData);
+    wsTurmas['!cols'] = [{ wch: 15 }, { wch: 25 }];
+    XLSX.utils.book_append_sheet(workbook, wsTurmas, 'Ranking Turmas');
+
+    // SHEET 4: Ranking de Alunos
+    const alunosData = this.estatisticas.topAlunos.map(a => ({
+      'Aluno': a.nome,
+      'Quantidade de Ocorrências': a.quantidade
+    }));
+
+    const wsAlunos = XLSX.utils.json_to_sheet(alunosData);
+    wsAlunos['!cols'] = [{ wch: 30 }, { wch: 25 }];
+    XLSX.utils.book_append_sheet(workbook, wsAlunos, 'Ranking Alunos');
+
+    // Gerar arquivo
+    const nomeArquivo = `relatorio-ocorrencias-${new Date().toISOString().split('T')[0]}.xlsx`;
+    XLSX.writeFile(workbook, nomeArquivo);
+  }
+
+  private getPeriodoTexto(): string {
+    switch (this.periodoSelecionado) {
+      case 'semana': return 'Última Semana';
+      case 'mes': return 'Último Mês';
+      case 'trimestre': return 'Último Trimestre';
+      case 'semestre': return 'Último Semestre';
+      case 'customizado': 
+        if (this.dataInicio && this.dataFim) {
+          return `${this.formatarData(this.dataInicio)} a ${this.formatarData(this.dataFim)}`;
+        }
+        return 'Período Customizado';
+      default: return 'Todos os Períodos';
+    }
+  }
+
+  private formatarData(data: string): string {
+    const partes = data.split('-');
+    return `${partes[2]}/${partes[1]}/${partes[0]}`;
   }
 
   exportarCSV() {

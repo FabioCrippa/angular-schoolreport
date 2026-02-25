@@ -125,6 +125,17 @@ export class FirestoreService {
       throw error;
     }
   }
+
+  async deletarOcorrencia(ocorrenciaId: string): Promise<void> {
+    try {
+      const ocorrenciaRef = doc(this.ocorrenciasCollection, ocorrenciaId);
+      await deleteDoc(ocorrenciaRef);
+      console.log('Ocorrência deletada:', ocorrenciaId);
+    } catch (error) {
+      console.error('Erro ao deletar ocorrência:', error);
+      throw error;
+    }
+  }
   
   // Converte string de data para Date local (evita problema de timezone)
   private converterDataLocal(dataString: string): Date {
