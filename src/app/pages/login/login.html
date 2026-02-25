@@ -1,62 +1,90 @@
 <div class="login-container">
-    <div class="login-header">
-        <a href="/" class="logo-link">
-            <img src="/logo2.png" class="logo-icon" alt="escu Logo">
-            <span class="logo-text">escu</span>
-        </a>
+    <!-- Lado Esquerdo: Formulário -->
+    <div class="login-left">
+
+        <div class="login-card">
+            <div class="card-header">
+                <h1>Bem-vindo de volta</h1>
+                <p class="subtitle">Digite suas credenciais para acessar</p>
+            </div>
+
+            <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input 
+                        type="email"
+                        id="email"
+                        formControlName="email"
+                        placeholder="seuemail@exemplo.com"
+                        [class.input-error]="email?.invalid && email?.touched">
+                    <div class="field-error" *ngIf="email?.invalid && email?.touched">
+                        <span *ngIf="email?.errors?.['required']">Email é obrigatório</span>
+                        <span *ngIf="email?.errors?.['email']">Email inválido</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Senha</label>
+                    <input 
+                        type="password"
+                        id="password"
+                        formControlName="password"
+                        placeholder="Digite sua senha"
+                        [class.input-error]="password?.invalid && password?.touched">
+                    <div class="field-error" *ngIf="password?.invalid && password?.touched">
+                        <span *ngIf="password?.errors?.['required']">Senha é obrigatória</span>
+                        <span *ngIf="password?.errors?.['minlength']">Mínimo de 6 caracteres</span>
+                    </div>
+                </div>
+
+                <button 
+                    type="submit"
+                    class="btn-primary"
+                    [disabled]="loading || loginForm.invalid">
+                    {{ loading ? 'Entrando...' : 'Entrar' }}
+                </button>
+            </form>
+
+            <div 
+                class="error-message" 
+                *ngIf="errorMessage">
+                {{ errorMessage }}
+            </div>
+
+            <div class="login-footer">
+                <a href="/" class="back-link">← Voltar para home</a>
+            </div>
+        </div>
     </div>
 
-    <div class="login-card">
-        <div class="card-header">
-            <h1>Entrar na plataforma</h1>
-            <p class="subtitle">Digite suas credenciais para acessar</p>
-        </div>
-
-        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-            <div class="form-group">
-                <label for="email">Email</label>
-                <input 
-                    type="email"
-                    id="email"
-                    formControlName="email"
-                    placeholder="seuemail@exemplo.com"
-                    [class.input-error]="email?.invalid && email?.touched">
-                <div class="field-error" *ngIf="email?.invalid && email?.touched">
-                    <span *ngIf="email?.errors?.['required']">Email é obrigatório</span>
-                    <span *ngIf="email?.errors?.['email']">Email inválido</span>
+    <!-- Lado Direito: Visual/Benefícios -->
+    <div class="login-right">
+        <div class="welcome-content">
+            
+            <h2>Gestão Escolar Simples e Eficiente</h2>
+            <p class="welcome-text">
+                Acompanhe ocorrências, controle entrada e saída de alunos, 
+                e tenha relatórios completos em tempo real.
+            </p>
+            
+            <div class="features">
+                <div class="feature-item">
+                    <span class="feature-icon">✓</span>
+                    <span>Registro de ocorrências</span>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon">✓</span>
+                    <span>Controle de entrada e saída</span>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon">✓</span>
+                    <span>Relatórios e dashboards</span>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon">✓</span>
+                    <span>Notificações automáticas</span>
                 </div>
             </div>
-
-            <div class="form-group">
-                <label for="password">Senha</label>
-                <input 
-                    type="password"
-                    id="password"
-                    formControlName="password"
-                    placeholder="Digite sua senha"
-                    [class.input-error]="password?.invalid && password?.touched">
-                <div class="field-error" *ngIf="password?.invalid && password?.touched">
-                    <span *ngIf="password?.errors?.['required']">Senha é obrigatória</span>
-                    <span *ngIf="password?.errors?.['minlength']">Mínimo de 6 caracteres</span>
-                </div>
-            </div>
-
-            <button 
-                type="submit"
-                class="btn-primary"
-                [disabled]="loading || loginForm.invalid">
-                {{ loading ? 'Entrando...' : 'Entrar' }}
-            </button>
-        </form>
-
-        <div 
-            class="error-message" 
-            *ngIf="errorMessage">
-            {{ errorMessage }}
-        </div>
-
-        <div class="login-footer">
-            <a href="/" class="back-link">← Voltar para home</a>
         </div>
     </div>
 </div>
