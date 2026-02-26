@@ -62,6 +62,12 @@ export const routes: Routes = [
         data: { roles: ['secretaria'] }
     },
     {
+        path: 'secretaria/lista-controles',
+        loadComponent: () => import('./pages/secretaria/lista-controles/lista-controles').then(m => m.ListaControles),
+        canActivate: [authGuard, roleGuard],
+        data: { roles: ['secretaria'] }
+    },
+    {
         path: '**',
         redirectTo: 'login'
     }

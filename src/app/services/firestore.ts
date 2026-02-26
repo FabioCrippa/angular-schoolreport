@@ -972,4 +972,15 @@ Equipe escu
       throw error;
     }
   }
+
+  async deletarControle(controleId: string): Promise<void> {
+    try {
+      const controleRef = doc(this.firestore, 'controleEntradaSaida', controleId);
+      await deleteDoc(controleRef);
+      console.log('Controle deletado:', controleId);
+    } catch (error) {
+      console.error('Erro ao deletar controle:', error);
+      throw error;
+    }
+  }
 }

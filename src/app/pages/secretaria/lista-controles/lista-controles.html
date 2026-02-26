@@ -1,0 +1,166 @@
+<div class="lista-container">
+  <!-- Header -->
+  <div class="header">
+    <button class="btn-voltar" (click)="voltar()">← Voltar</button>
+    <div class="header-content">
+      <h1>Controle de Entrada e Saída</h1>
+      <p class="subtitle">Visualize e gerencie os registros de atrasos e saídas antecipadas</p>
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <div class="filtros-container">
+    <div class="filtro-grupo">
+      <label>Período:</label>
+      <select [(ngModel)]="filtroPeriodo" (change)="aplicarFiltros()">
+        <option value="hoje">Hoje</option>
+        <option value="semana">Última Semana</option>
+        <option value="mes">Último Mês</option>
+        <option value="todos">Todos</option>
+      </select>
+    </div>
+
+    <div class="filtro-grupo">
+      <label>Tipo:</label>
+      <select [(ngModel)]="filtroTipo" (change)="aplicarFiltros()">
+        <option value="todos">Todos</option>
+        <option value="atraso">Atrasos</option>
+        <option value="saida">Saídas Antecipadas</option>
+      </select>
+    </div>
+
+    <div class="filtro-grupo">
+      <label>Turma:</label>
+      <select [(ngModel)]="filtroTurma" (change)="aplicarFiltros()">
+        <option value="">Todas</option>
+        <option *ngFor="let turma of turmasUnicas" [value]="turma">{{ turma }}</option>
+      </select>
+    </div>
+
+    <div class="filtro-grupo filtro-busca">
+      <label>Buscar Aluno:</label>
+      <input 
+        type="text" 
+        [(ngModel)]="filtroAluno" 
+        (input)="aplicarFiltros()"
+        placeholder="Digite o nome do aluno">
+    </div>
+
+    <button class="btn-limpar" (click)="limparFiltros()">Limpar Filtros</button>
+  </div>
+
+  <!-- Ações -->
+  <div class="acoes-container">
+    <div class="info-total">
+      <span class="total-label">Total de registros:</span>
+      <span class="total-numero">{{ controlesFiltrados.length }}</span>
+    </div>
+    <button class="btn-exportar" (click)="exportarExcel()" [disabled]="controlesFiltrados.length === 0">
+      📊 Exportar Excel
+    </button>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading">
+    <div class="spinner"></div>
+    <p>Carregando registros...</p>
+  </div>
+
+  <!-- Lista de Controles -->
+  <div *ngIf="!loading && controlesFiltrados.length > 0" class="controles-grid">
+    <div *ngFor="let controle of controlesFiltrados" class="controle-card">
+      <div class="card-header-row" (click)="toggleExpansao(controle)">
+        <div class="card-info">
+          <div class="aluno-nome">{{ controle.alunoNome }}</div>
+          <div class="card-meta">
+            <span class="badge" [ngClass]="getTipoBadgeClass(controle.tipo)">
+              {{ getTipoLabel(controle.tipo) }}
+            </span>
+            <span class="turma">{{ controle.turma }}</span>
+            <span class="data">{{ formatarData(controle.data) }}</span>
+            <span class="horario">{{ controle.horario }}</span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <button 
+            class="btn-deletar" 
+            (click)="abrirModalExclusao(controle); $event.stopPropagation()"
+            title="Excluir registro">
+            🗑️
+          </button>
+          <button class="btn-expandir">
+            {{ controle.expandido ? '▲' : '▼' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Detalhes Expandidos -->
+      <div *ngIf="controle.expandido" class="card-detalhes">
+        <div class="detalhe-linha">
+          <span class="label">Tipo de Ensino:</span>
+          <span class="valor">{{ controle.tipoEnsino }}</span>
+        </div>
+
+        <div class="detalhe-linha" *ngIf="controle.motivo">
+          <span class="label">Motivo:</span>
+          <span class="valor">{{ controle.motivo }}</span>
+        </div>
+
+        <div class="detalhe-linha" *ngIf="controle.tipo === 'atraso' && controle.aulaPermitida">
+          <span class="label">Aula Permitida:</span>
+          <span class="valor">{{ controle.aulaPermitida }}</span>
+        </div>
+
+        <div class="detalhe-linha" *ngIf="controle.tipo === 'saida' && controle.responsavel">
+          <span class="label">Responsável:</span>
+          <span class="valor">{{ controle.responsavel }}</span>
+        </div>
+
+        <div class="detalhe-linha" *ngIf="controle.tipo === 'saida' && controle.telefoneResponsavel">
+          <span class="label">Telefone:</span>
+          <span class="valor">{{ controle.telefoneResponsavel }}</span>
+        </div>
+
+        <div class="detalhe-linha">
+          <span class="label">Registrado por:</span>
+          <span class="valor">{{ controle.registradoPorNome }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Estado vazio -->
+  <div *ngIf="!loading && controlesFiltrados.length === 0" class="empty-state">
+    <div class="empty-icon">📋</div>
+    <h3>Nenhum registro encontrado</h3>
+    <p>Não há registros de entrada/saída para os filtros selecionados.</p>
+    <button class="btn-limpar" (click)="limparFiltros()">Limpar Filtros</button>
+  </div>
+</div>
+
+<!-- Modal de Confirmação de Exclusão -->
+<div *ngIf="modalExclusaoAberto" class="modal-overlay" (click)="fecharModalExclusao()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Confirmar Exclusão</h2>
+      <button class="btn-fechar" (click)="fecharModalExclusao()">✕</button>
+    </div>
+    
+    <div class="modal-body">
+      <p>Tem certeza que deseja excluir este registro?</p>
+      
+      <div class="info-exclusao" *ngIf="controleExcluindo">
+        <p><strong>Aluno:</strong> {{ controleExcluindo.alunoNome }}</p>
+        <p><strong>Tipo:</strong> {{ getTipoLabel(controleExcluindo.tipo) }}</p>
+        <p><strong>Data:</strong> {{ formatarData(controleExcluindo.data) }} às {{ controleExcluindo.horario }}</p>
+      </div>
+      
+      <p class="aviso-exclusao">⚠️ Esta ação não pode ser desfeita.</p>
+    </div>
+    
+    <div class="modal-footer">
+      <button class="btn-cancelar" (click)="fecharModalExclusao()">Cancelar</button>
+      <button class="btn-deletar-confirmar" (click)="confirmarExclusao()">Excluir</button>
+    </div>
+  </div>
+</div>
