@@ -87,22 +87,21 @@ export class ListaControles implements OnInit {
     // Filtro por período
     if (this.filtroPeriodo !== 'todos') {
       const hoje = new Date();
-      hoje.setHours(0, 0, 0, 0);
+      const hojeStr = hoje.toISOString().split('T')[0]; // YYYY-MM-DD
       
       controlesFiltrados = controlesFiltrados.filter(controle => {
-        const dataControle = new Date(controle.data);
-        dataControle.setHours(0, 0, 0, 0);
-        
         if (this.filtroPeriodo === 'hoje') {
-          return dataControle.getTime() === hoje.getTime();
+          return controle.data === hojeStr;
         } else if (this.filtroPeriodo === 'semana') {
           const umaSemanaAtras = new Date(hoje);
           umaSemanaAtras.setDate(hoje.getDate() - 7);
-          return dataControle >= umaSemanaAtras;
+          const semanaStr = umaSemanaAtras.toISOString().split('T')[0];
+          return controle.data >= semanaStr && controle.data <= hojeStr;
         } else if (this.filtroPeriodo === 'mes') {
           const umMesAtras = new Date(hoje);
           umMesAtras.setMonth(hoje.getMonth() - 1);
-          return dataControle >= umMesAtras;
+          const mesStr = umMesAtras.toISOString().split('T')[0];
+          return controle.data >= mesStr && controle.data <= hojeStr;
         }
         return true;
       });
