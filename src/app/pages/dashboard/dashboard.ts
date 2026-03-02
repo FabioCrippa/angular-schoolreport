@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectorRef, NgZone } from '@angular/core';
 import { AuthService } from '../../services/auth';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -22,6 +22,7 @@ export class Dashboard implements OnInit {
   private firestoreService = inject(FirestoreService);
   private relatoriosService = inject(RelatoriosService);
   private cdr = inject(ChangeDetectorRef);
+  private ngZone = inject(NgZone);
 
   userName = '';
   userEmail = '';
@@ -122,8 +123,10 @@ export class Dashboard implements OnInit {
       // Verifica se o usuário é admin
       this.isAdmin = this.ADMIN_EMAILS.includes(user.email || '');
       
-      // Busca o role do usuário
-      this.carregarDadosUsuario();
+      // Busca o role do usuário dentro do contexto do Angular
+      this.ngZone.run(() => {
+        this.carregarDadosUsuario();
+      });
     } else {
       this.loading = false;
     }
@@ -134,11 +137,16 @@ export class Dashboard implements OnInit {
       const user = this.authService.getCurrentUser();
       if (!user) {
         this.loading = false;
+        this.cdr.detectChanges();
         return;
       }
       
+      console.log('Iniciando carregamento de dados do usuário');
+      
       // Buscar dados do usuário no Firestore para pegar o role
       const usuario = await this.firestoreService.buscarUsuario(user.uid);
+      console.log('Usuário carregado:', usuario);
+      
       if (usuario) {
         this.userRole = usuario.role;
         this.userName = usuario.nome || this.userName;
@@ -146,37 +154,61 @@ export class Dashboard implements OnInit {
         
         // Redirecionar secretaria para dashboard próprio
         if (this.userRole === 'secretaria') {
+          console.log('Redirecionando para secretaria');
+          this.loading = false;
+          this.cdr.detectChanges();
           this.router.navigate(['/secretaria/dashboard']);
           return;
         }
 
         // Carregar estatísticas para coordenação e direção
         if (this.userRole === 'coordenacao' || this.userRole === 'direcao') {
-          await this.carregarEstatisticas();
+          console.log('Carregando estatísticas');
+          try {
+            await this.carregarEstatisticas();
+          } catch (erro) {
+            console.error('Erro ao carregar estatísticas:', erro);
+          }
         }
+      } else {
+        console.warn('Usuário não encontrado no Firestore');
       }
     } catch (error) {
       console.error('Erro ao carregar dados do usuário:', error);
     } finally {
-      this.loading = false;
-      this.cdr.detectChanges();
-      console.log('Dashboard loading finalizado:', this.loading, 'Role:', this.userRole);
+      // Garantir que a detecção de mudanças aconteça dentro do NgZone
+      this.ngZone.run(() => {
+        this.loading = false;
+        this.cdr.detectChanges();
+        console.log('Dashboard loading finalizado:', this.loading, 'Role:', this.userRole);
+      });
     }
   }
 
   async carregarEstatisticas() {
     try {
       this.loadingEstatisticas = true;
+      this.cdr.detectChanges();
+      
+      console.log('Iniciando carregamento de estatísticas');
       
       // Buscar todas as ocorrências da escola do usuário
       const user = this.authService.getCurrentUser();
-      if (!user) return;
+      if (!user) {
+        console.warn('Usuário não autenticado para estatísticas');
+        return;
+      }
 
       const usuario = await this.firestoreService.buscarUsuario(user.uid);
-      if (!usuario || !usuario.escolaId) return;
+      if (!usuario || !usuario.escolaId) {
+        console.warn('Usuário ou escolaId não encontrados');
+        return;
+      }
 
+      console.log('Buscando ocorrências da escola:', usuario.escolaId);
       // Buscar e guardar todas as ocorrências
       this.todasOcorrencias = await this.firestoreService.buscarOcorrencias(usuario.escolaId);
+      console.log('Ocorrências carregadas:', this.todasOcorrencias.length);
       
       // Aplicar filtro inicial (último mês)
       this.aplicarFiltroPeriodo();
@@ -184,8 +216,11 @@ export class Dashboard implements OnInit {
     } catch (error) {
       console.error('Erro ao carregar estatísticas:', error);
     } finally {
-      this.loadingEstatisticas = false;
-      this.cdr.detectChanges();
+      // Garantir que a detecção de mudanças aconteça dentro do NgZone
+      this.ngZone.run(() => {
+        this.loadingEstatisticas = false;
+        this.cdr.detectChanges();
+      });
     }
   }
 

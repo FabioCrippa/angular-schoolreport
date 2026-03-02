@@ -233,13 +233,18 @@ export class AgendamentoEquipamentosComponent implements OnInit {
         this.mensagemSucesso = 'Agendamento criado com sucesso!';
       }
 
-      // Fechar modal rapidamente e recarregar dados em background
+      // Fechar modal imediatamente
+      this.fecharModal();
+      
+      // Recarregar dados sem bloquear
       setTimeout(() => {
-        this.fecharModal();
-        this.mensagemSucesso = '';
-        // Recarrega dados sem bloquear o fechamento do modal
         this.carregarReservas();
-      }, 800);
+      }, 100);
+      
+      // Limpar mensagem após visualização
+      setTimeout(() => {
+        this.mensagemSucesso = '';
+      }, 2500);
     } catch (erro) {
       console.error('Erro:', erro);
       this.mensagemErro = 'Erro ao salvar agendamento. Tente novamente.';
@@ -266,24 +271,19 @@ export class AgendamentoEquipamentosComponent implements OnInit {
       return false;
     }
 
-    if (!this.tipoEnsinoSelecionado) {
-      this.mensagemErro = 'Tipo de Ensino é obrigatório';
-      return false;
-    }
-
-    if (!this.turmaId) {
-      this.mensagemErro = 'Turma é obrigatória';
-      return false;
-    }
-
-    if (!this.atividade.trim()) {
-      this.mensagemErro = 'Atividade é obrigatória';
-      return false;
-    }
-
     if (this.dataReserva < this.obterDataHoje()) {
       this.mensagemErro = 'Não é possível agendar para datas passadas';
       return false;
+    }
+
+    // Validar hora passada se for hoje
+    if (this.dataReserva === this.obterDataHoje()) {
+      const agora = new Date();
+      const horaAtualStr = agora.getHours().toString().padStart(2, '0') + ':' + agora.getMinutes().toString().padStart(2, '0');
+      if (this.horaInicio < horaAtualStr) {
+        this.mensagemErro = 'Não é possível agendar para horários passados';
+        return false;
+      }
     }
 
     return true;

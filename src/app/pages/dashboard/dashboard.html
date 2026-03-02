@@ -8,6 +8,12 @@
       <div class="user-info">
         <span class="user-name">{{ userName }}</span>
         <span class="user-email">{{ userEmail }}</span>
+        <span class="user-role">{{ 
+          userRole === 'professor' ? 'Professor' :
+          userRole === 'coordenacao' ? 'Coordenador(a)' :
+          userRole === 'direcao' ? 'Diretor(a)' :
+          userRole === 'secretaria' ? 'Secretaria' : ''
+        }}</span>
       </div>
       <button class="btn-admin" *ngIf="isAdmin" routerLink="/admin">
         ⚙️ Painel Admin

@@ -71,6 +71,14 @@ $border-color: #E5E7EB;
     font-size: 0.8125rem;
     opacity: 0.85;
   }
+
+  .user-role {
+    font-size: 0.75rem;
+    opacity: 0.7;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.9);
+    margin-top: 0.25rem;
+  }
 }
 
 .btn-logout {
