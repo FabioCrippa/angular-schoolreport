@@ -432,4 +432,8 @@ export class Dashboard implements OnInit {
   goToOcorrencias() {
     this.router.navigate(['/ocorrencias']);
   }
+
+  goToAgendamento() {
+    this.router.navigate(['/agendamento-equipamentos']);
+  }
 }

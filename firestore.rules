@@ -83,5 +83,23 @@ service cloud.firestore {
       // Não permite atualizar ou deletar (Firebase Extension gerencia)
       allow update, delete: if false;
     }
+
+    // Regras para coleção 'agendaEquipamentos'
+    match /agendaEquipamentos/{agendaId} {
+      // Usuários autenticados podem ler todos os agendamentos
+      allow read: if request.auth != null;
+      
+      // Usuários autenticados podem criar/editar/deletar agendamentos
+      allow create, update, delete: if request.auth != null;
+    }
+
+    // Regras para coleção 'turmas'
+    match /turmas/{turmaId} {
+      // Usuários autenticados podem ler todas as turmas
+      allow read: if request.auth != null;
+      
+      // Admins podem escrever
+      allow write: if isAdmin();
+    }
   }
 }

@@ -1,0 +1,223 @@
+<div class="agendamento-container">
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-content">
+      <h1>📅 Agenda de Equipamentos</h1>
+      <p>Tablet - Notebook - Sala de Informática</p>
+    </div>
+    <div class="header-buttons">
+      <button class="btn-voltar" (click)="voltar()">
+        ← Voltar
+      </button>
+      <button class="btn-novo" (click)="abrirModal()" *ngIf="!mostrarModal">
+        + Novo Agendamento
+      </button>
+    </div>
+  </div>
+
+  <!-- MENSAGENS -->
+  <div class="mensagem-sucesso" *ngIf="mensagemSucesso">
+    ✓ {{ mensagemSucesso }}
+  </div>
+
+  <!-- FILTROS -->
+  <div class="filtros">
+    <div class="filtro-grupo">
+      <label>Equipamento:</label>
+      <select [(ngModel)]="filtroEquipamento">
+        <option value="todos">Todos</option>
+        <option value="tablet">Tablet</option>
+        <option value="notebook">Notebook</option>
+        <option value="sala-informatica">Sala de Informática</option>
+      </select>
+    </div>
+    <div class="filtro-grupo">
+      <label>Data:</label>
+      <input type="date" [(ngModel)]="filtroData">
+    </div>
+    <button class="btn-secundario" (click)="filtroData = ''; filtroEquipamento = 'todos'">
+      Limpar Filtros
+    </button>
+  </div>
+
+  <!-- TABELA DE RESERVAS -->
+  <div class="tabela-container">
+    <div class="sem-reservas" *ngIf="reservasFiltradas.length === 0">
+      <p>Nenhuma reserva encontrada</p>
+      <small>Clique em "Novo Agendamento" para criar uma</small>
+    </div>
+
+    <div class="reservas-grid" *ngIf="reservasFiltradas.length > 0">
+      <div class="reserva-card" *ngFor="let reserva of reservasFiltradas">
+        <div class="card-header">
+          <div class="equipamento" [ngClass]="'eq-' + reserva.equipamento">
+            {{ obterEquipamentoEmPortugues(reserva.equipamento) }}
+          </div>
+          <div class="data">{{ formatarData(reserva.dataReserva) }}</div>
+        </div>
+
+        <div class="card-body">
+          <div class="info-row">
+            <span class="label">Horário:</span>
+            <span class="valor">{{ reserva.horaInicio }} - {{ reserva.horaFim }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Professor:</span>
+            <span class="valor">{{ reserva.professorNome }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Turma:</span>
+            <span class="valor">{{ reserva.turmaDescricao }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Atividade:</span>
+            <span class="valor">{{ reserva.atividade }}</span>
+          </div>
+        </div>
+
+        <div class="card-footer" *ngIf="reserva.professorId === usuarioId">
+          <button class="btn-editar" (click)="editarReserva(reserva)">
+            ✎ Editar
+          </button>
+          <button class="btn-cancelar" (click)="cancelarReserva(reserva)">
+            ✕ Cancelar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL AGENDAMENTO -->
+  <div class="modal-overlay" *ngIf="mostrarModal" (click)="fecharModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>{{ editando ? 'Editar Agendamento' : 'Novo Agendamento' }}</h2>
+        <button class="btn-fechar" (click)="fecharModal()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- MENSAGEM DE ERRO -->
+        <div class="mensagem-erro" *ngIf="mensagemErro">
+          {{ mensagemErro }}
+        </div>
+
+        <form>
+          <!-- DATA -->
+          <div class="form-group">
+            <label for="data">Data da Reserva *</label>
+            <input
+              type="date"
+              id="data"
+              [(ngModel)]="dataReserva"
+              name="dataReserva"
+              [min]="obterDataHoje()"
+              [max]="obterDataLimite()"
+              required>
+          </div>
+
+          <!-- HORA INICIO E FIM -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="horaInicio">Hora Início *</label>
+              <select
+                id="horaInicio"
+                [(ngModel)]="horaInicio"
+                name="horaInicio"
+                required>
+                <option value="">Selecione...</option>
+                <option *ngFor="let hora of horarios" [value]="hora">
+                  {{ hora }}
+                </option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="horaFim">Hora Fim *</label>
+              <select
+                id="horaFim"
+                [(ngModel)]="horaFim"
+                name="horaFim"
+                required>
+                <option value="">Selecione...</option>
+                <option *ngFor="let hora of horarios" [value]="hora">
+                  {{ hora }}
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <!-- EQUIPAMENTO -->
+          <div class="form-group">
+            <label for="equipamento">Equipamento *</label>
+            <select
+              id="equipamento"
+              [(ngModel)]="equipamento"
+              name="equipamento"
+              required>
+              <option value="tablet">Tablet</option>
+              <option value="notebook">Notebook</option>
+              <option value="sala-informatica">Sala de Informática</option>
+            </select>
+          </div>
+
+          <!-- TIPO DE ENSINO -->
+          <div class="form-group">
+            <label for="tipoEnsino">Tipo de Ensino *</label>
+            <select
+              id="tipoEnsino"
+              [(ngModel)]="tipoEnsinoSelecionado"
+              name="tipoEnsino"
+              (change)="onTipoEnsinoChange(tipoEnsinoSelecionado)"
+              required>
+              <option value="">Selecione...</option>
+              <option *ngFor="let tipo of tiposEnsino" [value]="tipo">
+                {{ tipo }}
+              </option>
+            </select>
+          </div>
+
+          <!-- TURMA -->
+          <div class="form-group">
+            <label for="turma">Turma *</label>
+            <select
+              id="turma"
+              [(ngModel)]="turmaId"
+              name="turmaId"
+              [disabled]="turmasFiltradas.length === 0"
+              required>
+              <option value="">
+                {{ turmasFiltradas.length === 0 ? 'Selecione...' : 'Selecione a turma' }}
+              </option>
+              <option *ngFor="let turma of turmasFiltradas" [value]="turma">
+                {{ turma }}
+              </option>
+            </select>
+          </div>
+
+          <!-- ATIVIDADE -->
+          <div class="form-group">
+            <label for="atividade">Atividade *</label>
+            <input
+              type="text"
+              id="atividade"
+              [(ngModel)]="atividade"
+              name="atividade"
+              placeholder="Ex: Aula de Programação, Vídeo Aula, etc"
+              required>
+          </div>
+        </form>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-secundario" (click)="fecharModal()" [disabled]="processando">
+          Cancelar
+        </button>
+        <button
+          class="btn-primary"
+          (click)="criarOuEditarReserva()"
+          [disabled]="processando">
+          {{ processando ? 'Salvando...' : (editando ? 'Atualizar' : 'Agendar') }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

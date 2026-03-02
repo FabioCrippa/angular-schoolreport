@@ -983,4 +983,90 @@ Equipe escu
       throw error;
     }
   }
+
+  // ===== AGENDA DE EQUIPAMENTOS =====
+
+  async obterAgendaEquipamentos(): Promise<any[]> {
+    try {
+      const agendaCollection = collection(this.firestore, 'agendaEquipamentos');
+      const q = query(agendaCollection, orderBy('dataReserva', 'asc'));
+      const querySnapshot = await getDocs(q);
+      
+      const reservas: any[] = [];
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        reservas.push({
+          id: doc.id,
+          ...data,
+          criadoEm: data['criadoEm']?.toDate()
+        });
+      });
+      
+      return reservas;
+    } catch (error) {
+      console.error('Erro ao obter agenda de equipamentos:', error);
+      throw error;
+    }
+  }
+
+  async criarAgendaEquipamento(reserva: any): Promise<string> {
+    try {
+      const agendaCollection = collection(this.firestore, 'agendaEquipamentos');
+      const docRef = await addDoc(agendaCollection, {
+        ...reserva,
+        criadoEm: Timestamp.now()
+      });
+      
+      console.log('Agendamento criado com ID:', docRef.id);
+      return docRef.id;
+    } catch (error) {
+      console.error('Erro ao criar agendamento:', error);
+      throw error;
+    }
+  }
+
+  async atualizarAgendaEquipamento(reservaId: string, dados: any): Promise<void> {
+    try {
+      const reservaDoc = doc(this.firestore, 'agendaEquipamentos', reservaId);
+      await updateDoc(reservaDoc, dados);
+      console.log('Agendamento atualizado:', reservaId);
+    } catch (error) {
+      console.error('Erro ao atualizar agendamento:', error);
+      throw error;
+    }
+  }
+
+  async cancelarAgendaEquipamento(reservaId: string): Promise<void> {
+    try {
+      const reservaDoc = doc(this.firestore, 'agendaEquipamentos', reservaId);
+      await updateDoc(reservaDoc, { status: 'cancelada' });
+      console.log('Agendamento cancelado:', reservaId);
+    } catch (error) {
+      console.error('Erro ao cancelar agendamento:', error);
+      throw error;
+    }
+  }
+
+  async obterTurmasProfessor(professorId: string): Promise<any[]> {
+    try {
+      const turmasCollection = collection(this.firestore, 'turmas');
+      const q = query(turmasCollection, where('professores', 'array-contains', professorId));
+      const querySnapshot = await getDocs(q);
+      
+      const turmas: any[] = [];
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        turmas.push({
+          id: doc.id,
+          nome: data['nome'],
+          ...data
+        });
+      });
+      
+      return turmas;
+    } catch (error) {
+      console.error('Erro ao obter turmas do professor:', error);
+      throw error;
+    }
+  }
 }
