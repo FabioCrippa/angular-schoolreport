@@ -71,7 +71,7 @@ export const routes: Routes = [
         path: 'agendamento-equipamentos',
         loadComponent: () => import('./pages/agendamento-equipamentos/agendamento-equipamentos').then(m => m.AgendamentoEquipamentosComponent),
         canActivate: [authGuard, roleGuard],
-        data: { roles: ['professor'] }
+        data: { roles: ['professor', 'coordenacao', 'direcao'] }
     },
     {
         path: '**',
