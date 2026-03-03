@@ -123,10 +123,8 @@ export class Dashboard implements OnInit {
       // Verifica se o usuário é admin
       this.isAdmin = this.ADMIN_EMAILS.includes(user.email || '');
       
-      // Busca o role do usuário dentro do contexto do Angular
-      this.ngZone.run(() => {
-        this.carregarDadosUsuario();
-      });
+      // Busca o role do usuário
+      this.carregarDadosUsuario();
     } else {
       this.loading = false;
     }
@@ -142,15 +140,18 @@ export class Dashboard implements OnInit {
       }
       
       console.log('Iniciando carregamento de dados do usuário');
+      console.log('UserRole ANTES de carregar:', this.userRole);
       
       // Buscar dados do usuário no Firestore para pegar o role
       const usuario = await this.firestoreService.buscarUsuario(user.uid);
       console.log('Usuário carregado:', usuario);
+      console.log('Dados do usuário:', { nome: usuario?.nome, role: usuario?.role });
       
       if (usuario) {
         this.userRole = usuario.role;
         this.userName = usuario.nome || this.userName;
-        console.log('Role do usuário:', this.userRole);
+        console.log('Role do usuário APÓS atribuição:', this.userRole);
+        console.log('UserRole no campo:', this.userRole);
         
         // Redirecionar secretaria para dashboard próprio
         if (this.userRole === 'secretaria') {
@@ -163,12 +164,18 @@ export class Dashboard implements OnInit {
 
         // Carregar estatísticas para coordenação e direção
         if (this.userRole === 'coordenacao' || this.userRole === 'direcao') {
-          console.log('Carregando estatísticas');
+          console.log('Carregando estatísticas para coordenação/direção');
           try {
             await this.carregarEstatisticas();
+            console.log('Estatísticas carregadas com sucesso');
           } catch (erro) {
             console.error('Erro ao carregar estatísticas:', erro);
           }
+        } else {
+          // Para professor, pode finalizar o loading agora
+          console.log('Carregamento finalizado para professor');
+          this.loading = false;
+          this.cdr.detectChanges();
         }
       } else {
         console.warn('Usuário não encontrado no Firestore');
@@ -176,19 +183,16 @@ export class Dashboard implements OnInit {
     } catch (error) {
       console.error('Erro ao carregar dados do usuário:', error);
     } finally {
-      // Garantir que a detecção de mudanças aconteça dentro do NgZone
-      this.ngZone.run(() => {
-        this.loading = false;
-        this.cdr.detectChanges();
-        console.log('Dashboard loading finalizado:', this.loading, 'Role:', this.userRole);
-      });
+      this.loading = false;
+      console.log('FINALLY: UserRole=', this.userRole, 'Loading=', this.loading);
+      this.cdr.detectChanges();
     }
   }
 
   async carregarEstatisticas() {
     try {
       this.loadingEstatisticas = true;
-      this.cdr.detectChanges();
+      this.cdr.markForCheck();
       
       console.log('Iniciando carregamento de estatísticas');
       
@@ -216,17 +220,14 @@ export class Dashboard implements OnInit {
     } catch (error) {
       console.error('Erro ao carregar estatísticas:', error);
     } finally {
-      // Garantir que a detecção de mudanças aconteça dentro do NgZone
-      this.ngZone.run(() => {
-        this.loadingEstatisticas = false;
-        this.cdr.detectChanges();
-      });
+      this.loadingEstatisticas = false;
+      this.cdr.markForCheck();
     }
   }
 
   aplicarFiltroPeriodo() {
-    if (this.todasOcorrencias.length === 0) return;
-
+    console.log('Aplicando filtro de período. Total de ocorrências:', this.todasOcorrencias.length);
+    
     let ocorrenciasFiltradas = [...this.todasOcorrencias];
     const hoje = new Date();
 
@@ -238,7 +239,9 @@ export class Dashboard implements OnInit {
         });
       }
       this.estatisticas = this.relatoriosService.calcularEstatisticasOcorrencias(ocorrenciasFiltradas);
+      console.log('Estatísticas customizadas calculadas:', this.estatisticas);
       this.prepararDadosGraficos();
+      this.cdr.detectChanges();
       return;
     }
 
@@ -274,9 +277,13 @@ export class Dashboard implements OnInit {
 
     // Calcular estatísticas com dados filtrados
     this.estatisticas = this.relatoriosService.calcularEstatisticasOcorrencias(ocorrenciasFiltradas);
+    console.log('Estatísticas calculadas:', this.estatisticas);
     
     // Preparar dados dos gráficos
     this.prepararDadosGraficos();
+    
+    // Acionando detecção de mudanças
+    this.cdr.detectChanges();
   }
 
   prepararDadosGraficos() {
