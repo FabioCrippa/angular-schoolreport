@@ -31,6 +31,7 @@ export class ListaOcorrencias implements OnInit {
   filtroAluno = '';
   filtroProfessor = '';
   professoresUnicos: string[] = [];
+  alunosUnicos: string[] = [];
   
   // Modal de confirmação de exclusão
   modalExclusaoAberto = false;
@@ -104,17 +105,24 @@ export class ListaOcorrencias implements OnInit {
       } else {
         this.ocorrencias = todasOcorrencias;
         
-        // Extrai lista única de professores para o filtro
+        // Extrai lista única de professores e alunos para os filtros
         const professoresSet = new Set<string>();
+        const alunosSet = new Set<string>();
         this.ocorrencias.forEach(occ => {
           if (occ.professorNome) {
             professoresSet.add(occ.professorNome);
           }
+          // Aluno + Turma como identificador único
+          if (occ.nomeAluno && occ.turma) {
+            alunosSet.add(`${occ.nomeAluno} - ${occ.turma}`);
+          }
         });
         this.professoresUnicos = Array.from(professoresSet).sort();
+        this.alunosUnicos = Array.from(alunosSet).sort();
         
         console.log('Todas as ocorrências da escola carregadas:', this.ocorrencias.length);
         console.log('Professores únicos:', this.professoresUnicos);
+        console.log('Alunos únicos:', this.alunosUnicos);
       }
       
       // Inicializa lista filtrada
@@ -478,17 +486,193 @@ export class ListaOcorrencias implements OnInit {
     if (!this.ocorrenciaExcluindo || !this.ocorrenciaExcluindo.id) return;
 
     try {
+      console.log('Iniciando exclusão da ocorrência:', this.ocorrenciaExcluindo.id);
       await this.firestoreService.deletarOcorrencia(this.ocorrenciaExcluindo.id);
       
+      console.log('✅ Ocorrência excluída com sucesso!');
       alert('✅ Ocorrência excluída com sucesso!');
       this.fecharModalExclusao();
       
       // Recarregar lista
       this.carregarDadosUsuario();
       
+    } catch (error: any) {
+      console.error('❌ Erro ao excluir ocorrência:', error);
+      console.error('Detalhes do erro:', error.message, error.code);
+      
+      // Mensagem de erro mais específica baseada no tipo de erro
+      let mensagem = 'Erro ao excluir ocorrência. Tente novamente.';
+      if (error.code === 'permission-denied') {
+        mensagem = 'Você não tem permissão para excluir esta ocorrência.';
+      } else if (error.code === 'not-found') {
+        mensagem = 'Ocorrência não encontrada. Ela pode ter sido deletada.';
+      }
+      
+      alert('❌ ' + mensagem);
+    }
+  }
+
+  async gerarPDFAluno(alunoSelecionado: string) {
+    if (!alunoSelecionado) {
+      alert('Selecione um aluno para gerar o PDF');
+      return;
+    }
+
+    try {
+      // Parsear "Nome - Turma" para extrair nome e turma
+      const partes = alunoSelecionado.split(' - ');
+      const nomeAluno = partes[0].trim();
+      const turmaAluno = partes[1]?.trim() || '';
+      
+      // Importar pdfMake dinamicamente
+      const pdfMake = await import('pdfmake/build/pdfmake');
+      const pdfFonts = await import('pdfmake/build/vfs_fonts');
+      
+      (pdfMake as any).default.vfs = (pdfFonts as any).default;
+
+      // Filtrar ocorrências do aluno (por nome E turma)
+      const ocorrenciasAluno = this.ocorrenciasFiltradas.filter(o => 
+        o.nomeAluno === nomeAluno && o.turma === turmaAluno
+      );
+      
+      if (ocorrenciasAluno.length === 0) {
+        alert('Nenhuma ocorrência encontrada para este aluno');
+        return;
+      }
+
+      // Buscar dados da escola
+      const user = this.authService.getCurrentUser();
+      if (!user) return;
+      
+      const usuario = await this.firestoreService.buscarUsuario(user.uid);
+      if (!usuario) return;
+
+      const escola = await this.firestoreService.buscarEscola(usuario.escolaId);
+
+      // Preparar dados da tabela
+      const corpoTabela = ocorrenciasAluno.map(occ => {
+        const partes = occ.data.split('-');
+        const dataOcorrencia = new Date(Number(partes[0]), Number(partes[1]) - 1, Number(partes[2]));
+        const dataFormatada = dataOcorrencia.toLocaleDateString('pt-BR');
+
+        return [
+          dataFormatada,
+          occ.professorNome || 'N/A',
+          occ.descricao || 'N/A',
+          ' ' // Espaço para assinatura (não deixar vazio)
+        ];
+      });
+
+      // Estrutura do documento
+      const documentDefinition: any = {
+        pageSize: 'A4',
+        pageMargins: [40, 60, 40, 100],
+        
+        header: {
+          margin: [40, 20, 40, 0],
+          columns: [
+            {
+              text: escola?.nome || 'Escola',
+              fontSize: 14,
+              bold: true,
+              alignment: 'left'
+            },
+            {
+              text: 'Resumo de Ocorrências do Aluno',
+              fontSize: 12,
+              bold: true,
+              alignment: 'right'
+            }
+          ]
+        },
+
+        footer: (currentPage: number, pageCount: number) => ({
+          text: `Página ${currentPage} de ${pageCount}`,
+          alignment: 'center',
+          fontSize: 10,
+          margin: [0, 10, 0, 0]
+        }),
+
+        content: [
+          // Informações do aluno
+          {
+            table: {
+              widths: ['50%', '50%'],
+              body: [
+                [
+                  { text: 'Aluno:', bold: true, fontSize: 11 },
+                  { text: nomeAluno, fontSize: 11 }
+                ],
+                [
+                  { text: 'Turma:', bold: true, fontSize: 11 },
+                  { text: ocorrenciasAluno[0]?.turma || 'N/A', fontSize: 11 }
+                ],
+                [
+                  { text: 'Data do Resumo:', bold: true, fontSize: 11 },
+                  { text: new Date().toLocaleDateString('pt-BR'), fontSize: 11 }
+                ]
+              ]
+            },
+            layout: 'noBorders',
+            margin: [0, 0, 0, 20]
+          },
+
+          // Tabela de ocorrências
+          {
+            table: {
+              headerRows: 1,
+              widths: ['15%', '25%', '40%', '20%'],
+              body: [
+                [
+                  { text: 'Data', bold: true, fillColor: '#3b82f6', color: 'white', fontSize: 10 },
+                  { text: 'Professor', bold: true, fillColor: '#3b82f6', color: 'white', fontSize: 10 },
+                  { text: 'Descrição', bold: true, fillColor: '#3b82f6', color: 'white', fontSize: 10 },
+                  { text: 'Assinatura Pai/Mãe', bold: true, fillColor: '#3b82f6', color: 'white', fontSize: 10 }
+                ],
+                ...corpoTabela
+              ]
+            },
+            layout: 'lightHorizontalLines',
+            margin: [0, 0, 0, 20]
+          },
+
+          // Seção de assinatura final
+          {
+            text: 'Confirmação do Responsável',
+            fontSize: 12,
+            bold: true,
+            margin: [0, 20, 0, 10]
+          },
+          {
+            text: 'Eu/nós, responsável(is) pelo aluno acima, declaro(amos) ter recebido e lido este documento com as ocorrências registradas.',
+            fontSize: 10,
+            alignment: 'justify',
+            margin: [0, 0, 0, 30]
+          },
+          {
+            columns: [
+              {
+                text: '_______________________\nAssinatura do Responsável',
+                alignment: 'center',
+                fontSize: 10
+              },
+              {
+                text: '_______________________\nData',
+                alignment: 'center',
+                fontSize: 10
+              }
+            ]
+          }
+        ]
+      };
+
+      // Gerar PDF
+      (pdfMake as any).default.createPdf(documentDefinition).download(`Resumo-${nomeAluno}-${turmaAluno}.pdf`);
+      console.log('PDF do aluno gerado com sucesso');
+      
     } catch (error) {
-      console.error('Erro ao excluir ocorrência:', error);
-      alert('❌ Erro ao excluir ocorrência. Tente novamente.');
+      console.error('Erro ao gerar PDF do aluno:', error);
+      alert('Erro ao gerar PDF do aluno. Tente novamente.');
     }
   }
 }

@@ -53,6 +53,27 @@
             <option *ngFor="let prof of professoresUnicos" [value]="prof">{{ prof }}</option>
           </select>
         </div>
+
+        <div class="filtro-item">
+          <label for="selectAluno">Gerar Resumo do Aluno:</label>
+          <div class="select-with-button">
+            <select 
+              id="selectAluno"
+              [(ngModel)]="filtroAluno"
+              class="select-aluno"
+            >
+              <option value="">Selecione um aluno...</option>
+              <option *ngFor="let aluno of alunosUnicos" [value]="aluno">{{ aluno }}</option>
+            </select>
+            <button 
+              class="btn-gerar-resumo" 
+              (click)="gerarPDFAluno(filtroAluno)"
+              [disabled]="!filtroAluno"
+              title="Gera um PDF com todas as ocorrências do aluno selecionado">
+              📋 Gerar Resumo
+            </button>
+          </div>
+        </div>
         
         <div class="filtro-item filtro-actions">
           <button class="btn-limpar" (click)="limparFiltros()">Limpar Filtros</button>

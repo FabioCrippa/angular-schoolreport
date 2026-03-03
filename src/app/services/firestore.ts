@@ -129,11 +129,13 @@ export class FirestoreService {
 
   async deletarOcorrencia(ocorrenciaId: string): Promise<void> {
     try {
+      console.log('Tentando deletar ocorrência:', ocorrenciaId);
       const ocorrenciaRef = doc(this.ocorrenciasCollection, ocorrenciaId);
       await deleteDoc(ocorrenciaRef);
-      console.log('Ocorrência deletada:', ocorrenciaId);
-    } catch (error) {
-      console.error('Erro ao deletar ocorrência:', error);
+      console.log('✅ Ocorrência deletada com sucesso:', ocorrenciaId);
+    } catch (error: any) {
+      console.error('❌ Erro ao deletar ocorrência:', error);
+      console.error('Detalhes do erro:', error.message, error.code);
       throw error;
     }
   }

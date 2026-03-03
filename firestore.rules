@@ -58,9 +58,11 @@ service cloud.firestore {
       // Admins podem ler todas as ocorrências
       allow read: if isAdmin();
       
-      // Usuários podem deletar apenas suas próprias ocorrências
+      // Usuários (professor, coordenador, diretor) podem deletar ocorrências da sua escola
+      // OU o criador pode deletar sua própria ocorrência
       allow delete: if request.auth != null && 
-                      resource.data.criadoPor == request.auth.uid;
+                      resource.data.escolaId != null &&
+                      belongsToSchool(resource.data.escolaId);
       
       // Admins podem deletar qualquer ocorrência
       allow delete: if isAdmin();

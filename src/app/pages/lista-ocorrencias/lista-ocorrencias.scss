@@ -228,6 +228,51 @@ $border-color: #E5E7EB;
   }
 }
 
+.select-with-button {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+
+  .select-aluno {
+    flex: 1;
+    padding: 0.75rem;
+    border: 1px solid $border-color;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+
+    &:focus {
+      outline: none;
+      border-color: $primary-blue;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+  }
+
+  .btn-gerar-resumo {
+    padding: 0.75rem 1rem;
+    background: $primary-blue;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+
+    &:hover:not(:disabled) {
+      background: $primary-blue-dark;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+}
+
+
 // ===== OCORRENCIAS LIST =====
 .ocorrencias-list {
   display: flex;
