@@ -39,6 +39,7 @@ export class RegistroOcorrencia {
     'Falta de material',
     'Indisciplina',
     'Não fez a atividade proposta',
+    'Saiu da sala sem autorização',
     'Uso de celular',
     'Vandalismo',    
     'Outros',
