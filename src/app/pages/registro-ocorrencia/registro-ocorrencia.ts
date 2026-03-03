@@ -35,6 +35,7 @@ export class RegistroOcorrencia {
     'Chegou depois do professor',
     'Desrespeito a colegas',
     'Desrespeito a professores',
+    'Dormiu durante a aula',
     'Falta de material',
     'Indisciplina',
     'Não fez a atividade proposta',
