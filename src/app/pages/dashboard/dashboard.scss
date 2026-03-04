@@ -402,11 +402,16 @@ $border-color: #E5E7EB;
 // ===== RESPONSIVE =====
 @media (max-width: 768px) {
   .dashboard-header {
-    padding: 1rem 1.5rem;
+    padding: 0.75rem 1rem;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 0.75rem;
   }
 
   .logo-link {
     font-size: 1.125rem;
+    flex: 1;
+    min-width: 200px;
 
     .logo-icon {
       font-size: 1.5rem;
@@ -414,11 +419,48 @@ $border-color: #E5E7EB;
   }
 
   .header-right {
-    gap: 1rem;
+    display: flex;
+    gap: 0.5rem;
+    width: 100%;
+    align-items: center;
+    flex-wrap: wrap;
   }
 
   .user-info {
-    display: none;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+    flex: 1;
+    min-width: 150px;
+
+    .user-name {
+      font-size: 0.75rem;
+      font-weight: 600;
+      line-height: 1;
+    }
+
+    .user-email {
+      font-size: 0.65rem;
+      opacity: 0.75;
+      line-height: 1;
+    }
+
+    .user-role {
+      font-size: 0.65rem;
+      opacity: 0.6;
+      font-weight: 500;
+      margin-top: 0.15rem;
+      line-height: 1;
+    }
+  }
+
+  .btn-admin,
+  .btn-logout {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.75rem;
+    border-radius: 4px;
+    flex-shrink: 0;
   }
 
   .dashboard-content {
