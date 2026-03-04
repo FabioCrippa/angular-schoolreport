@@ -435,22 +435,19 @@ $border-color: #E5E7EB;
     min-width: 150px;
 
     .user-name {
-      font-size: 0.75rem;
+      font-size: 0.8rem;
       font-weight: 600;
-      line-height: 1;
+      line-height: 1.2;
     }
 
     .user-email {
-      font-size: 0.65rem;
-      opacity: 0.75;
-      line-height: 1;
+      display: none;
     }
 
     .user-role {
-      font-size: 0.65rem;
-      opacity: 0.6;
+      font-size: 0.7rem;
+      opacity: 0.75;
       font-weight: 500;
-      margin-top: 0.15rem;
       line-height: 1;
     }
   }
