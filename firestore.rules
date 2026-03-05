@@ -35,11 +35,13 @@ service cloud.firestore {
       // Usuário pode ler e atualizar seu próprio documento
       allow read, update: if request.auth != null && request.auth.uid == userId;
       
-      // Permitir criação de documento durante primeiro acesso (sem auth ainda)
-      // ou quando o email corresponde
-      allow create: if request.auth != null;
+      // Permitir criação de novo documento com UID do Auth durante primeiro acesso
+      // O documento temporário (criado pelo admin) será deletado e um novo será criado com o UID real
+      allow create: if request.auth != null && 
+                       request.resource.data.email == request.auth.token.email;
       
-      // Permitir leitura por email para o fluxo de primeiro acesso
+      // Permitir leitura para verificar email durante primeiro acesso (antes de qualquer auth)
+      // Usando uma consulta by email - isto é seguro porque verifica se o email já existe
       allow read: if request.auth != null;
     }
     

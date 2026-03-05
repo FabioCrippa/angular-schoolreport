@@ -175,6 +175,10 @@ export class PrimeiroAcesso {
       } else if (error.code === 'auth/email-already-in-use') {
         this.mensagemErro = 'Este email já possui uma conta. Tente fazer login na página inicial.';
         this.processando = false;
+      } else if (error.code === 'permission-denied') {
+        console.error('🔒 ERRO DE PERMISSÃO - Verifique as Firestore Rules!');
+        this.mensagemErro = 'Erro de permissão ao criar documento. Contate o administrador.';
+        this.processando = false;
       } else {
         this.mensagemErro = `Erro ao criar conta: ${error.message || 'Tente novamente.'}`;
         this.processando = false;
