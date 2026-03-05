@@ -36,6 +36,8 @@ export class GerenciarAlunos implements OnInit {
   showModalEdicao = false;
   
   filtroAlunos = '';
+  turmasExpandidas: Set<string> = new Set();
+  turmaAtualImportacao = ''; // Turma sendo importada
   
   ngOnInit() {
     this.carregarDados();
@@ -138,7 +140,7 @@ export class GerenciarAlunos implements OnInit {
         // Validar e preparar dados
         this.alunosPreview = jsonNormalizado
           .filter(row => {
-            const valid = row['Nome'] && row['Turma'] && row['Série'];
+            const valid = row['Nome'] && row['Turma'] && row['Série/Ano'];
             if (!valid) {
               console.warn('⚠️ Linha inválida (faltam campos):', row);
             }
@@ -147,14 +149,24 @@ export class GerenciarAlunos implements OnInit {
           .map(row => ({
             nome: String(row['Nome']).trim(),
             turma: String(row['Turma']).trim(),
-            serie: String(row['Série']).trim()
+            serie: String(row['Série/Ano']).trim()
           }));
+        
+        // Detectar turma(s) no arquivo
+        const turmasNoArquivo = [...new Set(this.alunosPreview.map(a => a.turma))];
+        if (turmasNoArquivo.length === 1) {
+          this.turmaAtualImportacao = turmasNoArquivo[0];
+          console.log('🎯 Turma detectada:', this.turmaAtualImportacao);
+        } else if (turmasNoArquivo.length > 1) {
+          console.warn('⚠️ Arquivo contém múltiplas turmas:', turmasNoArquivo);
+          this.turmaAtualImportacao = '';
+        }
         
         console.log('✅ Alunos filtrados:', this.alunosPreview.length);
         
         if (this.alunosPreview.length === 0) {
           console.error('❌ Nenhum aluno válido encontrado');
-          this.exibirMensagem('Nenhum aluno válido encontrado. Verifique as colunas: Nome, Turma, Série', 'erro');
+          this.exibirMensagem('Nenhum aluno válido encontrado. Verifique as colunas: Nome, Turma, Série/Ano', 'erro');
           return;
         }
         
@@ -191,20 +203,52 @@ export class GerenciarAlunos implements OnInit {
       console.log('📝 Alunos a importar:', this.alunosPreview.length);
       this.loading = true;
       
-      // Primeiro, desativar todos os alunos anteriores
-      console.log('🗑️ Limpando alunos anteriores...');
-      await this.firestoreService.limparAlunos(this.escolaId);
-      console.log('✅ Alunos anteriores desativados');
+      // Verificar se é turma existente (reimportação) ou nova
+      const turmasNoArquivo = [...new Set(this.alunosPreview.map(a => a.turma))];
+      const turmaExistenteNoSistema = this.alunos.some(a => a.turma === this.turmaAtualImportacao);
       
-      // Depois importar os novos
+      if (turmaExistenteNoSistema && this.turmaAtualImportacao) {
+        // É reimportação da mesma turma: deletar antigos dessa turma
+        console.log(`🔄 Reimportando turma "${this.turmaAtualImportacao}"...`);
+        console.log('🗑️ Deletando alunos antigos dessa turma...');
+        
+        const alunosAntigos = this.alunos.filter(a => a.turma === this.turmaAtualImportacao);
+        for (const aluno of alunosAntigos) {
+          if (aluno.id) {
+            await this.firestoreService.deletarAluno(aluno.id);
+          }
+        }
+        console.log(`✅ ${alunosAntigos.length} alunos antigos deletados`);
+      } else if (turmasNoArquivo.length > 1) {
+        // Múltiplas turmas: deletar todas as turmas do arquivo
+        console.log('📚 Múltiplas turmas detectadas, atualizando todas...');
+        console.log('🗑️ Deletando alunos antigos das turmas...');
+        
+        for (const turma of turmasNoArquivo) {
+          const alunosAntigos = this.alunos.filter(a => a.turma === turma);
+          for (const aluno of alunosAntigos) {
+            if (aluno.id) {
+              await this.firestoreService.deletarAluno(aluno.id);
+            }
+          }
+        }
+        console.log('✅ Alunos antigos deletados');
+      } else {
+        // Turma nova: apenas adicionar
+        console.log(`✨ Nova turma detectada: "${this.turmaAtualImportacao}"`);
+      }
+      
+      // Importar os novos alunos
       console.log('📥 Importando novos alunos...');
       const contador = await this.firestoreService.importarAlunos(this.escolaId, this.alunosPreview);
       
       console.log(`✨ ${contador} alunos importados com sucesso`);
       
       this.alunosPreview = [];
+      this.turmaAtualImportacao = '';
       this.showPreview = false;
       this.showList = true;
+      this.turmasExpandidas.clear(); // Limpar turmas expandidas
       
       await this.carregarAlunos();
       this.exibirMensagem(`✅ ${contador} alunos importados com sucesso!`, 'sucesso');
@@ -222,12 +266,37 @@ export class GerenciarAlunos implements OnInit {
     this.alunosPreview = [];
     this.showPreview = false;
     this.showList = false;
+    this.turmaAtualImportacao = '';
   }
   
   reimportar() {
     this.filtroAlunos = '';
     this.showList = false;
     this.showPreview = false;
+  }
+  
+  toggleTurma(turma: string) {
+    if (this.turmasExpandidas.has(turma)) {
+      this.turmasExpandidas.delete(turma);
+    } else {
+      this.turmasExpandidas.add(turma);
+    }
+  }
+  
+  isTurmaExpandida(turma: string): boolean {
+    return this.turmasExpandidas.has(turma);
+  }
+  
+  isTurmaExistente(): boolean {
+    return this.alunos.some(a => a.turma === this.turmaAtualImportacao);
+  }
+  
+  isTurmaNova(): boolean {
+    return !!this.turmaAtualImportacao && !this.isTurmaExistente();
+  }
+  
+  temMultiplasTurmas(): boolean {
+    return !this.turmaAtualImportacao;
   }
   
   abrirEdicao(aluno: Aluno) {
@@ -289,9 +358,9 @@ export class GerenciarAlunos implements OnInit {
   
   downloadTemplate() {
     const dados = [
-      { Nome: 'João Silva', Turma: 'Turma A', Série: '7º ano' },
-      { Nome: 'Maria Santos', Turma: 'Turma A', Série: '7º ano' },
-      { Nome: 'Pedro Oliveira', Turma: 'Turma B', Série: '8º ano' }
+      { Nome: 'João Silva', Turma: 'Turma A', 'Série/Ano': '7º ano' },
+      { Nome: 'Maria Santos', Turma: 'Turma A', 'Série/Ano': '7º ano' },
+      { Nome: 'Pedro Oliveira', Turma: 'Turma B', 'Série/Ano': '8º ano' }
     ];
     
     const planilha = XLSX.utils.json_to_sheet(dados);

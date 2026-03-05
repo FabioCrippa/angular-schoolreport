@@ -80,7 +80,7 @@
         <div class="coluna-item">
           <span class="coluna-icon">📚</span>
           <div>
-            <strong>Série</strong><br>
+            <strong>Série/Ano</strong><br>
             <small>Ex: 7º ano, 1º ano EM</small>
           </div>
         </div>
@@ -90,7 +90,23 @@
 
   <!-- Seção de Preview -->
   <div *ngIf="showPreview" class="secao">
-    <h2>2. Confirmação da Importação</h2>
+    <h2>2. Confirmar Importação</h2>
+    
+    <div class="info-importacao">
+      <span class="icone">ℹ️</span>
+      <div class="info-texto">
+        <span *ngIf="isTurmaExistente()" class="status-atualizacao">
+          <strong>🔄 Atualização de Turma</strong> - Os alunos antigos da turma "<strong>{{ turmaAtualImportacao }}</strong>" serão substituídos.
+        </span>
+        <span *ngIf="isTurmaNova()" class="status-nova">
+          <strong>✨ Nova Turma</strong> - A turma "<strong>{{ turmaAtualImportacao }}</strong>" será adicionada ao sistema.
+        </span>
+        <span *ngIf="temMultiplasTurmas()" class="status-multipla">
+          <strong>📚 Múltiplas Turmas</strong> - O arquivo contém várias turmas.
+        </span>
+      </div>
+    </div>
+    
     <p class="info-preview">Total de alunos a importar: <strong>{{ alunosPreview.length }}</strong></p>
     
     <div class="tabela-container">
@@ -100,7 +116,7 @@
             <th>#</th>
             <th>Nome</th>
             <th>Turma</th>
-            <th>Série</th>
+            <th>Série/Ano</th>
           </tr>
         </thead>
         <tbody>
@@ -134,7 +150,7 @@
         <input 
           type="text" 
           [(ngModel)]="filtroAlunos" 
-          placeholder="🔍 Buscar por nome, turma ou série..."
+          placeholder="🔍 Buscar por nome, turma ou série/ano..."
           class="input-search"
           (input)="filtroAlunos = $any($event.target).value"
         />
@@ -161,40 +177,47 @@
       
       <!-- Agrupado por Turma -->
       <div *ngFor="let turmaGrupo of (alunosFiltrados | groupByTurma)" class="grupo-turma">
-        <div class="turma-header">
-          <div class="turma-nome">{{ turmaGrupo.turma }}</div>
-          <div class="turma-count">{{ turmaGrupo.alunos.length }} aluno(s)</div>
+        <div class="turma-header" (click)="toggleTurma(turmaGrupo.turma)" [class.expandida]="isTurmaExpandida(turmaGrupo.turma)">
+          <button class="toggle-btn" [class.expandido]="isTurmaExpandida(turmaGrupo.turma)">
+            <span class="toggle-icon">▶</span>
+          </button>
+          <div class="turma-info">
+            <div class="turma-nome">{{ turmaGrupo.turma }}</div>
+            <div class="turma-count">{{ turmaGrupo.alunos.length }} aluno(s)</div>
+          </div>
         </div>
         
-        <table class="tabela-alunos">
-          <thead>
-            <tr>
-              <th>Nome</th>
-              <th>Série</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let aluno of turmaGrupo.alunos">
-              <td>{{ aluno.nome }}</td>
-              <td>{{ aluno.serie }}</td>
-              <td class="celula-acoes">
-                <button 
-                  class="btn-icon btn-edit" 
-                  (click)="abrirEdicao(aluno)" 
-                  title="Editar aluno">
-                  ✏️
-                </button>
-                <button 
-                  class="btn-icon btn-delete" 
-                  (click)="deletarAluno(aluno)" 
-                  title="Deletar aluno">
-                  🗑️
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <div class="turma-content" *ngIf="isTurmaExpandida(turmaGrupo.turma)">
+          <table class="tabela-alunos">
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Série/Ano</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let aluno of turmaGrupo.alunos">
+                <td>{{ aluno.nome }}</td>
+                <td>{{ aluno.serie }}</td>
+                <td class="celula-acoes">
+                  <button 
+                    class="btn-icon btn-edit" 
+                    (click)="abrirEdicao(aluno)" 
+                    title="Editar aluno">
+                    ✏️
+                  </button>
+                  <button 
+                    class="btn-icon btn-delete" 
+                    (click)="deletarAluno(aluno)" 
+                    title="Deletar aluno">
+                    🗑️
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
@@ -224,7 +247,7 @@
           class="input"
         />
         
-        <label>Série</label>
+        <label>Série/Ano</label>
         <input 
           type="text" 
           [(ngModel)]="alunoEditando.serie" 

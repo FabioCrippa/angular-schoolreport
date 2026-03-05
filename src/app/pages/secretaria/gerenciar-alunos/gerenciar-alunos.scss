@@ -92,7 +92,120 @@
   }
 }
 
-// Seções
+// Step Indicator
+.step-indicator {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0;
+  margin-bottom: 3rem;
+  padding: 2rem 1rem;
+  background: linear-gradient(135deg, #f5f7fa 0%, #f9fbfd 100%);
+  border-radius: 12px;
+  position: relative;
+  
+  @media (max-width: 768px) {
+    margin-bottom: 2rem;
+    padding: 1.5rem 0.5rem;
+  }
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+  flex: 0 0 auto;
+  
+  .step-number {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: #ecf0f1;
+    border: 3px solid #bdc3c7;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.2rem;
+    color: #95a5a6;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    margin-bottom: 0.75rem;
+    
+    @media (max-width: 768px) {
+      width: 42px;
+      height: 42px;
+      font-size: 1rem;
+    }
+  }
+  
+  .step-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #7f8c8d;
+    white-space: nowrap;
+    transition: all 0.4s ease;
+  }
+  
+  // Estado inativo/pendente
+  &:not(.ativo) {
+    pointer-events: none;
+  }
+  
+  // Estado ativo
+  &.ativo {
+    .step-number {
+      background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+      border-color: #2980b9;
+      color: white;
+      box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+      transform: scale(1.1);
+    }
+    
+    .step-label {
+      color: #2980b9;
+      font-weight: 700;
+      transform: translateY(-2px);
+    }
+  }
+  
+  // Estado já completado (passou)
+  &:has(~ .step.ativo) {
+    .step-number {
+      background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+      border-color: #229954;
+      color: white;
+      box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
+    }
+    
+    .step-label {
+      color: #27ae60;
+    }
+  }
+}
+
+.step-linha {
+  width: 50px;
+  height: 3px;
+  background: #ecf0f1;
+  margin: 0;
+  flex-shrink: 0;
+  transition: all 0.4s ease;
+  z-index: 0;
+  
+  @media (max-width: 768px) {
+    width: 30px;
+  }
+  
+  // Linha ativa (entre step ativo e próximo)
+  .step.ativo ~ * .step-linha {
+    &:first-of-type {
+      background: linear-gradient(90deg, #3498db 0%, #ecf0f1 100%);
+    }
+  }
+}
 .secao {
   background: white;
   border-radius: 12px;
@@ -322,6 +435,63 @@
   margin-bottom: 1.5rem;
 }
 
+// Info Importação
+.info-importacao {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  border-left: 4px solid;
+  
+  .icone {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+  }
+  
+  .info-texto {
+    flex: 1;
+    display: flex;
+    align-items: center;
+  }
+  
+  span {
+    strong {
+      font-weight: 700;
+    }
+  }
+  
+  .status-atualizacao {
+    background-color: #fff3cd;
+    border-left-color: #ffc107;
+    color: #856404;
+    
+    .icone {
+      color: #ffc107;
+    }
+  }
+  
+  .status-nova {
+    background-color: #d4edda;
+    border-left-color: #28a745;
+    color: #155724;
+    
+    .icone {
+      color: #28a745;
+    }
+  }
+  
+  .status-multipla {
+    background-color: #d1ecf1;
+    border-left-color: #17a2b8;
+    color: #0c5460;
+    
+    .icone {
+      color: #17a2b8;
+    }
+  }
+}
+
 .tabela-container {
   overflow-x: auto;
   margin-bottom: 1.5rem;
@@ -429,6 +599,9 @@
 
 .grupo-turma {
   margin-bottom: 2rem;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   
   .turma-header {
     background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
@@ -440,6 +613,54 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    user-select: none;
+    
+    &:hover {
+      background: linear-gradient(135deg, #2980b9 0%, #1f618d 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+    }
+    
+    &.expandida {
+      border-radius: 6px 6px 0 0;
+    }
+    
+    .toggle-btn {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 1.2rem;
+      cursor: pointer;
+      padding: 0;
+      margin-right: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      
+      .toggle-icon {
+        display: block;
+        transition: transform 0.3s ease;
+      }
+      
+      &.expandido {
+        .toggle-icon {
+          transform: rotate(90deg);
+        }
+      }
+    }
+    
+    .turma-info {
+      flex: 1;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
     
     .turma-nome {
       flex: 1;
@@ -452,6 +673,27 @@
       border-radius: 20px;
       white-space: nowrap;
     }
+  }
+}
+
+// Conteúdo da turma com animação
+.turma-content {
+  animation: slideDown 0.3s ease-out forwards;
+  transform-origin: top;
+  max-height: 1000px;
+  overflow: hidden;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: scaleY(0.95);
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    transform: scaleY(1);
+    max-height: 1000px;
   }
 }
 
