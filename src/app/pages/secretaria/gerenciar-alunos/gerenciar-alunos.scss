@@ -8,6 +8,7 @@
 .header {
   margin-bottom: 3rem;
   text-align: center;
+  position: relative;
   
   h1 {
     font-size: 2rem;
@@ -20,6 +21,36 @@
     font-size: 1rem;
     color: #7f8c8d;
     margin: 0;
+  }
+  
+  .header-content {
+    margin-bottom: 1rem;
+  }
+  
+  .btn-voltar {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 0.6rem 1.2rem;
+    background-color: #95a5a6;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    
+    &:hover {
+      background-color: #7f8c8d;
+      transform: translateX(-2px);
+    }
+    
+    @media (max-width: 768px) {
+      position: static;
+      width: 100%;
+      margin-bottom: 1rem;
+    }
   }
 }
 
@@ -521,9 +552,4 @@
       padding: 0.75rem 0.5rem;
     }
   }
-}
-
-// Pipe para agrupar por turma - CSS helper
-[groupByTurma] {
-  // Este é um placeholder para o pipe que será criado
 }

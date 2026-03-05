@@ -1,6 +1,7 @@
 import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { FirestoreService, Aluno } from '../../../services/firestore';
 import { AuthService } from '../../../services/auth';
 import { GroupByTurmaPipe } from '../../../pipes/group-by-turma.pipe';
@@ -18,6 +19,7 @@ export class GerenciarAlunos implements OnInit {
   private firestoreService = inject(FirestoreService);
   private authService = inject(AuthService);
   private cdr = inject(ChangeDetectorRef);
+  private router = inject(Router);
   
   escolaId = '';
   alunos: Aluno[] = [];
@@ -284,5 +286,9 @@ export class GerenciarAlunos implements OnInit {
     setTimeout(() => {
       this.mensagem = '';
     }, 4000);
+  }
+
+  voltar() {
+    this.router.navigate(['/secretaria/dashboard']);
   }
 }
