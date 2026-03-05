@@ -80,6 +80,12 @@ export const routes: Routes = [
         data: { roles: ['secretaria'] }
     },
     {
+        path: 'secretaria/relatorio-faltas',
+        loadComponent: () => import('./pages/secretaria/relatorio-faltas/relatorio-faltas').then(m => m.RelatorioFaltas),
+        canActivate: [authGuard, roleGuard],
+        data: { roles: ['secretaria'] }
+    },
+    {
         path: 'agendamento-equipamentos',
         loadComponent: () => import('./pages/agendamento-equipamentos/agendamento-equipamentos').then(m => m.AgendamentoEquipamentosComponent),
         canActivate: [authGuard, roleGuard],

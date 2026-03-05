@@ -1327,6 +1327,39 @@ Equipe escu
       throw error;
     }
   }
+
+  async obterFaltasPorEscola(escolaId: string): Promise<Falta[]> {
+    try {
+      const faltasCollection = collection(this.firestore, 'faltas');
+      const q = query(
+        faltasCollection,
+        where('escolaId', '==', escolaId)
+      );
+      
+      const querySnapshot = await getDocs(q);
+      const faltas: Falta[] = [];
+      
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        faltas.push({
+          id: doc.id,
+          escolaId: data['escolaId'],
+          turmaId: data['turmaId'],
+          turma: data['turma'],
+          data: data['data'],
+          alunos: data['alunos'],
+          registradoEm: data['registradoEm']?.toDate(),
+          registradoPor: data['registradoPor'],
+          registradoPorNome: data['registradoPorNome']
+        });
+      });
+      
+      return faltas;
+    } catch (error) {
+      console.error('Erro ao obter faltas por escola:', error);
+      throw error;
+    }
+  }
 }
 
 

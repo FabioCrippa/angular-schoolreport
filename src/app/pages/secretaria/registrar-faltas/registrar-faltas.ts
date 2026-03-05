@@ -1,6 +1,7 @@
 import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { FirestoreService, Aluno, Falta } from '../../../services/firestore';
 import { AuthService } from '../../../services/auth';
 
@@ -16,6 +17,7 @@ export class RegistrarFaltas implements OnInit {
   private firestoreService = inject(FirestoreService);
   private authService = inject(AuthService);
   private cdr = inject(ChangeDetectorRef);
+  private router = inject(Router);
   
   escolaId = '';
   usuarioId = '';
@@ -77,7 +79,12 @@ export class RegistrarFaltas implements OnInit {
   }
   
   async aoSelecionarTurma() {
+    // Se deselecionou (voltou para "Selecione turma"), limpar alunos
     if (!this.turmaAtual) {
+      this.alunosSelecionados = [];
+      this.faltas = {};
+      this.faltaExistente = null;
+      this.cdr.markForCheck();
       return;
     }
     
@@ -208,6 +215,11 @@ export class RegistrarFaltas implements OnInit {
       this.exibirMensagem('✅ Faltas salvas com sucesso!', 'sucesso');
       this.cdr.markForCheck();
       
+      // Reset automático após 2 segundos
+      setTimeout(() => {
+        this.resetarFormulario();
+      }, 2000);
+      
     } catch (error) {
       console.error('Erro ao salvar faltas:', error);
       this.exibirMensagem('Erro ao salvar faltas', 'erro');
@@ -243,5 +255,17 @@ export class RegistrarFaltas implements OnInit {
     setTimeout(() => {
       this.mensagem = '';
     }, 4000);
+  }
+  
+  resetarFormulario() {
+    this.turmaAtual = '';
+    this.alunosSelecionados = [];
+    this.faltas = {};
+    this.faltaExistente = null;
+    this.cdr.markForCheck();
+  }
+  
+  voltar() {
+    this.router.navigate(['/secretaria/dashboard']);
   }
 }

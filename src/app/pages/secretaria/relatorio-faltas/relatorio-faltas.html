@@ -1,0 +1,191 @@
+<div class="relatorio-faltas-container">
+  
+  <!-- Header -->
+  <div class="header">
+    <div class="header-top">
+      <button class="btn btn-voltar" (click)="voltar()">← Voltar</button>
+      <h1>📊 Relatório de Faltas</h1>
+      <div class="spacer"></div>
+    </div>
+    <p class="subtitle">Acompanhamento de Faltas e Busca Ativa</p>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading">
+    <div class="spinner"></div>
+    <p>Carregando dados...</p>
+  </div>
+
+  <!-- Cards de Resumo -->
+  <div *ngIf="!loading && resumo" class="cards-resumo">
+    
+    <!-- Críticos (3+) -->
+    <div class="card critico" 
+         [class.card-highlight]="resumo.criticos.length > 0">
+      <div class="card-icon">🔴</div>
+      <div class="card-content">
+        <h3>Crítico</h3>
+        <p class="card-number">{{ resumo.criticos.length }}</p>
+        <span class="card-label">3+ dias consecutivos</span>
+      </div>
+      <div class="card-bg"></div>
+    </div>
+
+    <!-- Atenção (2) -->
+    <div class="card atencao"
+         [class.card-highlight]="resumo.atencao.length > 0">
+      <div class="card-icon">🟡</div>
+      <div class="card-content">
+        <h3>Atenção</h3>
+        <p class="card-number">{{ resumo.atencao.length }}</p>
+        <span class="card-label">2 dias consecutivos</span>
+      </div>
+      <div class="card-bg"></div>
+    </div>
+
+    <!-- Normais (1) -->
+    <div class="card normal"
+         [class.card-highlight]="resumo.normais.length > 0">
+      <div class="card-icon">🟢</div>
+      <div class="card-content">
+        <h3>Normal</h3>
+        <p class="card-number">{{ resumo.normais.length }}</p>
+        <span class="card-label">1 dia de falta</span>
+      </div>
+      <div class="card-bg"></div>
+    </div>
+
+    <!-- Total -->
+    <div class="card total">
+      <div class="card-icon">📈</div>
+      <div class="card-content">
+        <h3>Total</h3>
+        <p class="card-number">{{ alunosFaltosos.length }}</p>
+        <span class="card-label">Alunos com faltas</span>
+      </div>
+      <div class="card-bg"></div>
+    </div>
+
+  </div>
+
+  <!-- Message When No Absences Found -->
+  <div *ngIf="!loading && alunosFaltosos.length === 0" class="no-absences-message">
+    <div class="message-icon">✨</div>
+    <h2>Excelente!</h2>
+    <p>Não há alunos com faltas consecutivas no período selecionado. Continue acompanhando!</p>
+  </div>
+
+  <!-- Filtros -->
+  <div *ngIf="!loading" class="filtros-section">
+    <h2>Filtros (Últimos 30 dias)</h2>
+    
+    <div class="filtros-grid">
+      
+      <!-- Filtro Nome -->
+      <div class="filtro-item">
+        <label>🔍 Buscar por Nome</label>
+        <input 
+          type="text" 
+          [(ngModel)]="filtroNome"
+          (input)="aoMudarFiltro()"
+          placeholder="Ex: João Silva..."
+          class="filtro-input"
+          autocomplete="off"
+        />
+      </div>
+
+      <!-- Filtro Turma -->
+      <div class="filtro-item" *ngIf="turmasDisponiveis.length > 0">
+        <label>👥 Turma</label>
+        <select 
+          [(ngModel)]="filtroTurma"
+          (change)="aoMudarFiltro()"
+          class="filtro-select"
+        >
+          <option value="">Todas as turmas ({{ turmasDisponiveis.length }})</option>
+          <option *ngFor="let turma of turmasDisponiveis" [value]="turma">
+            {{ turma }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Filtro Status -->
+      <div class="filtro-item">
+        <label>⚠️ Prioridade</label>
+        <select 
+          [(ngModel)]="filtroStatus"
+          (change)="aoMudarFiltro()"
+          class="filtro-select"
+        >
+          <option value="todos">Todos os status</option>
+          <option value="criticos">🔴 Crítico (3+ dias)</option>
+          <option value="atencao">🟡 Atenção (2 dias)</option>
+          <option value="normais">🟢 Normal (1 dia)</option>
+        </select>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Tabela de Alunos Faltosos -->
+  <div *ngIf="!loading" class="tabela-section">
+    <h2>Alunos com Faltas</h2>
+    
+    <div *ngIf="listaFiltrada.length === 0" class="empty-state">
+      <p>✨ Nenhum aluno encontrado com os filtros selecionados.</p>
+    </div>
+
+    <div *ngIf="listaFiltrada.length > 0" class="tabela-wrapper">
+      <table class="tabela-alunos">
+        <thead>
+          <tr>
+            <th class="col-status">Status</th>
+            <th class="col-nome">Aluno</th>
+            <th class="col-turma">Turma</th>
+            <th class="col-dias">Dias Consecutivos</th>
+            <th class="col-ultima">Última Falta</th>
+            <th class="col-telefone">Telefone Realizado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr 
+            *ngFor="let aluno of listaFiltrada" 
+            [class]="'row-' + obterStatusClass(aluno.diasConsecutivos)"
+          >
+            <td class="col-status">
+              <span [class]="'badge ' + obterStatusClass(aluno.diasConsecutivos)">
+                {{ obterStatusLabel(aluno.diasConsecutivos) }}
+              </span>
+            </td>
+            <td class="col-nome">{{ aluno.alunoNome }}</td>
+            <td class="col-turma">{{ aluno.turma }}</td>
+            <td class="col-dias">
+              <strong class="dias-badge" [class]="obterStatusClass(aluno.diasConsecutivos)">
+                {{ aluno.diasConsecutivos }}
+              </strong>
+            </td>
+            <td class="col-ultima">{{ aluno.ultimaFalta }}</td>
+            <td class="col-telefone">
+              <input 
+                type="checkbox" 
+                [checked]="aluno.contatado"
+                (change)="marcarContatado(aluno)"
+                class="checkbox-telefone"
+              />
+              <span class="label-telefone" *ngIf="aluno.contatado">✅ Realizado</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Resumo da tabela -->
+    <div *ngIf="listaFiltrada.length > 0" class="tabela-resumo">
+      <p>
+        Exibindo <strong>{{ listaFiltrada.length }}</strong> de <strong>{{ alunosFaltosos.length }}</strong> alunos
+      </p>
+    </div>
+
+  </div>
+
+</div>
