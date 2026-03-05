@@ -1,0 +1,134 @@
+<div class="container">
+  <div class="header">
+    <h1>Registrar Faltas</h1>
+    <p class="subtitle">Marque as ausências dos alunos por turma e data</p>
+  </div>
+
+  <!-- Mensagem de feedback -->
+  <div *ngIf="mensagem" class="mensagem" [ngClass]="'mensagem-' + tipoMensagem">
+    {{ mensagem }}
+  </div>
+
+  <!-- Seção de Seleção -->
+  <div class="secao selecao">
+    <div class="linha-selecao">
+      <div class="grupo-control">
+        <label>Turma</label>
+        <select 
+          [(ngModel)]="turmaAtual" 
+          (change)="aoSelecionarTurma()"
+          [disabled]="loading"
+          class="select"
+        >
+          <option value="">-- Selecione uma turma --</option>
+          <option *ngFor="let turma of turmas" [value]="turma">
+            {{ turma }}
+          </option>
+        </select>
+      </div>
+
+      <div class="grupo-control">
+        <label>Data</label>
+        <input 
+          type="date" 
+          [(ngModel)]="dataSelecionada" 
+          (change)="aoAlterarData()"
+          [disabled]="loading"
+          class="input-data"
+        />
+        <span class="data-formatada">{{ formatarData(dataSelecionada) }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Seção de Alunos -->
+  <div *ngIf="alunosSelecionados.length > 0" class="secao alunos">
+    <div class="header-alunos">
+      <div class="titulo">
+        <h2>{{ turmaAtual }}</h2>
+        <span class="badge-contador">{{ obterContadores().total }} alunos</span>
+      </div>
+
+      <div class="resumo-faltas">
+        <span class="presentes">
+          <strong>{{ obterContadores().presentes }}</strong> Presentes
+        </span>
+        <span class="ausentes">
+          <strong>{{ obterContadores().ausentes }}</strong> Ausentes
+        </span>
+      </div>
+
+      <div class="botoes-rapidos">
+        <button 
+          class="btn-rapido btn-todos-presentes" 
+          (click)="marcarTodos(true)"
+          [disabled]="loading"
+          title="Marcar todos como presentes"
+        >
+          ✅ Todos Presentes
+        </button>
+        <button 
+          class="btn-rapido btn-todos-ausentes" 
+          (click)="marcarTodos(false)"
+          [disabled]="loading"
+          title="Marcar todos como ausentes"
+        >
+          ❌ Todos Ausentes
+        </button>
+      </div>
+    </div>
+
+    <!-- Lista de Alunos -->
+    <div class="lista-alunos">
+      <div *ngFor="let aluno of alunosSelecionados; let i = index" 
+           class="item-aluno"
+           [class.ausente]="!faltas[aluno.id!]"
+           [class.presente]="faltas[aluno.id!]"
+      >
+        <div class="numero">{{ i + 1 }}</div>
+        
+        <div class="nome-aluno">
+          {{ aluno.nome }}
+        </div>
+
+        <div class="toggle-presenca">
+          <label class="checkbox-toggle">
+            <input 
+              type="checkbox" 
+              [checked]="faltas[aluno.id!]"
+              (change)="togglePresenca(aluno.id!)"
+              [disabled]="loading"
+            />
+            <span class="checkmark"></span>
+            <span class="label-texto">
+              {{ faltas[aluno.id!] ? 'Presente' : 'Ausente' }}
+            </span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Botões de Ação -->
+    <div class="botoes-acao">
+      <button 
+        class="btn btn-primary" 
+        (click)="salvarFaltas()"
+        [disabled]="loading || alunosSelecionados.length === 0"
+      >
+        <span *ngIf="!loading">💾 Salvar Faltas</span>
+        <span *ngIf="loading">Salvando...</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Estado Vazio -->
+  <div *ngIf="!turmaAtual && alunosSelecionados.length === 0" class="estado-vazio">
+    <div class="icone">📚</div>
+    <p>Selecione uma turma para começar a registrar faltas</p>
+  </div>
+
+  <!-- Carregando -->
+  <div *ngIf="loading && alunosSelecionados.length === 0" class="carregando">
+    <p>Carregando alunos...</p>
+  </div>
+</div>

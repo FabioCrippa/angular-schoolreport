@@ -103,5 +103,27 @@ service cloud.firestore {
       // Admins podem escrever
       allow write: if isAdmin();
     }
+
+    // Regras para coleção 'alunos'
+    match /alunos/{alunoId} {
+      // Usuários da escola podem ler alunos
+      allow read: if request.auth != null && belongsToSchool(resource.data.escolaId);
+      
+      // Secretaria pode criar, atualizar e deletar alunos da sua escola
+      allow create, update, delete: if request.auth != null && 
+                                      belongsToSchool(request.resource.data.escolaId) &&
+                                      get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.role == 'secretaria';
+    }
+
+    // Regras para coleção 'faltas'
+    match /faltas/{faltaId} {
+      // Usuários da escola podem ler faltas
+      allow read: if request.auth != null && belongsToSchool(resource.data.escolaId);
+      
+      // Secretaria pode criar, atualizar e deletar faltas
+      allow create, update, delete: if request.auth != null && 
+                                      belongsToSchool(request.resource.data.escolaId) &&
+                                      get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.role == 'secretaria';
+    }
   }
 }

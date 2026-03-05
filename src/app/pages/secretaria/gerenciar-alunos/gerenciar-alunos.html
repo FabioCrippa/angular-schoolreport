@@ -1,0 +1,188 @@
+<div class="container">
+  <div class="header">
+    <h1>Gerenciar Alunos</h1>
+    <p class="subtitle">Importe a lista de alunos da escola via Excel</p>
+  </div>
+
+  <!-- Mensagem de feedback -->
+  <div *ngIf="mensagem" class="mensagem" [ngClass]="'mensagem-' + tipoMensagem">
+    {{ mensagem }}
+  </div>
+
+  <!-- Seção de Upload -->
+  <div *ngIf="!showPreview" class="secao">
+    <h2>1. Importar Alunos</h2>
+    
+    <div class="upload-area">
+      <div class="upload-icon">📁</div>
+      <p>Escolha um arquivo Excel para importar</p>
+      
+      <input 
+        type="file" 
+        #fileInput 
+        accept=".xlsx,.xls,.csv" 
+        (change)="aoSelecionarArquivo($event)"
+        style="display: none"
+      />
+      
+      <button class="btn btn-primary" (click)="fileInput.click()" [disabled]="loading">
+        Selecionar Arquivo
+      </button>
+      
+      <button class="btn btn-secondary" (click)="downloadTemplate()">
+        Baixar Template
+      </button>
+    </div>
+    
+    <div class="formato-info">
+      <h3>Formato do Excel:</h3>
+      <p>O arquivo deve conter 3 colunas com os nomes exatos:</p>
+      <ul>
+        <li><strong>Nome</strong> - Nome completo do aluno</li>
+        <li><strong>Turma</strong> - Ex: Turma A, Turma B</li>
+        <li><strong>Série</strong> - Ex: 7º ano, 8º ano</li>
+      </ul>
+      <p class="exemplo">Exemplo:</p>
+      <table>
+        <tr>
+          <th>Nome</th>
+          <th>Turma</th>
+          <th>Série</th>
+        </tr>
+        <tr>
+          <td>João Silva</td>
+          <td>Turma A</td>
+          <td>7º ano</td>
+        </tr>
+        <tr>
+          <td>Maria Santos</td>
+          <td>Turma A</td>
+          <td>7º ano</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- Seção de Preview -->
+  <div *ngIf="showPreview" class="secao">
+    <h2>2. Confirmação da Importação</h2>
+    <p class="info-preview">Total de alunos a importar: <strong>{{ alunosPreview.length }}</strong></p>
+    
+    <div class="tabela-container">
+      <table class="tabela-preview">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Nome</th>
+            <th>Turma</th>
+            <th>Série</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let aluno of alunosPreview; let i = index">
+            <td>{{ i + 1 }}</td>
+            <td>{{ aluno.nome }}</td>
+            <td>{{ aluno.turma }}</td>
+            <td>{{ aluno.serie }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <div class="botoes-acao">
+      <button class="btn btn-success" (click)="importarAlunos()" [disabled]="loading">
+        <span *ngIf="!loading">✅ Confirmar Importação</span>
+        <span *ngIf="loading">Importando...</span>
+      </button>
+      <button class="btn btn-secondary" (click)="cancelarImportacao()" [disabled]="loading">
+        Cancelar
+      </button>
+    </div>
+  </div>
+
+  <!-- Seção de Lista -->
+  <div *ngIf="showList" class="secao">
+    <h2>3. Alunos Cadastrados</h2>
+    
+    <div *ngIf="loading" class="loading">
+      <p>Carregando alunos...</p>
+    </div>
+    
+    <div *ngIf="!loading && alunos.length === 0" class="vazio">
+      <p>Nenhum aluno cadastrado. Faça upload de um arquivo Excel.</p>
+    </div>
+    
+    <div *ngIf="!loading && alunos.length > 0">
+      <p class="info-lista">Total: <strong>{{ alunos.length }}</strong> alunos cadastrados</p>
+      
+      <!-- Agrupado por Turma -->
+      <div *ngFor="let turmaGrupo of (alunos | groupByTurma)" class="grupo-turma">
+        <div class="turma-header">{{ turmaGrupo.turma }}</div>
+        
+        <table class="tabela-alunos">
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Série</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let aluno of turmaGrupo.alunos">
+              <td>{{ aluno.nome }}</td>
+              <td>{{ aluno.serie }}</td>
+              <td class="celula-acoes">
+                <button class="btn-icon" (click)="abrirEdicao(aluno)" title="Editar">✏️</button>
+                <button class="btn-icon btn-danger" (click)="deletarAluno(aluno)" title="Deletar">🗑️</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Edição -->
+<div *ngIf="showModalEdicao" class="modal-overlay" (click)="fecharModalEdicao()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Editar Aluno</h3>
+      <button class="btn-fechar" (click)="fecharModalEdicao()">✕</button>
+    </div>
+    
+    <div class="modal-body">
+      <div *ngIf="alunoEditando" class="form-group">
+        <label>Nome</label>
+        <input 
+          type="text" 
+          [(ngModel)]="alunoEditando.nome" 
+          class="input"
+        />
+        
+        <label>Turma</label>
+        <input 
+          type="text" 
+          [(ngModel)]="alunoEditando.turma" 
+          class="input"
+        />
+        
+        <label>Série</label>
+        <input 
+          type="text" 
+          [(ngModel)]="alunoEditando.serie" 
+          class="input"
+        />
+      </div>
+    </div>
+    
+    <div class="modal-footer">
+      <button class="btn btn-success" (click)="salvarEdicao()" [disabled]="loading">
+        Salvar
+      </button>
+      <button class="btn btn-secondary" (click)="fecharModalEdicao()">
+        Cancelar
+      </button>
+    </div>
+  </div>
+</div>

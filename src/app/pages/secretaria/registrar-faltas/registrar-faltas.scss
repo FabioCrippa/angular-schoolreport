@@ -1,0 +1,502 @@
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+.header {
+  margin-bottom: 2rem;
+  text-align: center;
+  
+  h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #2c3e50;
+    margin: 0 0 0.5rem 0;
+  }
+  
+  .subtitle {
+    font-size: 1rem;
+    color: #7f8c8d;
+    margin: 0;
+  }
+}
+
+// Mensagens
+.mensagem {
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  font-weight: 500;
+  animation: slideIn 0.3s ease-out;
+  
+  &.mensagem-sucesso {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+  }
+  
+  &.mensagem-erro {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+  }
+  
+  &.mensagem-info {
+    background-color: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Seções
+.secao {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  
+  &.selecao {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    
+    label {
+      color: white;
+      font-weight: 600;
+    }
+    
+    .select,
+    .input-data {
+      background: white;
+      color: #2c3e50;
+    }
+  }
+}
+
+// Seleção de Turma e Data
+.linha-selecao {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.grupo-control {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  
+  label {
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+}
+
+.select,
+.input-data {
+  padding: 0.75rem;
+  border: 1px solid #bdc3c7;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: border-color 0.2s ease;
+  
+  &:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+  }
+  
+  &:disabled {
+    background-color: #ecf0f1;
+    cursor: not-allowed;
+  }
+}
+
+.data-formatada {
+  font-size: 0.85rem;
+  color: #7f8c8d;
+  margin-top: 0.25rem;
+}
+
+// Header dos Alunos
+.header-alunos {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid #ecf0f1;
+}
+
+.titulo {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  
+  h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: #2c3e50;
+  }
+  
+  .badge-contador {
+    background-color: #3498db;
+    color: white;
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+}
+
+.resumo-faltas {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+  
+  .presentes {
+    color: #27ae60;
+    font-weight: 500;
+    
+    strong {
+      font-size: 1.3rem;
+      display: block;
+    }
+  }
+  
+  .ausentes {
+    color: #e74c3c;
+    font-weight: 500;
+    
+    strong {
+      font-size: 1.3rem;
+      display: block;
+    }
+  }
+}
+
+.botoes-rapidos {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.btn-rapido {
+  padding: 0.65rem 1.2rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+}
+
+.btn-todos-presentes {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+  
+  &:hover:not(:disabled) {
+    background-color: #c3e6cb;
+  }
+}
+
+.btn-todos-ausentes {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+  
+  &:hover:not(:disabled) {
+    background-color: #f5c6cb;
+  }
+}
+
+// Lista de Alunos
+.lista-alunos {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.item-aluno {
+  display: grid;
+  grid-template-columns: 40px 1fr auto;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: 8px;
+  background-color: #f8f9fa;
+  border-left: 4px solid transparent;
+  transition: all 0.2s ease;
+  
+  &.presente {
+    border-left-color: #27ae60;
+    background-color: #f0fdf4;
+    
+    .nome-aluno {
+      color: #27ae60;
+      font-weight: 500;
+    }
+  }
+  
+  &.ausente {
+    border-left-color: #e74c3c;
+    background-color: #fef5f5;
+    
+    .nome-aluno {
+      color: #e74c3c;
+      font-weight: 600;
+    }
+  }
+  
+  &:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.numero {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background-color: #ecf0f1;
+  border-radius: 50%;
+  font-weight: 700;
+  color: #2c3e50;
+  font-size: 0.9rem;
+}
+
+.nome-aluno {
+  font-size: 0.95rem;
+  color: #2c3e50;
+  transition: color 0.2s ease;
+}
+
+.toggle-presenca {
+  display: flex;
+  justify-content: flex-end;
+}
+
+// Checkbox Toggle
+.checkbox-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+  
+  input {
+    display: none;
+  }
+  
+  .checkmark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border: 2px solid #bdc3c7;
+    border-radius: 4px;
+    background-color: white;
+    transition: all 0.2s ease;
+    
+    &::after {
+      content: '✓';
+      color: white;
+      font-weight: bold;
+      font-size: 0.9rem;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+  }
+  
+  input:checked + .checkmark {
+    background-color: #27ae60;
+    border-color: #27ae60;
+    
+    &::after {
+      opacity: 1;
+    }
+  }
+  
+  input:disabled + .checkmark {
+    background-color: #ecf0f1;
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+  
+  .label-texto {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #2c3e50;
+  }
+}
+
+// Botões de Ação
+.botoes-acao {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  padding-top: 1.5rem;
+  border-top: 2px solid #ecf0f1;
+}
+
+.btn {
+  padding: 0.875rem 2rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+}
+
+.btn-primary {
+  background-color: #3498db;
+  color: white;
+  
+  &:hover:not(:disabled) {
+    background-color: #2980b9;
+  }
+}
+
+// Estados Vazios
+.estado-vazio {
+  text-align: center;
+  padding: 3rem 2rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  
+  .icone {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+  }
+  
+  p {
+    font-size: 1.1rem;
+    color: #7f8c8d;
+    margin: 0;
+  }
+}
+
+.carregando {
+  text-align: center;
+  padding: 2rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  
+  p {
+    font-size: 1.1rem;
+    color: #3498db;
+    font-weight: 500;
+    margin: 0;
+  }
+}
+
+// Responsivo
+@media (max-width: 768px) {
+  .container {
+    padding: 1.5rem 1rem;
+  }
+  
+  .header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .item-aluno {
+    grid-template-columns: 35px 1fr auto;
+    padding: 0.75rem;
+    gap: 0.75rem;
+  }
+  
+  .numero {
+    width: 35px;
+    height: 35px;
+    font-size: 0.85rem;
+  }
+  
+  .resumo-faltas {
+    gap: 1rem;
+    font-size: 0.9rem;
+    
+    .presentes strong,
+    .ausentes strong {
+      font-size: 1.1rem;
+    }
+  }
+  
+  .botoes-rapidos {
+    gap: 0.5rem;
+  }
+  
+  .btn-rapido {
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+  }
+  
+  .btn {
+    width: 100%;
+  }
+}
+
+// Scroll personalizado (webkit)
+.lista-alunos {
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: #ecf0f1;
+    border-radius: 10px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: #3498db;
+    border-radius: 10px;
+    
+    &:hover {
+      background: #2980b9;
+    }
+  }
+}

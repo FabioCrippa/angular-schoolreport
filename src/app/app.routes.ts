@@ -68,6 +68,18 @@ export const routes: Routes = [
         data: { roles: ['secretaria'] }
     },
     {
+        path: 'secretaria/gerenciar-alunos',
+        loadComponent: () => import('./pages/secretaria/gerenciar-alunos/gerenciar-alunos').then(m => m.GerenciarAlunos),
+        canActivate: [authGuard, roleGuard],
+        data: { roles: ['secretaria'] }
+    },
+    {
+        path: 'secretaria/registrar-faltas',
+        loadComponent: () => import('./pages/secretaria/registrar-faltas/registrar-faltas').then(m => m.RegistrarFaltas),
+        canActivate: [authGuard, roleGuard],
+        data: { roles: ['secretaria'] }
+    },
+    {
         path: 'agendamento-equipamentos',
         loadComponent: () => import('./pages/agendamento-equipamentos/agendamento-equipamentos').then(m => m.AgendamentoEquipamentosComponent),
         canActivate: [authGuard, roleGuard],

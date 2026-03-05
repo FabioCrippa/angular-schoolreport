@@ -71,6 +71,34 @@ export interface ControleEntradaSaida {
   expandido?: boolean;
 }
 
+export interface Aluno {
+  id?: string;
+  escolaId: string;
+  nome: string;
+  turma: string;
+  serie: string;
+  ativo?: boolean;
+  criadoEm?: Date;
+  atualizadoEm?: Date;
+}
+
+export interface Falta {
+  id?: string;
+  escolaId: string;
+  turmaId?: string;
+  turma: string;
+  data: string; // YYYY-MM-DD
+  alunos: {
+    [alunoId: string]: {
+      alunoNome: string;
+      presente: boolean;
+    };
+  };
+  registradoEm?: Date;
+  registradoPor: string; // uid da secretaria
+  registradoPorNome: string; // nome da secretaria
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -1071,4 +1099,234 @@ Equipe escu
       throw error;
     }
   }
+
+  // ================== MÉTODOS PARA GERENCIAR ALUNOS ==================
+
+  async importarAlunos(escolaId: string, alunos: Array<{ nome: string; turma: string; serie: string }>): Promise<number> {
+    try {
+      const alunosCollection = collection(this.firestore, 'alunos');
+      let contador = 0;
+
+      for (const aluno of alunos) {
+        const alunoData: any = {
+          escolaId,
+          nome: aluno.nome.trim(),
+          turma: aluno.turma.trim(),
+          serie: aluno.serie.trim(),
+          ativo: true,
+          criadoEm: Timestamp.now(),
+          atualizadoEm: Timestamp.now()
+        };
+
+        await addDoc(alunosCollection, alunoData);
+        contador++;
+      }
+
+      console.log(`✅ ${contador} alunos importados com sucesso`);
+      return contador;
+    } catch (error) {
+      console.error('Erro ao importar alunos:', error);
+      throw error;
+    }
+  }
+
+  async obterAlunos(escolaId: string): Promise<Aluno[]> {
+    try {
+      const alunosCollection = collection(this.firestore, 'alunos');
+      const q = query(
+        alunosCollection, 
+        where('escolaId', '==', escolaId)
+      );
+      
+      const querySnapshot = await getDocs(q);
+      const alunos: Aluno[] = [];
+      
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        // Filtrar apenas alunos ativos em memória
+        if (data['ativo'] !== false) {
+          alunos.push({
+            id: doc.id,
+            escolaId: data['escolaId'],
+            nome: data['nome'],
+            turma: data['turma'],
+            serie: data['serie'],
+            ativo: data['ativo'],
+            criadoEm: data['criadoEm']?.toDate(),
+            atualizadoEm: data['atualizadoEm']?.toDate()
+          });
+        }
+      });
+      
+      // Ordenar em memória por turma e depois por nome
+      alunos.sort((a, b) => {
+        if (a.turma !== b.turma) {
+          return a.turma.localeCompare(b.turma);
+        }
+        return a.nome.localeCompare(b.nome);
+      });
+      
+      return alunos;
+    } catch (error) {
+      console.error('Erro ao obter alunos:', error);
+      throw error;
+    }
+  }
+
+  async atualizarAluno(alunoId: string, dados: Partial<Aluno>): Promise<void> {
+    try {
+      const alunoDoc = doc(this.firestore, 'alunos', alunoId);
+      const dataAtualizacao = {
+        ...dados,
+        atualizadoEm: Timestamp.now()
+      };
+      await updateDoc(alunoDoc, dataAtualizacao);
+      console.log('✅ Aluno atualizado:', alunoId);
+    } catch (error) {
+      console.error('Erro ao atualizar aluno:', error);
+      throw error;
+    }
+  }
+
+  async deletarAluno(alunoId: string): Promise<void> {
+    try {
+      const alunoDoc = doc(this.firestore, 'alunos', alunoId);
+      await updateDoc(alunoDoc, { ativo: false, atualizadoEm: Timestamp.now() });
+      console.log('✅ Aluno deletado (desativado):', alunoId);
+    } catch (error) {
+      console.error('Erro ao deletar aluno:', error);
+      throw error;
+    }
+  }
+
+  async limparAlunos(escolaId: string): Promise<void> {
+    try {
+      const alunosCollection = collection(this.firestore, 'alunos');
+      const q = query(alunosCollection, where('escolaId', '==', escolaId));
+      const querySnapshot = await getDocs(q);
+      
+      for (const doc_item of querySnapshot.docs) {
+        await updateDoc(doc(this.firestore, 'alunos', doc_item.id), { 
+          ativo: false,
+          atualizadoEm: Timestamp.now() 
+        });
+      }
+      
+      console.log('✅ Todos os alunos foram desativados');
+    } catch (error) {
+      console.error('Erro ao limpar alunos:', error);
+      throw error;
+    }
+  }
+
+  // ================== MÉTODOS PARA GERENCIAR FALTAS ==================
+
+  async registrarFaltas(escolaId: string, falta: Omit<Falta, 'id' | 'registradoEm'>): Promise<string> {
+    try {
+      const faltasCollection = collection(this.firestore, 'faltas');
+      const docRef = await addDoc(faltasCollection, {
+        ...falta,
+        registradoEm: Timestamp.now()
+      });
+      console.log('✅ Faltas registradas com sucesso:', docRef.id);
+      return docRef.id;
+    } catch (error) {
+      console.error('Erro ao registrar faltas:', error);
+      throw error;
+    }
+  }
+
+  async obterFaltasPorData(escolaId: string, data: string): Promise<Falta[]> {
+    try {
+      const faltasCollection = collection(this.firestore, 'faltas');
+      const q = query(
+        faltasCollection,
+        where('escolaId', '==', escolaId),
+        where('data', '==', data)
+      );
+      
+      const querySnapshot = await getDocs(q);
+      const faltas: Falta[] = [];
+      
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        faltas.push({
+          id: doc.id,
+          escolaId: data['escolaId'],
+          turmaId: data['turmaId'],
+          turma: data['turma'],
+          data: data['data'],
+          alunos: data['alunos'],
+          registradoEm: data['registradoEm']?.toDate(),
+          registradoPor: data['registradoPor'],
+          registradoPorNome: data['registradoPorNome']
+        });
+      });
+      
+      return faltas;
+    } catch (error) {
+      console.error('Erro ao obter faltas por data:', error);
+      throw error;
+    }
+  }
+
+  async obterFaltasPorTurmaEData(escolaId: string, turma: string, data: string): Promise<Falta | null> {
+    try {
+      const faltasCollection = collection(this.firestore, 'faltas');
+      const q = query(
+        faltasCollection,
+        where('escolaId', '==', escolaId),
+        where('turma', '==', turma),
+        where('data', '==', data)
+      );
+      
+      const querySnapshot = await getDocs(q);
+      
+      if (querySnapshot.empty) {
+        return null;
+      }
+      
+      const doc = querySnapshot.docs[0];
+      const data_obj = doc.data();
+      
+      return {
+        id: doc.id,
+        escolaId: data_obj['escolaId'],
+        turmaId: data_obj['turmaId'],
+        turma: data_obj['turma'],
+        data: data_obj['data'],
+        alunos: data_obj['alunos'],
+        registradoEm: data_obj['registradoEm']?.toDate(),
+        registradoPor: data_obj['registradoPor'],
+        registradoPorNome: data_obj['registradoPorNome']
+      };
+    } catch (error) {
+      console.error('Erro ao obter faltas por turma e data:', error);
+      throw error;
+    }
+  }
+
+  async atualizarFaltas(faltaId: string, alunos: Falta['alunos']): Promise<void> {
+    try {
+      const faltaDoc = doc(this.firestore, 'faltas', faltaId);
+      await updateDoc(faltaDoc, { alunos });
+      console.log('✅ Faltas atualizadas:', faltaId);
+    } catch (error) {
+      console.error('Erro ao atualizar faltas:', error);
+      throw error;
+    }
+  }
+
+  async deletarFaltas(faltaId: string): Promise<void> {
+    try {
+      const faltaDoc = doc(this.firestore, 'faltas', faltaId);
+      await deleteDoc(faltaDoc);
+      console.log('✅ Registro de faltas deletado:', faltaId);
+    } catch (error) {
+      console.error('Erro ao deletar faltas:', error);
+      throw error;
+    }
+  }
 }
+
+
