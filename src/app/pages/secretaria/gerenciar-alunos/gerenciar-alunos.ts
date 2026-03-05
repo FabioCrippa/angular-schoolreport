@@ -35,8 +35,23 @@ export class GerenciarAlunos implements OnInit {
   alunoEditando: Aluno | null = null;
   showModalEdicao = false;
   
+  filtroAlunos = '';
+  
   ngOnInit() {
     this.carregarDados();
+  }
+  
+  get alunosFiltrados(): Aluno[] {
+    if (!this.filtroAlunos.trim()) {
+      return this.alunos;
+    }
+    
+    const termo = this.filtroAlunos.toLowerCase();
+    return this.alunos.filter(aluno => 
+      aluno.nome.toLowerCase().includes(termo) ||
+      aluno.turma.toLowerCase().includes(termo) ||
+      aluno.serie.toLowerCase().includes(termo)
+    );
   }
   
   async carregarDados() {
@@ -206,7 +221,13 @@ export class GerenciarAlunos implements OnInit {
   cancelarImportacao() {
     this.alunosPreview = [];
     this.showPreview = false;
-    this.showList = true;
+    this.showList = false;
+  }
+  
+  reimportar() {
+    this.filtroAlunos = '';
+    this.showList = false;
+    this.showPreview = false;
   }
   
   abrirEdicao(aluno: Aluno) {

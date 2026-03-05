@@ -9,14 +9,32 @@
     </button>
   </div>
 
+  <!-- Step Indicator -->
+  <div class="step-indicator">
+    <div class="step" [class.ativo]="!showPreview && !showList">
+      <div class="step-number">1</div>
+      <div class="step-label">Importar</div>
+    </div>
+    <div class="step-linha"></div>
+    <div class="step" [class.ativo]="showPreview">
+      <div class="step-number">2</div>
+      <div class="step-label">Confirmar</div>
+    </div>
+    <div class="step-linha"></div>
+    <div class="step" [class.ativo]="showList">
+      <div class="step-number">3</div>
+      <div class="step-label">Visualizar</div>
+    </div>
+  </div>
+
   <!-- Mensagem de feedback -->
   <div *ngIf="mensagem" class="mensagem" [ngClass]="'mensagem-' + tipoMensagem">
     {{ mensagem }}
   </div>
 
   <!-- Seção de Upload -->
-  <div *ngIf="!showPreview" class="secao">
-    <h2>1. Importar Alunos</h2>
+  <div *ngIf="!showPreview && !showList" class="secao">
+    <h2>Importar Alunos</h2>
     
     <div class="upload-area">
       <div class="upload-icon">📁</div>
@@ -30,41 +48,43 @@
         style="display: none"
       />
       
-      <button class="btn btn-primary" (click)="fileInput.click()" [disabled]="loading">
-        Selecionar Arquivo
-      </button>
-      
-      <button class="btn btn-secondary" (click)="downloadTemplate()">
-        Baixar Template
-      </button>
+      <div class="botoes-upload">
+        <button class="btn btn-primary" (click)="fileInput.click()" [disabled]="loading">
+          📂 Selecionar Arquivo
+        </button>
+        
+        <button class="btn btn-outline" (click)="downloadTemplate()">
+          ⬇️ Baixar Template
+        </button>
+      </div>
     </div>
     
     <div class="formato-info">
-      <h3>Formato do Excel:</h3>
-      <p>O arquivo deve conter 3 colunas com os nomes exatos:</p>
-      <ul>
-        <li><strong>Nome</strong> - Nome completo do aluno</li>
-        <li><strong>Turma</strong> - Ex: Turma A, Turma B</li>
-        <li><strong>Série</strong> - Ex: 7º ano, 8º ano</li>
-      </ul>
-      <p class="exemplo">Exemplo:</p>
-      <table>
-        <tr>
-          <th>Nome</th>
-          <th>Turma</th>
-          <th>Série</th>
-        </tr>
-        <tr>
-          <td>João Silva</td>
-          <td>Turma A</td>
-          <td>7º ano</td>
-        </tr>
-        <tr>
-          <td>Maria Santos</td>
-          <td>Turma A</td>
-          <td>7º ano</td>
-        </tr>
-      </table>
+      <h3>Como preparar o arquivo Excel:</h3>
+      <p>O arquivo deve conter exatamente 3 colunas:</p>
+      <div class="colunas-lista">
+        <div class="coluna-item">
+          <span class="coluna-icon">📝</span>
+          <div>
+            <strong>Nome</strong><br>
+            <small>Nome completo do aluno</small>
+          </div>
+        </div>
+        <div class="coluna-item">
+          <span class="coluna-icon">🏫</span>
+          <div>
+            <strong>Turma</strong><br>
+            <small>Ex: Turma A, Turma B</small>
+          </div>
+        </div>
+        <div class="coluna-item">
+          <span class="coluna-icon">📚</span>
+          <div>
+            <strong>Série</strong><br>
+            <small>Ex: 7º ano, 1º ano EM</small>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -109,6 +129,25 @@
   <div *ngIf="showList" class="secao">
     <h2>3. Alunos Cadastrados</h2>
     
+    <div class="lista-controls">
+      <div class="input-group">
+        <input 
+          type="text" 
+          [(ngModel)]="filtroAlunos" 
+          placeholder="🔍 Buscar por nome, turma ou série..."
+          class="input-search"
+          (input)="filtroAlunos = $any($event.target).value"
+        />
+        <span class="search-count" *ngIf="filtroAlunos">
+          {{ alunosFiltrados.length }} resultado(s)
+        </span>
+      </div>
+      
+      <button class="btn btn-outline" (click)="reimportar()" title="Voltar para tela de importação">
+        ↻ Reimportar
+      </button>
+    </div>
+    
     <div *ngIf="loading" class="loading">
       <p>Carregando alunos...</p>
     </div>
@@ -118,11 +157,14 @@
     </div>
     
     <div *ngIf="!loading && alunos.length > 0">
-      <p class="info-lista">Total: <strong>{{ alunos.length }}</strong> alunos cadastrados</p>
+      <p class="info-lista">Total: <strong>{{ alunos.length }}</strong> alunos | Filtrados: <strong>{{ alunosFiltrados.length }}</strong></p>
       
       <!-- Agrupado por Turma -->
-      <div *ngFor="let turmaGrupo of (alunos | groupByTurma)" class="grupo-turma">
-        <div class="turma-header">{{ turmaGrupo.turma }}</div>
+      <div *ngFor="let turmaGrupo of (alunosFiltrados | groupByTurma)" class="grupo-turma">
+        <div class="turma-header">
+          <div class="turma-nome">{{ turmaGrupo.turma }}</div>
+          <div class="turma-count">{{ turmaGrupo.alunos.length }} aluno(s)</div>
+        </div>
         
         <table class="tabela-alunos">
           <thead>
@@ -137,8 +179,18 @@
               <td>{{ aluno.nome }}</td>
               <td>{{ aluno.serie }}</td>
               <td class="celula-acoes">
-                <button class="btn-icon" (click)="abrirEdicao(aluno)" title="Editar">✏️</button>
-                <button class="btn-icon btn-danger" (click)="deletarAluno(aluno)" title="Deletar">🗑️</button>
+                <button 
+                  class="btn-icon btn-edit" 
+                  (click)="abrirEdicao(aluno)" 
+                  title="Editar aluno">
+                  ✏️
+                </button>
+                <button 
+                  class="btn-icon btn-delete" 
+                  (click)="deletarAluno(aluno)" 
+                  title="Deletar aluno">
+                  🗑️
+                </button>
               </td>
             </tr>
           </tbody>

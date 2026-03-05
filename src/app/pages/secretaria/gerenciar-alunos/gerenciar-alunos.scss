@@ -128,6 +128,22 @@
     color: #2c3e50;
     margin: 1rem 0;
   }
+  
+  .botoes-upload {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 1.5rem;
+    
+    @media (max-width: 768px) {
+      flex-direction: column;
+      
+      .btn {
+        width: 100%;
+      }
+    }
+  }
 }
 
 // Botões
@@ -169,6 +185,18 @@
   
   &:hover:not(:disabled) {
     background-color: #7f8c8d;
+  }
+}
+
+.btn-outline {
+  background-color: transparent;
+  color: #3498db;
+  border: 2px solid #3498db;
+  
+  &:hover:not(:disabled) {
+    background-color: #ecf0f1;
+    color: #2980b9;
+    border-color: #2980b9;
   }
 }
 
@@ -247,6 +275,41 @@
       background-color: #f9f9f9;
     }
   }
+  
+  .colunas-lista {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+  
+  .coluna-item {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem;
+    background: white;
+    border-radius: 6px;
+    border: 1px solid #ecf0f1;
+    
+    .coluna-icon {
+      font-size: 1.8rem;
+      flex-shrink: 0;
+    }
+    
+    div {
+      flex: 1;
+      
+      strong {
+        color: #2c3e50;
+        display: block;
+        margin-bottom: 0.25rem;
+      }
+      
+      small {
+        color: #7f8c8d;
+      }
+    }
+  }
 }
 
 // Preview
@@ -313,16 +376,82 @@
   }
 }
 
+// Controles da lista
+.lista-controls {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
+}
+
+// Grupo de inputs
+.input-group {
+  flex: 1;
+  min-width: 200px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  
+  .input-search {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid #ecf0f1;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    transition: all 0.3s ease;
+    
+    &:focus {
+      outline: none;
+      border-color: #3498db;
+      box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+    }
+    
+    &::placeholder {
+      color: #95a5a6;
+    }
+  }
+  
+  .search-count {
+    position: absolute;
+    right: 12px;
+    font-size: 0.85rem;
+    color: #7f8c8d;
+    background: white;
+    padding: 0 4px;
+  }
+}
+
 .grupo-turma {
   margin-bottom: 2rem;
   
   .turma-header {
-    background-color: #3498db;
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
     color: white;
     padding: 1rem;
     font-weight: 600;
     border-radius: 6px 6px 0 0;
     margin-bottom: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    
+    .turma-nome {
+      flex: 1;
+    }
+    
+    .turma-count {
+      font-size: 0.9rem;
+      background: rgba(255, 255, 255, 0.2);
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
   }
 }
 
@@ -362,20 +491,35 @@
   font-size: 1.2rem;
   cursor: pointer;
   padding: 0.5rem;
-  transition: transform 0.2s ease;
+  transition: all 0.3s ease;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   
   &:hover {
-    transform: scale(1.2);
+    transform: scale(1.15);
+    background: rgba(0, 0, 0, 0.05);
   }
   
   &:not(:last-child) {
     margin-right: 0.5rem;
   }
-}
-
-.btn-danger {
-  &:hover {
-    filter: brightness(1.2);
+  
+  &.btn-edit {
+    color: #3498db;
+    
+    &:hover {
+      background: rgba(52, 152, 219, 0.15);
+    }
+  }
+  
+  &.btn-delete {
+    color: #e74c3c;
+    
+    &:hover {
+      background: rgba(231, 76, 60, 0.15);
+    }
   }
 }
 
