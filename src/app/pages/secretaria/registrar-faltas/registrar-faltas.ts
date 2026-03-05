@@ -215,10 +215,10 @@ export class RegistrarFaltas implements OnInit {
       this.exibirMensagem('✅ Faltas salvas com sucesso!', 'sucesso');
       this.cdr.markForCheck();
       
-      // Reset automático após 2 segundos
+      // Reset automático após 1 segundo (mais ágil)
       setTimeout(() => {
         this.resetarFormulario();
-      }, 2000);
+      }, 1000);
       
     } catch (error) {
       console.error('Erro ao salvar faltas:', error);

@@ -120,7 +120,9 @@
         [disabled]="loading || alunosSelecionados.length === 0"
       >
         <span *ngIf="!loading">💾 Salvar Faltas</span>
-        <span *ngIf="loading">Salvando...</span>
+        <span *ngIf="loading" class="spinner-text">
+          <span class="spinner"></span> Salvando...
+        </span>
       </button>
     </div>
   </div>
