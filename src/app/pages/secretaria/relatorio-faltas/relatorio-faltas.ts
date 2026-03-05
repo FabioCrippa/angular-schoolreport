@@ -22,6 +22,19 @@ interface ResumoFaltas {
   normais: AlunoFalta[]; // 1 dia
 }
 
+interface Conversa {
+  id?: string;
+  alunoId: string;
+  alunoNome: string;
+  responsavel: string;
+  telefonado: boolean;
+  assunto: 'falta_justificada' | 'sem_justificativa' | 'doente' | 'trabalho' | 'outro';
+  notas: string;
+  registradoEm: Date;
+  registradoPor: string;
+  registradoPorNome: string;
+}
+
 @Component({
   selector: 'app-relatorio-faltas',
   standalone: true,
@@ -43,6 +56,21 @@ export class RelatorioFaltas implements OnInit {
   alunosFaltosos: AlunoFalta[] = [];
   resumo: ResumoFaltas = { criticos: [], atencao: [], normais: [] };
   
+  // Modal de Conversas
+  modalAberto = false;
+  alunoSelecionado: AlunoFalta | null = null;
+  conversasHistorico: Conversa[] = [];
+  usuarioId = '';
+  usuarioNome = '';
+  
+  // Formulário de Nova Conversa
+  novaConversa = {
+    responsavel: '',
+    telefonado: true,
+    assunto: 'sem_justificativa' as 'falta_justificada' | 'sem_justificativa' | 'doente' | 'trabalho' | 'outro',
+    notas: ''
+  };
+  
   // Filtros
   filtroTurma = '';
   filtroStatus: 'todos' | 'criticos' | 'atencao' | 'normais' = 'todos';
@@ -63,6 +91,8 @@ export class RelatorioFaltas implements OnInit {
         const usuario = await this.firestoreService.buscarUsuario(user.uid);
         if (usuario) {
           this.escolaId = usuario.escolaId;
+          this.usuarioId = user.uid;
+          this.usuarioNome = usuario.nome;
           await this.procesarFaltas();
         }
       }
@@ -253,6 +283,102 @@ export class RelatorioFaltas implements OnInit {
     } catch (error) {
       console.error('Erro ao marcar contatado:', error);
     }
+  }
+  
+  async abrirModalConversa(aluno: AlunoFalta) {
+    try {
+      this.alunoSelecionado = aluno;
+      this.novaConversa = {
+        responsavel: '',
+        telefonado: true,
+        assunto: 'sem_justificativa',
+        notas: ''
+      };
+      
+      // Carregar histórico de conversas
+      await this.carregarHistoricoConversas(aluno.alunoId);
+      
+      this.modalAberto = true;
+      this.cdr.markForCheck();
+    } catch (error) {
+      console.error('Erro ao abrir modal:', error);
+    }
+  }
+  
+  fecharModal() {
+    this.modalAberto = false;
+    this.alunoSelecionado = null;
+    this.conversasHistorico = [];
+    this.cdr.markForCheck();
+  }
+  
+  async carregarHistoricoConversas(alunoId: string) {
+    try {
+      this.conversasHistorico = await this.firestoreService.obterConversas(alunoId);
+      // Ordenar por data mais recente primeiro
+      this.conversasHistorico.sort((a, b) => 
+        new Date(b.registradoEm).getTime() - new Date(a.registradoEm).getTime()
+      );
+      // Mostrar apenas últimas 5 conversas
+      this.conversasHistorico = this.conversasHistorico.slice(0, 5);
+    } catch (error) {
+      console.error('Erro ao carregar histórico:', error);
+      this.conversasHistorico = [];
+    }
+  }
+  
+  async salvarConversa() {
+    try {
+      if (!this.alunoSelecionado || !this.novaConversa.responsavel.trim()) {
+        console.error('Preencha os campos obrigatórios');
+        return;
+      }
+      
+      const conversa: Omit<Conversa, 'id'> = {
+        alunoId: this.alunoSelecionado.alunoId,
+        alunoNome: this.alunoSelecionado.alunoNome,
+        responsavel: this.novaConversa.responsavel,
+        telefonado: this.novaConversa.telefonado,
+        assunto: this.novaConversa.assunto,
+        notas: this.novaConversa.notas,
+        registradoEm: new Date(),
+        registradoPor: this.usuarioId,
+        registradoPorNome: this.usuarioNome
+      };
+      
+      await this.firestoreService.salvarConversa(conversa);
+      
+      // Marcar aluno como contatado
+      this.alunoSelecionado.contatado = true;
+      
+      console.log('✅ Conversa registrada com sucesso');
+      
+      // Recarregar histórico
+      await this.carregarHistoricoConversas(this.alunoSelecionado.alunoId);
+      
+      // Limpar formulário
+      this.novaConversa = {
+        responsavel: '',
+        telefonado: true,
+        assunto: 'sem_justificativa',
+        notas: ''
+      };
+      
+      this.cdr.markForCheck();
+    } catch (error) {
+      console.error('Erro ao salvar conversa:', error);
+    }
+  }
+  
+  obterLabelAssunto(assunto: string): string {
+    const labels: { [key: string]: string } = {
+      'falta_justificada': '✅ Falta Justificada',
+      'sem_justificativa': '❌ Sem Justificativa',
+      'doente': '🤒 Aluno Doente',
+      'trabalho': '💼 Trabalho',
+      'outro': '📌 Outro'
+    };
+    return labels[assunto] || assunto;
   }
   
   voltar() {

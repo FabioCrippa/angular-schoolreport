@@ -151,6 +151,8 @@
           <tr 
             *ngFor="let aluno of listaFiltrada" 
             [class]="'row-' + obterStatusClass(aluno.diasConsecutivos)"
+            (click)="abrirModalConversa(aluno)"
+            class="aluno-row-clicavel"
           >
             <td class="col-status">
               <span [class]="'badge ' + obterStatusClass(aluno.diasConsecutivos)">
@@ -186,6 +188,115 @@
       </p>
     </div>
 
+  </div>
+
+  <!-- Modal de Registro de Conversas -->
+  <div *ngIf="modalAberto" class="modal-overlay" (click)="fecharModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      
+      <!-- Header do Modal -->
+      <div class="modal-header">
+        <h2>📞 Registro de Conversa de Busca Ativa</h2>
+        <button class="btn-fechar" (click)="fecharModal()">×</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Dados do Aluno -->
+        <div *ngIf="alunoSelecionado" class="dados-aluno">
+          <div class="info-item">
+            <span class="label">Aluno:</span>
+            <span class="valor">{{ alunoSelecionado.alunoNome }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Turma:</span>
+            <span class="valor">{{ alunoSelecionado.turma }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Dias Consecutivos:</span>
+            <span class="valor badge" [class]="'badge-' + obterStatusClass(alunoSelecionado.diasConsecutivos)">
+              {{ alunoSelecionado.diasConsecutivos }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Formulário de Nova Conversa -->
+        <div class="formulario-conversa">
+          <h3>Nova Conversa</h3>
+
+          <div class="form-group">
+            <label>👤 Responsável Contatado</label>
+            <input 
+              type="text" 
+              [(ngModel)]="novaConversa.responsavel"
+              placeholder="Ex: María Silva (mãe)"
+              class="form-input"
+            />
+          </div>
+
+          <div class="form-group">
+            <label>📋 Assunto da Conversa</label>
+            <select [(ngModel)]="novaConversa.assunto" class="form-select">
+              <option value="sem_justificativa">❌ Sem Justificativa</option>
+              <option value="falta_justificada">✅ Falta Justificada</option>
+              <option value="doente">🤒 Aluno Doente</option>
+              <option value="trabalho">💼 Trabalho</option>
+              <option value="outro">📌 Outro</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>📝 Notas da Conversa</label>
+            <textarea 
+              [(ngModel)]="novaConversa.notas"
+              placeholder="Resuma o que conversou com o responsável..."
+              class="form-textarea"
+              rows="4"
+            ></textarea>
+          </div>
+
+          <div class="form-group checkbox">
+            <label>
+              <input 
+                type="checkbox" 
+                [(ngModel)]="novaConversa.telefonado"
+              />
+              <span>Telefone para responsável realizado</span>
+            </label>
+          </div>
+
+          <button class="btn btn-primary" (click)="salvarConversa()">
+            ✅ Registrar Conversa
+          </button>
+        </div>
+
+        <!-- Histórico de Conversas -->
+        <div *ngIf="conversasHistorico.length > 0" class="historico-conversas">
+          <h3>📋 Histórico de Conversas (Últimas 5)</h3>
+          
+          <div *ngFor="let conversa of conversasHistorico" class="conversa-item">
+            <div class="conversa-header">
+              <div class="conversa-assunto">{{ obterLabelAssunto(conversa.assunto) }}</div>
+              <div class="conversa-data">{{ conversa.registradoEm | date: 'dd/MM/yyyy HH:mm' }}</div>
+            </div>
+            <div class="conversa-info">
+              <p><strong>Responsável:</strong> {{ conversa.responsavel }}</p>
+              <p><strong>Registrado por:</strong> {{ conversa.registradoPorNome }}</p>
+              <p *ngIf="conversa.notas"><strong>Notas:</strong> {{ conversa.notas }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="conversasHistorico.length === 0" class="sem-historico">
+          <p>Nenhuma conversa registrada ainda</p>
+        </div>
+      </div>
+
+      <!-- Footer do Modal -->
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="fecharModal()">Fechar</button>
+      </div>
+
+    </div>
   </div>
 
 </div>

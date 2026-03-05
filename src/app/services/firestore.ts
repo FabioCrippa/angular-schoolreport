@@ -99,6 +99,19 @@ export interface Falta {
   registradoPorNome: string; // nome da secretaria
 }
 
+export interface Conversa {
+  id?: string;
+  alunoId: string;
+  alunoNome: string;
+  responsavel: string;
+  telefonado: boolean;
+  assunto: 'falta_justificada' | 'sem_justificativa' | 'doente' | 'trabalho' | 'outro';
+  notas: string;
+  registradoEm: Date;
+  registradoPor: string;
+  registradoPorNome: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -1357,6 +1370,57 @@ Equipe escu
       return faltas;
     } catch (error) {
       console.error('Erro ao obter faltas por escola:', error);
+      throw error;
+    }
+  }
+
+  // ================== MÉTODOS PARA GERENCIAR CONVERSAS ==================
+
+  async salvarConversa(conversa: Omit<Conversa, 'id'>): Promise<string> {
+    try {
+      const conversasCollection = collection(this.firestore, 'conversas');
+      const docRef = await addDoc(conversasCollection, {
+        ...conversa,
+        registradoEm: Timestamp.now()
+      });
+      console.log('✅ Conversa registrada com sucesso:', docRef.id);
+      return docRef.id;
+    } catch (error) {
+      console.error('Erro ao salvar conversa:', error);
+      throw error;
+    }
+  }
+
+  async obterConversas(alunoId: string): Promise<Conversa[]> {
+    try {
+      const conversasCollection = collection(this.firestore, 'conversas');
+      const q = query(
+        conversasCollection,
+        where('alunoId', '==', alunoId)
+      );
+
+      const querySnapshot = await getDocs(q);
+      const conversas: Conversa[] = [];
+
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        conversas.push({
+          id: doc.id,
+          alunoId: data['alunoId'],
+          alunoNome: data['alunoNome'],
+          responsavel: data['responsavel'],
+          telefonado: data['telefonado'],
+          assunto: data['assunto'],
+          notas: data['notas'],
+          registradoEm: data['registradoEm']?.toDate(),
+          registradoPor: data['registradoPor'],
+          registradoPorNome: data['registradoPorNome']
+        });
+      });
+
+      return conversas;
+    } catch (error) {
+      console.error('Erro ao obter conversas:', error);
       throw error;
     }
   }
