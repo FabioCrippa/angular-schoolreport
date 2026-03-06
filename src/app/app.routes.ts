@@ -86,6 +86,18 @@ export const routes: Routes = [
         data: { roles: ['secretaria'] }
     },
     {
+        path: 'secretaria/registrar-falta-professor',
+        loadComponent: () => import('./pages/secretaria/registrar-falta-professor/registrar-falta-professor').then(m => m.RegistrarFaltaProfessor),
+        canActivate: [authGuard, roleGuard],
+        data: { roles: ['secretaria'] }
+    },
+    {
+        path: 'secretaria/lista-faltas-professores',
+        loadComponent: () => import('./pages/secretaria/lista-faltas-professores/lista-faltas-professores').then(m => m.ListaFaltasProfessores),
+        canActivate: [authGuard, roleGuard],
+        data: { roles: ['secretaria'] }
+    },
+    {
         path: 'agendamento-equipamentos',
         loadComponent: () => import('./pages/agendamento-equipamentos/agendamento-equipamentos').then(m => m.AgendamentoEquipamentosComponent),
         canActivate: [authGuard, roleGuard],

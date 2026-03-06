@@ -1,0 +1,143 @@
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-top">
+      <button class="btn-voltar" (click)="voltar()">← Voltar</button>
+      <h1>👨‍🏫 Registrar Falta de Professor</h1>
+      <div class="spacer"></div>
+    </div>
+    <p class="subtitle">Registre ausências de professores e as turmas afetadas</p>
+  </div>
+
+  <!-- Mensagem -->
+  <div *ngIf="mensagem" class="mensagem" [class]="'mensagem-' + tipoMensagem">
+    {{ mensagem }}
+  </div>
+
+  <!-- FORMULÁRIO -->
+  <div class="form-card" *ngIf="!loading">
+
+    <!-- Dados do Professor -->
+    <div class="form-section">
+      <h3 class="section-title">Dados do Professor</h3>
+      <div class="form-grid">
+
+        <div class="form-group">
+          <label>Data *</label>
+          <input type="date" [(ngModel)]="form.data" class="input" />
+        </div>
+
+        <div class="form-group">
+          <label>Período *</label>
+          <select [(ngModel)]="form.periodo" class="input">
+            <option value="">Selecione</option>
+            <option value="manha">Manhã</option>
+            <option value="tarde">Tarde</option>
+            <option value="noite">Noite</option>
+          </select>
+        </div>
+
+        <div class="form-group full-width">
+          <label>Nome do Professor Ausente *</label>
+          <input
+            type="text"
+            [(ngModel)]="form.professorNome"
+            placeholder="Digite o nome completo"
+            class="input"
+            autocomplete="off"
+          />
+        </div>
+
+        <div class="form-group full-width">
+          <label>Professor Eventual (substituto)</label>
+          <input
+            type="text"
+            [(ngModel)]="form.professorEventual"
+            placeholder="Nome do professor que substituiu (opcional)"
+            class="input"
+            autocomplete="off"
+          />
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Aulas Afetadas -->
+    <div class="form-section">
+      <div class="section-header">
+        <h3 class="section-title">Aulas Afetadas *</h3>
+        <button class="btn-add-aula" (click)="adicionarAula()" type="button">
+          + Adicionar Aula
+        </button>
+      </div>
+
+      <div *ngIf="aulas.length === 0" class="empty-aulas">
+        Nenhuma aula adicionada. Clique em "+ Adicionar Aula".
+      </div>
+
+      <div *ngFor="let aula of aulas; let i = index" class="aula-row">
+        <span class="aula-num">{{ i + 1 }}</span>
+
+        <div class="aula-fields">
+
+          <div class="field-group">
+            <label>Tipo de Ensino</label>
+            <select
+              [(ngModel)]="aula.tipoEnsino"
+              (change)="onTipoEnsinoAulaChange(aula)"
+              class="input"
+            >
+              <option value="">Selecione</option>
+              <option *ngFor="let tipo of tiposEnsino" [value]="tipo">{{ tipo }}</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label>Turma</label>
+            <select
+              [(ngModel)]="aula.turma"
+              [disabled]="aula.turmasFiltradas.length === 0"
+              class="input"
+            >
+              <option value="">{{ aula.turmasFiltradas.length === 0 ? 'Selecione o tipo' : 'Selecione' }}</option>
+              <option *ngFor="let turma of aula.turmasFiltradas" [value]="turma">{{ turma }}</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label>Nº da Aula</label>
+            <select [(ngModel)]="aula.numeroAula" class="input">
+              <option value="">Selecione</option>
+              <option *ngFor="let n of numerosAula" [value]="n">{{ n }}</option>
+            </select>
+          </div>
+
+        </div>
+
+        <button class="btn-remove-aula" (click)="removerAula(i)" title="Remover aula" *ngIf="aulas.length > 1">
+          ✕
+        </button>
+      </div>
+    </div>
+
+    <!-- Botão Salvar -->
+    <div class="form-actions">
+      <button
+        class="btn-salvar"
+        (click)="salvar()"
+        [disabled]="loading || !formularioValido()"
+      >
+        {{ loading ? 'Salvando...' : '💾 Registrar Falta' }}
+      </button>
+    </div>
+
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading">
+    <div class="spinner"></div>
+    <p>Salvando registro...</p>
+  </div>
+
+</div>

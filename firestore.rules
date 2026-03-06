@@ -157,5 +157,16 @@ service cloud.firestore {
       allow delete: if request.auth != null && 
                     get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.role == 'secretaria';
     }
+
+    // Regras para coleção 'faltasProfessores'
+    match /faltasProfessores/{faltaId} {
+      allow read: if request.auth != null && belongsToSchool(resource.data.escolaId);
+      allow create: if request.auth != null &&
+                       belongsToSchool(request.resource.data.escolaId) &&
+                       get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.role == 'secretaria';
+      allow delete: if request.auth != null &&
+                       belongsToSchool(resource.data.escolaId) &&
+                       get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.role == 'secretaria';
+    }
   }
 }

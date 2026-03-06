@@ -124,6 +124,24 @@ export interface StatusBuscaAtiva {
   registradoPorNome: string;
 }
 
+export interface AulaFaltaProfessor {
+  turma: string;
+  numeroAula: string;
+}
+
+export interface FaltaProfessor {
+  id?: string;
+  escolaId: string;
+  data: string; // YYYY-MM-DD
+  professorNome: string;
+  periodo: 'manha' | 'tarde' | 'noite';
+  aulas: AulaFaltaProfessor[];
+  professorEventual: string;
+  registradoEm?: Date;
+  registradoPor: string;
+  registradoPorNome: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -1553,6 +1571,36 @@ Equipe escu
     } catch (error) {
       console.error('Erro ao obter status de busca ativa:', error);
       return null;
+    }
+  }
+
+  async salvarFaltaProfessor(falta: Omit<FaltaProfessor, 'id'>): Promise<string> {
+    try {
+      const col = collection(this.firestore, 'faltasProfessores');
+      const docRef = await addDoc(col, {
+        ...falta,
+        registradoEm: Timestamp.now()
+      });
+      return docRef.id;
+    } catch (error) {
+      console.error('Erro ao salvar falta de professor:', error);
+      throw error;
+    }
+  }
+
+  async obterFaltasProfessores(escolaId: string): Promise<FaltaProfessor[]> {
+    try {
+      const col = collection(this.firestore, 'faltasProfessores');
+      const q = query(col, where('escolaId', '==', escolaId), orderBy('data', 'desc'));
+      const snap = await getDocs(q);
+      return snap.docs.map(d => ({
+        id: d.id,
+        ...(d.data() as Omit<FaltaProfessor, 'id'>),
+        registradoEm: d.data()['registradoEm']?.toDate()
+      }));
+    } catch (error) {
+      console.error('Erro ao obter faltas de professores:', error);
+      return [];
     }
   }
 }

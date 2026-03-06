@@ -1,0 +1,223 @@
+$primary: #3B82F6;
+$primary-dark: #2563EB;
+$text-dark: #1F2937;
+$text-gray: #6B7280;
+$bg-light: #F9FAFB;
+$border-color: #E5E7EB;
+
+.lista-container {
+  min-height: 100vh;
+  background: $bg-light;
+  padding: 2rem;
+}
+
+// Header
+.header {
+  margin-bottom: 2rem;
+}
+
+.btn-voltar {
+  background: white;
+  border: 1px solid $border-color;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  color: $text-gray;
+  transition: all 0.2s;
+  margin-bottom: 1rem;
+
+  &:hover { background: $bg-light; color: $primary; }
+}
+
+.header-content {
+  h1 { margin: 0 0 0.5rem; font-size: 2rem; color: $text-dark; font-weight: 800; }
+  .subtitle { margin: 0; color: $text-gray; font-size: 1rem; }
+}
+
+// Filtros
+.filtros-container {
+  background: white;
+  padding: 1.25rem 1.5rem;
+  border-radius: 8px;
+  border: 1px solid $border-color;
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-end;
+}
+
+.filtro-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  label { font-size: 13px; font-weight: 600; color: $text-dark; }
+
+  &.filtro-busca { flex: 1; min-width: 200px; }
+}
+
+.filtro-input {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid $border-color;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  color: $text-dark;
+  background: white;
+  transition: border-color 0.2s;
+
+  &:focus { outline: none; border-color: $primary; box-shadow: 0 0 0 3px rgba(59,130,246,.1); }
+}
+
+.btn-limpar {
+  padding: 0.5rem 1rem;
+  background: white;
+  border: 1px solid $border-color;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  color: $text-gray;
+  transition: all 0.2s;
+  font-weight: 500;
+
+  &:hover { background: #f0f0f0; color: $text-dark; }
+}
+
+// Ações
+.acoes-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.info-total {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  .total-label { font-size: 14px; color: $text-gray; }
+  .total-numero { font-size: 16px; font-weight: 700; color: $text-dark; }
+}
+
+.btn-exportar {
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+
+  &:hover:not(:disabled) { background: #1e7e34; }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+
+// Loading
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px;
+  color: $text-gray;
+
+  .spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid #e0e0e0;
+    border-top-color: $primary;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-bottom: 12px;
+  }
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+// Empty
+.empty-state {
+  background: white;
+  border: 1px solid $border-color;
+  border-radius: 8px;
+  padding: 40px;
+  text-align: center;
+  color: $text-gray;
+  font-size: 15px;
+}
+
+// Tabela
+.tabela-wrapper {
+  background: white;
+  border-radius: 8px;
+  border: 1px solid $border-color;
+  overflow-x: auto;
+}
+
+.tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+
+  thead tr {
+    background: $bg-light;
+    border-bottom: 2px solid $border-color;
+  }
+
+  th {
+    padding: 12px 14px;
+    text-align: left;
+    font-size: 13px;
+    font-weight: 700;
+    color: $text-dark;
+    white-space: nowrap;
+  }
+
+  tbody tr {
+    border-bottom: 1px solid #f0f0f0;
+    transition: background 0.15s;
+
+    &:last-child { border-bottom: none; }
+    &:hover { background: #f8f9ff; }
+  }
+
+  td {
+    padding: 12px 14px;
+    color: $text-dark;
+    vertical-align: middle;
+  }
+}
+
+.col-data { white-space: nowrap; font-weight: 600; color: #444; }
+.col-professor { font-weight: 500; }
+.col-eventual .sem-eventual { color: $text-gray; }
+
+// Badges período
+.badge-periodo {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+
+  &.periodo-manha  { background: #fff3cd; color: #856404; }
+  &.periodo-tarde  { background: #cce5ff; color: #004085; }
+  &.periodo-noite  { background: #d3d3f5; color: #2c2c8c; }
+}
+
+// Badges aula
+.badge-aula {
+  display: inline-block;
+  background: #e9f5ff;
+  color: #0056b3;
+  border: 1px solid #b8d9f5;
+  border-radius: 4px;
+  padding: 2px 7px;
+  font-size: 12px;
+  margin: 2px 3px 2px 0;
+  white-space: nowrap;
+}

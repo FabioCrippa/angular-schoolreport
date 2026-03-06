@@ -1,0 +1,115 @@
+<div class="lista-container">
+
+  <!-- Header -->
+  <div class="header">
+    <button class="btn-voltar" (click)="voltar()">← Voltar</button>
+    <div class="header-content">
+      <h1>👨‍🏫 Faltas de Professores</h1>
+      <p class="subtitle">Visualize e exporte os registros de ausências de professores</p>
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <div class="filtros-container">
+
+    <div class="filtro-grupo">
+      <label>De</label>
+      <input type="date" [(ngModel)]="filtroDataDe" (change)="aplicarFiltros()" class="filtro-input" />
+    </div>
+
+    <div class="filtro-grupo">
+      <label>Até</label>
+      <input type="date" [(ngModel)]="filtroDataAte" (change)="aplicarFiltros()" class="filtro-input" />
+    </div>
+
+    <div class="filtro-grupo">
+      <label>Período</label>
+      <select [(ngModel)]="filtroPeriodo" (change)="aplicarFiltros()" class="filtro-input">
+        <option value="">Todos</option>
+        <option value="manha">Manhã</option>
+        <option value="tarde">Tarde</option>
+        <option value="noite">Noite</option>
+      </select>
+    </div>
+
+    <div class="filtro-grupo filtro-busca">
+      <label>Buscar Professor</label>
+      <input
+        type="text"
+        [(ngModel)]="filtroNome"
+        (input)="aplicarFiltros()"
+        placeholder="Nome do professor..."
+        class="filtro-input"
+        autocomplete="off"
+      />
+    </div>
+
+    <button class="btn-limpar" (click)="limparFiltros()">Limpar</button>
+
+  </div>
+
+  <!-- Ações -->
+  <div class="acoes-container">
+    <div class="info-total">
+      <span class="total-label">Registros encontrados:</span>
+      <span class="total-numero">{{ faltasFiltradas.length }}</span>
+    </div>
+    <button
+      class="btn-exportar"
+      (click)="exportarExcel()"
+      [disabled]="faltasFiltradas.length === 0"
+    >
+      📊 Exportar Excel
+    </button>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Carregando registros...</p>
+  </div>
+
+  <!-- Tabela -->
+  <div *ngIf="!loading" class="tabela-wrapper">
+
+    <div *ngIf="faltasFiltradas.length === 0" class="empty-state">
+      <p>✨ Nenhum registro encontrado para os filtros selecionados.</p>
+    </div>
+
+    <table *ngIf="faltasFiltradas.length > 0" class="tabela">
+      <thead>
+        <tr>
+          <th>Data</th>
+          <th>Professor Ausente</th>
+          <th>Período</th>
+          <th>Aulas Afetadas</th>
+          <th>Prof. Eventual</th>
+          <th>Registrado por</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let falta of faltasFiltradas">
+          <td class="col-data">{{ formatarData(falta.data) }}</td>
+          <td class="col-professor">{{ falta.professorNome }}</td>
+          <td class="col-periodo">
+            <span class="badge-periodo" [class]="'periodo-' + falta.periodo">
+              {{ labelPeriodo(falta.periodo) }}
+            </span>
+          </td>
+          <td class="col-aulas">
+            <span *ngFor="let aula of falta.aulas" class="badge-aula">
+              {{ aula.turma }} – {{ aula.numeroAula }}
+            </span>
+          </td>
+          <td class="col-eventual">
+            <span *ngIf="falta.professorEventual">{{ falta.professorEventual }}</span>
+            <span *ngIf="!falta.professorEventual" class="sem-eventual">—</span>
+          </td>
+          <td class="col-registrado">{{ falta.registradoPorNome }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+  </div>
+
+</div>
