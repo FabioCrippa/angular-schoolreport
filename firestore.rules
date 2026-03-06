@@ -127,5 +127,16 @@ service cloud.firestore {
                                       belongsToSchool(request.resource.data.escolaId) &&
                                       get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.role == 'secretaria';
     }
+
+    // Regras para coleção 'conversas'
+    match /conversas/{conversaId} {
+      // Usuários da escola podem ler conversas
+      allow read: if request.auth != null && belongsToSchool(resource.data.escolaId);
+      
+      // Secretaria pode criar, atualizar e deletar conversas
+      allow create, update, delete: if request.auth != null && 
+                                      belongsToSchool(request.resource.data.escolaId) &&
+                                      get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.role == 'secretaria';
+    }
   }
 }

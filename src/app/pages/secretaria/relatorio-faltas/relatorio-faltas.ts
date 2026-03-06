@@ -314,7 +314,7 @@ export class RelatorioFaltas implements OnInit {
   
   async carregarHistoricoConversas(alunoId: string) {
     try {
-      this.conversasHistorico = await this.firestoreService.obterConversas(alunoId);
+      this.conversasHistorico = await this.firestoreService.obterConversas(this.escolaId, alunoId);
       // Ordenar por data mais recente primeiro
       this.conversasHistorico.sort((a, b) => 
         new Date(b.registradoEm).getTime() - new Date(a.registradoEm).getTime()
@@ -334,7 +334,7 @@ export class RelatorioFaltas implements OnInit {
         return;
       }
       
-      const conversa: Omit<Conversa, 'id'> = {
+      const conversa: Omit<Conversa, 'id' | 'escolaId'> = {
         alunoId: this.alunoSelecionado.alunoId,
         alunoNome: this.alunoSelecionado.alunoNome,
         responsavel: this.novaConversa.responsavel,
@@ -346,7 +346,7 @@ export class RelatorioFaltas implements OnInit {
         registradoPorNome: this.usuarioNome
       };
       
-      await this.firestoreService.salvarConversa(conversa);
+      await this.firestoreService.salvarConversa(this.escolaId, conversa);
       
       // Marcar aluno como contatado
       this.alunoSelecionado.contatado = true;

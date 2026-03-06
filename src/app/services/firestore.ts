@@ -101,6 +101,7 @@ export interface Falta {
 
 export interface Conversa {
   id?: string;
+  escolaId: string;
   alunoId: string;
   alunoNome: string;
   responsavel: string;
@@ -1376,11 +1377,12 @@ Equipe escu
 
   // ================== MÉTODOS PARA GERENCIAR CONVERSAS ==================
 
-  async salvarConversa(conversa: Omit<Conversa, 'id'>): Promise<string> {
+  async salvarConversa(escolaId: string, conversa: Omit<Conversa, 'id' | 'escolaId'>): Promise<string> {
     try {
       const conversasCollection = collection(this.firestore, 'conversas');
       const docRef = await addDoc(conversasCollection, {
         ...conversa,
+        escolaId,
         registradoEm: Timestamp.now()
       });
       console.log('✅ Conversa registrada com sucesso:', docRef.id);
@@ -1391,11 +1393,12 @@ Equipe escu
     }
   }
 
-  async obterConversas(alunoId: string): Promise<Conversa[]> {
+  async obterConversas(escolaId: string, alunoId: string): Promise<Conversa[]> {
     try {
       const conversasCollection = collection(this.firestore, 'conversas');
       const q = query(
         conversasCollection,
+        where('escolaId', '==', escolaId),
         where('alunoId', '==', alunoId)
       );
 
@@ -1406,6 +1409,7 @@ Equipe escu
         const data = doc.data();
         conversas.push({
           id: doc.id,
+          escolaId: data['escolaId'],
           alunoId: data['alunoId'],
           alunoNome: data['alunoNome'],
           responsavel: data['responsavel'],
