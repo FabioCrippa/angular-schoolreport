@@ -14,6 +14,7 @@ interface AlunoFalta {
   ultimaFalta: string; // YYYY-MM-DD
   datas: string[]; // array de datas de faltas consecutivas
   contatado: boolean;
+  statusContato?: 'conversa' | 'nao_conseguiu' | 'recado' | 'ligar_novamente';
 }
 
 interface ResumoFaltas {
@@ -27,9 +28,7 @@ interface Conversa {
   alunoId: string;
   alunoNome: string;
   responsavel: string;
-  telefonado: boolean;
-  resultadoContato: 'conversa' | 'nao_conseguiu' | 'recado' | 'liga_devolvida';
-  assunto: 'falta_justificada' | 'sem_justificativa' | 'doente' | 'trabalho' | 'outro';
+  resultadoContato: 'conversa' | 'nao_conseguiu' | 'recado' | 'ligar_novamente';
   notas: string;
   registradoEm: Date;
   registradoPor: string;
@@ -67,9 +66,7 @@ export class RelatorioFaltas implements OnInit {
   // Formulário de Nova Conversa
   novaConversa = {
     responsavel: '',
-    telefonado: true,
-    resultadoContato: 'conversa' as 'conversa' | 'nao_conseguiu' | 'recado' | 'liga_devolvida',
-    assunto: 'sem_justificativa' as 'falta_justificada' | 'sem_justificativa' | 'doente' | 'trabalho' | 'outro',
+    resultadoContato: 'conversa' as 'conversa' | 'nao_conseguiu' | 'recado' | 'ligar_novamente',
     notas: ''
   };
   
@@ -295,9 +292,7 @@ export class RelatorioFaltas implements OnInit {
       this.alunoSelecionado = aluno;
       this.novaConversa = {
         responsavel: '',
-        telefonado: true,
-        resultadoContato: 'conversa' as 'conversa' | 'nao_conseguiu' | 'recado' | 'liga_devolvida',
-        assunto: 'sem_justificativa',
+        resultadoContato: 'conversa' as 'conversa' | 'nao_conseguiu' | 'recado' | 'ligar_novamente',
         notas: ''
       };
       
@@ -325,6 +320,7 @@ export class RelatorioFaltas implements OnInit {
         const status = await this.firestoreService.obterStatusBuscaAtiva(this.escolaId, aluno.alunoId);
         if (status) {
           aluno.contatado = true;
+          aluno.statusContato = status.resultado;
         }
       }
       this.cdr.markForCheck();
@@ -359,9 +355,7 @@ export class RelatorioFaltas implements OnInit {
         alunoId: this.alunoSelecionado.alunoId,
         alunoNome: this.alunoSelecionado.alunoNome,
         responsavel: this.novaConversa.responsavel,
-        telefonado: this.novaConversa.telefonado,
         resultadoContato: this.novaConversa.resultadoContato,
-        assunto: this.novaConversa.assunto,
         notas: this.novaConversa.notas,
         registradoEm: new Date(),
         registradoPor: this.usuarioId,
@@ -383,6 +377,7 @@ export class RelatorioFaltas implements OnInit {
       
       // Marcar aluno como contatado
       this.alunoSelecionado.contatado = true;
+      this.alunoSelecionado.statusContato = this.novaConversa.resultadoContato;
       
       console.log('✅ Conversa registrada com sucesso');
       
@@ -392,9 +387,7 @@ export class RelatorioFaltas implements OnInit {
       // Limpar formulário
       this.novaConversa = {
         responsavel: '',
-        telefonado: true,
-        resultadoContato: 'conversa' as 'conversa' | 'nao_conseguiu' | 'recado' | 'liga_devolvida',
-        assunto: 'sem_justificativa',
+        resultadoContato: 'conversa' as 'conversa' | 'nao_conseguiu' | 'recado' | 'ligar_novamente',
         notas: ''
       };
       
@@ -404,25 +397,34 @@ export class RelatorioFaltas implements OnInit {
     }
   }
   
-  obterLabelAssunto(assunto: string): string {
-    const labels: { [key: string]: string } = {
-      'falta_justificada': '✅ Falta Justificada',
-      'sem_justificativa': '❌ Sem Justificativa',
-      'doente': '🤒 Aluno Doente',
-      'trabalho': '💼 Trabalho',
-      'outro': '📌 Outro'
-    };
-    return labels[assunto] || assunto;
-  }
-
   obterLabelResultado(resultado: string): string {
     const labels: { [key: string]: string } = {
       'conversa': '✅ Conversa com Responsável',
       'nao_conseguiu': '❌ Não Conseguiu Contato',
       'recado': '⏳ Deixou Recado',
-      'liga_devolvida': '📞 Liga Devolvida'
+      'ligar_novamente': '🔄 Ligar Novamente'
     };
     return labels[resultado] || resultado;
+  }
+
+  obterCorStatus(resultado: string): string {
+    const cores: { [key: string]: string } = {
+      'conversa': '#28a745',        // Verde
+      'nao_conseguiu': '#dc3545',   // Vermelho
+      'recado': '#ffc107',          // Amarelo
+      'ligar_novamente': '#fd7e14'  // Laranja
+    };
+    return cores[resultado] || '#6c757d'; // Cinza padrão
+  }
+
+  obterTextoBadge(resultado: string): string {
+    const textos: { [key: string]: string } = {
+      'conversa': 'Conversou',
+      'nao_conseguiu': 'Não atendeu',
+      'recado': 'Deixou recado',
+      'ligar_novamente': 'Ligar novamente'
+    };
+    return textos[resultado] || resultado;
   }
   
   voltar() {

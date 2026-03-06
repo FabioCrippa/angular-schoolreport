@@ -168,13 +168,14 @@
             </td>
             <td class="col-ultima">{{ aluno.ultimaFalta }}</td>
             <td class="col-telefone">
-              <input 
-                type="checkbox" 
-                [checked]="aluno.contatado"
-                (change)="marcarContatado(aluno)"
-                class="checkbox-telefone"
-              />
-              <span class="label-telefone" *ngIf="aluno.contatado">✅ Realizado</span>
+              <div *ngIf="aluno.contatado && aluno.statusContato" 
+                   class="badge-status"
+                   [style.backgroundColor]="obterCorStatus(aluno.statusContato)">
+                {{ obterTextoBadge(aluno.statusContato) }}
+              </div>
+              <div *ngIf="!aluno.contatado" class="badge-status-cinza">
+                Não contatado
+              </div>
             </td>
           </tr>
         </tbody>
@@ -234,23 +235,12 @@
           </div>
 
           <div class="form-group">
-            <label>📋 Assunto da Conversa</label>
-            <select [(ngModel)]="novaConversa.assunto" class="form-select">
-              <option value="sem_justificativa">❌ Sem Justificativa</option>
-              <option value="falta_justificada">✅ Falta Justificada</option>
-              <option value="doente">🤒 Aluno Doente</option>
-              <option value="trabalho">💼 Trabalho</option>
-              <option value="outro">📌 Outro</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label>📞 Resultado do Contato</label>
+            <label> Resultado do Contato</label>
             <select [(ngModel)]="novaConversa.resultadoContato" class="form-select">
               <option value="conversa">✅ Conversa com Responsável</option>
               <option value="nao_conseguiu">❌ Não Conseguiu Contato</option>
               <option value="recado">⏳ Deixou Recado</option>
-              <option value="liga_devolvida">📞 Liga Devolvida</option>
+              <option value="ligar_novamente">🔄 Ligar Novamente</option>
             </select>
           </div>
 
@@ -264,16 +254,6 @@
             ></textarea>
           </div>
 
-          <div class="form-group checkbox">
-            <label>
-              <input 
-                type="checkbox" 
-                [(ngModel)]="novaConversa.telefonado"
-              />
-              <span>Telefone para responsável realizado</span>
-            </label>
-          </div>
-
           <button class="btn btn-primary" (click)="salvarConversa()">
             ✅ Registrar Conversa
           </button>
@@ -285,12 +265,11 @@
           
           <div *ngFor="let conversa of conversasHistorico" class="conversa-item">
             <div class="conversa-header">
-              <div class="conversa-assunto">{{ obterLabelAssunto(conversa.assunto) }}</div>
+              <div class="conversa-resultado">{{ obterLabelResultado(conversa.resultadoContato) }}</div>
               <div class="conversa-data">{{ conversa.registradoEm | date: 'dd/MM/yyyy HH:mm' }}</div>
             </div>
             <div class="conversa-info">
               <p><strong>Responsável:</strong> {{ conversa.responsavel }}</p>
-              <p><strong>Resultado:</strong> {{ obterLabelResultado(conversa.resultadoContato) }}</p>
               <p><strong>Registrado por:</strong> {{ conversa.registradoPorNome }}</p>
               <p *ngIf="conversa.notas"><strong>Notas:</strong> {{ conversa.notas }}</p>
             </div>

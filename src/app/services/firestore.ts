@@ -106,9 +106,7 @@ export interface Conversa {
   alunoId: string;
   alunoNome: string;
   responsavel: string;
-  telefonado: boolean;
-  resultadoContato: 'conversa' | 'nao_conseguiu' | 'recado' | 'liga_devolvida';
-  assunto: 'falta_justificada' | 'sem_justificativa' | 'doente' | 'trabalho' | 'outro';
+  resultadoContato: 'conversa' | 'nao_conseguiu' | 'recado' | 'ligar_novamente';
   notas: string;
   registradoEm: Date;
   registradoPor: string;
@@ -121,7 +119,7 @@ export interface StatusBuscaAtiva {
   alunoId: string;
   alunoNome: string;
   ultimoContato: Date;
-  resultado: 'conversa' | 'nao_conseguiu' | 'recado' | 'liga_devolvida';
+  resultado: 'conversa' | 'nao_conseguiu' | 'recado' | 'ligar_novamente';
   registradoPor: string;
   registradoPorNome: string;
 }
@@ -1427,9 +1425,7 @@ Equipe escu
           alunoId: data['alunoId'],
           alunoNome: data['alunoNome'],
           responsavel: data['responsavel'],
-          telefonado: data['telefonado'],
           resultadoContato: data['resultadoContato'] || 'conversa',
-          assunto: data['assunto'],
           notas: data['notas'],
           registradoEm: data['registradoEm']?.toDate(),
           registradoPor: data['registradoPor'],
