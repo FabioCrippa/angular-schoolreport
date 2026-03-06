@@ -11,18 +11,23 @@
 
   <!-- Step Indicator -->
   <div class="step-indicator">
-    <div class="step" [class.ativo]="!showPreview && !showList">
+    <div class="step" [class.ativo]="!showMapeamento && !showPreview && !showList">
       <div class="step-number">1</div>
       <div class="step-label">Importar</div>
     </div>
     <div class="step-linha"></div>
-    <div class="step" [class.ativo]="showPreview">
+    <div class="step" [class.ativo]="showMapeamento">
       <div class="step-number">2</div>
+      <div class="step-label">Mapear Abas</div>
+    </div>
+    <div class="step-linha"></div>
+    <div class="step" [class.ativo]="showPreview">
+      <div class="step-number">3</div>
       <div class="step-label">Confirmar</div>
     </div>
     <div class="step-linha"></div>
     <div class="step" [class.ativo]="showList">
-      <div class="step-number">3</div>
+      <div class="step-number">4</div>
       <div class="step-label">Visualizar</div>
     </div>
   </div>
@@ -61,48 +66,124 @@
     
     <div class="formato-info">
       <h3>Como preparar o arquivo Excel:</h3>
-      <p>O arquivo deve conter exatamente 3 colunas:</p>
+      <p>✨ Arquivo simplificado - agora é muito mais fácil!</p>
       <div class="colunas-lista">
         <div class="coluna-item">
           <span class="coluna-icon">📝</span>
           <div>
-            <strong>Nome</strong><br>
+            <strong>Coluna: Nome</strong><br>
             <small>Nome completo do aluno</small>
           </div>
         </div>
+      </div>
+      
+      <h3 style="margin-top: 1.5rem;">Como organizar as abas:</h3>
+      <p>Cada aba do Excel representa uma turma:</p>
+      <div class="colunas-lista">
         <div class="coluna-item">
-          <span class="coluna-icon">🏫</span>
+          <span class="coluna-icon">📑</span>
           <div>
-            <strong>Turma</strong><br>
-            <small>Ex: Turma A, Turma B</small>
+            <strong>Nome da Aba = Turma</strong><br>
+            <small>Ex: "6A", "7B", "8C"</small>
           </div>
         </div>
         <div class="coluna-item">
           <span class="coluna-icon">📚</span>
           <div>
             <strong>Série/Ano</strong><br>
-            <small>Ex: 7º ano, 1º ano EM</small>
+            <small>Será configurado no próximo passo</small>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Seção de Preview -->
-  <div *ngIf="showPreview" class="secao">
-    <h2>2. Confirmar Importação</h2>
+  <!-- Seção de Mapeamento de Abas -->
+  <div *ngIf="showMapeamento" class="secao">
+    <h2>2. Mapear Abas para Turmas</h2>
     
     <div class="info-importacao">
       <span class="icone">ℹ️</span>
       <div class="info-texto">
-        <span *ngIf="isTurmaExistente()" class="status-atualizacao">
-          <strong>🔄 Atualização de Turma</strong> - Os alunos antigos da turma "<strong>{{ turmaAtualImportacao }}</strong>" serão substituídos.
+        <strong>Configurar Abas do Excel</strong> - Define qual turma do sistema cada aba do arquivo corresponde
+      </div>
+    </div>
+    
+    <p class="info-preview">Total de abas detectadas: <strong>{{ sheetsMapping.length }}</strong></p>
+    
+    <!-- Mapear cada aba -->
+    <div class="mapeamento-container">
+      <div *ngFor="let sheet of sheetsMapping" class="aba-mapeamento">
+        <div class="aba-header">
+          <div class="aba-title">
+            <strong>📑 {{ sheet.sheetName }}</strong>
+            <span class="aba-alunos">({{ sheet.alunosPreview.length }} alunos)</span>
+          </div>
+        </div>
+        
+        <div class="aba-form">
+          <!-- Turma automática (vem do nome da aba) -->
+          <div class="form-group">
+            <label>Turma (identificada pela aba):</label>
+            <div class="turma-auto">
+              <strong>{{ sheet.turmaDestino }}</strong>
+            </div>
+          </div>
+          
+          <!-- Série/Ano (com sugestão) -->
+          <div class="form-group">
+            <label for="serie-{{ sheet.sheetName }}">Série/Ano:</label>
+            <input 
+              [id]="'serie-' + sheet.sheetName"
+              type="text" 
+              [(ngModel)]="sheet.serieDestino" 
+              placeholder="Ex: 6º ano, 1º ano EM"
+              class="input-text"
+            />
+            <small class="hint" *ngIf="!sheet.serieDestino">
+              ⚠️ Campo obrigatório
+            </small>
+          </div>
+        </div>
+        
+        <!-- Mostrar preview mínimo dos alunos -->
+        <div class="aba-preview">
+          <small>Primeiros alunos a importar:</small>
+          <ul class="alunos-mini">
+            <li *ngFor="let aluno of sheet.alunosPreview.slice(0, 3)">
+              {{ aluno.nome }}
+            </li>
+            <li *ngIf="sheet.alunosPreview.length > 3" class="mais">
+              +{{ sheet.alunosPreview.length - 3 }} mais
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    
+    <div class="botoes-acao">
+      <button class="btn btn-success" (click)="confirmarMapeamento()" [disabled]="loading">
+        <span *ngIf="!loading">✅ Confirmar Mapeamento</span>
+        <span *ngIf="loading">Validando...</span>
+      </button>
+      <button class="btn btn-secondary" (click)="cancelarImportacao()" [disabled]="loading">
+        Cancelar
+      </button>
+    </div>
+  </div>
+
+  <!-- Seção de Preview -->
+  <div *ngIf="showPreview" class="secao">
+    <h2>3. Confirmar Importação</h2>
+    
+    <div class="info-importacao">
+      <span class="icone">ℹ️</span>
+      <div class="info-texto">
+        <span *ngIf="sheetsMapping.length === 1" class="status-multipla">
+          <strong>📑 Uma Aba</strong> - Será importada para a turma "<strong>{{ sheetsMapping[0].turmaDestino }}</strong>"
         </span>
-        <span *ngIf="isTurmaNova()" class="status-nova">
-          <strong>✨ Nova Turma</strong> - A turma "<strong>{{ turmaAtualImportacao }}</strong>" será adicionada ao sistema.
-        </span>
-        <span *ngIf="temMultiplasTurmas()" class="status-multipla">
-          <strong>📚 Múltiplas Turmas</strong> - O arquivo contém várias turmas.
+        <span *ngIf="sheetsMapping.length > 1" class="status-multipla">
+          <strong>📚 {{ sheetsMapping.length }} Abas</strong> - As abas serão importadas para suas turmas correspondentes
         </span>
       </div>
     </div>
@@ -115,17 +196,25 @@
           <tr>
             <th>#</th>
             <th>Nome</th>
-            <th>Turma</th>
-            <th>Série/Ano</th>
+            <th>Turma (Aba)</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let aluno of alunosPreview; let i = index">
-            <td>{{ i + 1 }}</td>
-            <td>{{ aluno.nome }}</td>
-            <td>{{ aluno.turma }}</td>
-            <td>{{ aluno.serie }}</td>
-          </tr>
+          <!-- Agrupar por aba/turma para visualização -->
+          <template *ngFor="let sheet of sheetsMapping">
+            <!-- Header de turma -->
+            <tr class="turma-header-row">
+              <td colspan="3" class="turma-header-cell">
+                <strong>📑 {{ sheet.turmaDestino }}</strong> ({{ sheet.serieDestino }})
+              </td>
+            </tr>
+            <!-- Alunos da turma -->
+            <tr *ngFor="let aluno of sheet.alunosPreview; let i = index">
+              <td>{{ i + 1 }}</td>
+              <td>{{ aluno.nome }}</td>
+              <td>{{ sheet.turmaDestino }}</td>
+            </tr>
+          </template>
         </tbody>
       </table>
     </div>
@@ -143,7 +232,7 @@
 
   <!-- Seção de Lista -->
   <div *ngIf="showList" class="secao">
-    <h2>3. Alunos Cadastrados</h2>
+    <h2>4. Alunos Cadastrados</h2>
     
     <div class="lista-controls">
       <div class="input-group">
@@ -177,14 +266,22 @@
       
       <!-- Agrupado por Turma -->
       <div *ngFor="let turmaGrupo of (alunosFiltrados | groupByTurma)" class="grupo-turma">
-        <div class="turma-header" (click)="toggleTurma(turmaGrupo.turma)" [class.expandida]="isTurmaExpandida(turmaGrupo.turma)">
-          <button class="toggle-btn" [class.expandido]="isTurmaExpandida(turmaGrupo.turma)">
-            <span class="toggle-icon">▶</span>
-          </button>
-          <div class="turma-info">
-            <div class="turma-nome">{{ turmaGrupo.turma }}</div>
-            <div class="turma-count">{{ turmaGrupo.alunos.length }} aluno(s)</div>
+        <div class="turma-header" [class.expandida]="isTurmaExpandida(turmaGrupo.turma)">
+          <div class="turma-header-left" (click)="toggleTurma(turmaGrupo.turma)">
+            <button class="toggle-btn" [class.expandido]="isTurmaExpandida(turmaGrupo.turma)">
+              <span class="toggle-icon">▶</span>
+            </button>
+            <div class="turma-info">
+              <div class="turma-nome">{{ turmaGrupo.turma }}</div>
+              <div class="turma-count">{{ turmaGrupo.alunos.length }} aluno(s)</div>
+            </div>
           </div>
+          <button 
+            class="btn-icon btn-delete-turma" 
+            (click)="deletarTurma(turmaGrupo.turma)" 
+            title="Deletar turma inteira">
+            🗑️ Deletar Turma
+          </button>
         </div>
         
         <div class="turma-content" *ngIf="isTurmaExpandida(turmaGrupo.turma)">

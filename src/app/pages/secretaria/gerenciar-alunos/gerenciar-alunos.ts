@@ -7,6 +7,16 @@ import { AuthService } from '../../../services/auth';
 import { GroupByTurmaPipe } from '../../../pipes/group-by-turma.pipe';
 import * as XLSX from 'xlsx';
 
+// Interface para armazenar info de cada aba do Excel
+interface SheetMapping {
+  sheetName: string;
+  alunosPreview: any[];
+  turmaDestino: string; // Turma que será usada no sistema
+  serieDestino: string; // Série/Ano que será usada
+  turmasMapeadas: any; // Mapeamento de turmas encontradas na aba (aqui vem o nome da aba)
+  necessitaMapeamento: boolean; // True se a aba precisa de mapeamento
+}
+
 @Component({
   selector: 'app-gerenciar-alunos',
   standalone: true,
@@ -25,9 +35,13 @@ export class GerenciarAlunos implements OnInit {
   alunos: Aluno[] = [];
   alunosPreview: any[] = [];
   
-  loading = false;
+  // Novas propriedades para múltiplas abas
+  sheetsMapping: SheetMapping[] = [];
+  showMapeamento = false;
   showPreview = false;
   showList = true;
+  
+  loading = false;
   
   mensagem = '';
   tipoMensagem: 'sucesso' | 'erro' | 'info' = 'info';
@@ -37,7 +51,7 @@ export class GerenciarAlunos implements OnInit {
   
   filtroAlunos = '';
   turmasExpandidas: Set<string> = new Set();
-  turmaAtualImportacao = ''; // Turma sendo importada
+  turmaAtualImportacao = ''; // Turma sendo importada (para compatibilidade com código antigo)
   
   ngOnInit() {
     this.carregarDados();
@@ -115,65 +129,82 @@ export class GerenciarAlunos implements OnInit {
         const workbook = XLSX.read(dados, { type: 'binary' });
         console.log('📋 Abas disponíveis:', workbook.SheetNames);
         
-        const primeiraAba = workbook.SheetNames[0];
-        console.log('📌 Primeira aba:', primeiraAba);
+        // Nova lógica: processar TODAS as abas
+        this.sheetsMapping = [];
+        let totalAlunos = 0;
         
-        const planilha = workbook.Sheets[primeiraAba];
-        console.log('📄 Planilha carregada');
-        
-        const json: any[] = XLSX.utils.sheet_to_json(planilha);
-        console.log('🔄 JSON convertido, linhas:', json.length);
-        console.log('📑 Primeiras linhas:', json.slice(0, 3));
-        
-        // Normalizar as chaves (remover espaços, fazer lowercase)
-        const jsonNormalizado = json.map(row => {
-          const newRow: any = {};
-          Object.keys(row).forEach(key => {
-            const normalizedKey = key.trim();
-            newRow[normalizedKey] = row[key];
+        for (const sheetName of workbook.SheetNames) {
+          console.log(`\n📌 Processando aba: "${sheetName}"`);
+          
+          const planilha = workbook.Sheets[sheetName];
+          const json: any[] = XLSX.utils.sheet_to_json(planilha);
+          
+          // Normalizar as chaves (remover espaços)
+          const jsonNormalizado = json.map(row => {
+            const newRow: any = {};
+            Object.keys(row).forEach(key => {
+              const normalizedKey = key.trim();
+              newRow[normalizedKey] = row[key];
+            });
+            return newRow;
           });
-          return newRow;
-        });
-        
-        console.log('📑 Primeiras linhas normalizadas:', jsonNormalizado.slice(0, 3));
-        
-        // Validar e preparar dados
-        this.alunosPreview = jsonNormalizado
-          .filter(row => {
-            const valid = row['Nome'] && row['Turma'] && row['Série/Ano'];
-            if (!valid) {
-              console.warn('⚠️ Linha inválida (faltam campos):', row);
-            }
-            return valid;
-          })
-          .map(row => ({
-            nome: String(row['Nome']).trim(),
-            turma: String(row['Turma']).trim(),
-            serie: String(row['Série/Ano']).trim()
-          }));
-        
-        // Detectar turma(s) no arquivo
-        const turmasNoArquivo = [...new Set(this.alunosPreview.map(a => a.turma))];
-        if (turmasNoArquivo.length === 1) {
-          this.turmaAtualImportacao = turmasNoArquivo[0];
-          console.log('🎯 Turma detectada:', this.turmaAtualImportacao);
-        } else if (turmasNoArquivo.length > 1) {
-          console.warn('⚠️ Arquivo contém múltiplas turmas:', turmasNoArquivo);
-          this.turmaAtualImportacao = '';
+          
+          // Validar e preparar dados (apenas Nome é obrigatório)
+          const alunosValidos = jsonNormalizado
+            .filter(row => {
+              const valid = row['Nome'];
+              if (!valid) {
+                console.warn('⚠️ Linha inválida (falta Nome):', row);
+              }
+              return valid;
+            })
+            .map(row => ({
+              nome: String(row['Nome']).trim()
+            }));
+          
+          if (alunosValidos.length === 0) {
+            console.warn(`⚠️ Nenhum aluno válido na aba "${sheetName}"`);
+            continue;
+          }
+          
+          console.log(`✅ ${alunosValidos.length} alunos válidos na aba "${sheetName}"`);
+          
+          // Usar o nome da aba como turma
+          const turmaAba = sheetName;
+          console.log(`📚 Turma detectada: "${turmaAba}"`);
+          
+          // Criar mapeamento para a aba
+          const mapping: SheetMapping = {
+            sheetName: sheetName,
+            alunosPreview: alunosValidos,
+            turmaDestino: turmaAba,
+            serieDestino: '',
+            turmasMapeadas: [turmaAba],
+            necessitaMapeamento: false // Sempre temos turma pela aba
+          };
+          
+          this.sheetsMapping.push(mapping);
+          totalAlunos += alunosValidos.length;
         }
         
-        console.log('✅ Alunos filtrados:', this.alunosPreview.length);
-        
-        if (this.alunosPreview.length === 0) {
-          console.error('❌ Nenhum aluno válido encontrado');
-          this.exibirMensagem('Nenhum aluno válido encontrado. Verifique as colunas: Nome, Turma, Série/Ano', 'erro');
+        if (this.sheetsMapping.length === 0) {
+          console.error('❌ Nenhuma aba com dados válidos encontrada');
+          this.exibirMensagem('Nenhuma aba com dados válidos encontrada. Verifique o formato', 'erro');
           return;
         }
         
-        this.showPreview = true;
+        console.log(`\n✨ Total de ${totalAlunos} alunos em ${this.sheetsMapping.length} aba(s)`);
+        
+        // Tentar mapeamento automático e sugestão de série/ano
+        this.tentarMapeamentoAutomatico();
+        
+        // Sempre mostrar painel de mapeamento agora (para confirmar série/ano)
+        console.log('📋 Mostrando painel de mapeamento');
+        this.showMapeamento = true;
+        this.showPreview = false;
         this.showList = false;
-        this.exibirMensagem(`${this.alunosPreview.length} alunos encontrados para importação`, 'info');
-        console.log('✨ Preview carregado com sucesso');
+        
+        this.exibirMensagem(`${totalAlunos} alunos encontrados em ${this.sheetsMapping.length} aba(s)`, 'info');
         this.cdr.markForCheck();
         
       } catch (error) {
@@ -190,68 +221,117 @@ export class GerenciarAlunos implements OnInit {
     reader.readAsBinaryString(arquivo);
   }
   
+  // Tentar mapear automaticamente abas (agora é mais simples, pois aba = turma)
+  tentarMapeamentoAutomatico() {
+    // Com a nova lógica, o nome da aba já é a turma
+    // Apenas verificamos se precisamos de série/ano
+    for (const sheet of this.sheetsMapping) {
+      // Tentar detectar série/ano sugerido pelo nome da aba
+      // Ex: "6A" → "6º ano", "1A" → "1º ano EM"
+      if (!sheet.serieDestino) {
+        sheet.serieDestino = this.sugerirSerieAno(sheet.turmaDestino);
+        console.log(`✅ Série/Ano sugerida para "${sheet.turmaDestino}": "${sheet.serieDestino}"`);
+      }
+    }
+  }
+  
+  // Sugerir série/ano baseado no padrão do nome da turma
+  sugerirSerieAno(nomeTurma: string): string {
+    // Extrair número do começo (ex: "6A" → 6)
+    const match = nomeTurma.match(/^(\d+)/);
+    if (match) {
+      const numero = parseInt(match[1]);
+      if (numero >= 1 && numero <= 9) {
+        return `${numero}º ano`;
+      } else if (numero >= 10 && numero <= 12) {
+        return `${numero - 9}º ano EM`;
+      }
+    }
+    return '';
+  }
+  
+  // Preparar preview unificado (agrupa todas as abas)
+  prepararPreview() {
+    this.alunosPreview = [];
+    for (const sheet of this.sheetsMapping) {
+      this.alunosPreview.push(...sheet.alunosPreview);
+    }
+  }
+  
+  // Confirmar mapeamento e ir para preview
+  confirmarMapeamento() {
+    // Validar que todas as abas tem turma e série/ano definidas
+    const abasInvalidas = this.sheetsMapping.filter(s => !s.turmaDestino || !s.serieDestino);
+    if (abasInvalidas.length > 0) {
+      this.exibirMensagem('Por favor, defina a série/ano para todas as abas', 'erro');
+      return;
+    }
+    
+    console.log('✅ Mapeamento confirmado!');
+    this.prepararPreview();
+    this.showMapeamento = false;
+    this.showPreview = true;
+    this.cdr.markForCheck();
+  }
+  
   async importarAlunos() {
     try {
       console.log('🚀 Iniciando importação de alunos...');
       
-      if (this.alunosPreview.length === 0) {
-        console.error('❌ Nenhum aluno para importar');
-        this.exibirMensagem('Nenhum aluno para importar', 'erro');
+      if (this.sheetsMapping.length === 0) {
+        console.error('❌ Nenhuma aba para importar');
+        this.exibirMensagem('Nenhuma aba para importar', 'erro');
         return;
       }
       
-      console.log('📝 Alunos a importar:', this.alunosPreview.length);
       this.loading = true;
+      let totalImportados = 0;
+      const turmasProcessadas = new Set<string>();
       
-      // Verificar se é turma existente (reimportação) ou nova
-      const turmasNoArquivo = [...new Set(this.alunosPreview.map(a => a.turma))];
-      const turmaExistenteNoSistema = this.alunos.some(a => a.turma === this.turmaAtualImportacao);
-      
-      if (turmaExistenteNoSistema && this.turmaAtualImportacao) {
-        // É reimportação da mesma turma: deletar antigos dessa turma
-        console.log(`🔄 Reimportando turma "${this.turmaAtualImportacao}"...`);
-        console.log('🗑️ Deletando alunos antigos dessa turma...');
+      // Processar cada aba
+      for (const sheet of this.sheetsMapping) {
+        console.log(`\n📝 Processando aba "${sheet.sheetName}"...`);
         
-        const alunosAntigos = this.alunos.filter(a => a.turma === this.turmaAtualImportacao);
-        for (const aluno of alunosAntigos) {
-          if (aluno.id) {
-            await this.firestoreService.deletarAluno(aluno.id);
-          }
-        }
-        console.log(`✅ ${alunosAntigos.length} alunos antigos deletados`);
-      } else if (turmasNoArquivo.length > 1) {
-        // Múltiplas turmas: deletar todas as turmas do arquivo
-        console.log('📚 Múltiplas turmas detectadas, atualizando todas...');
-        console.log('🗑️ Deletando alunos antigos das turmas...');
-        
-        for (const turma of turmasNoArquivo) {
-          const alunosAntigos = this.alunos.filter(a => a.turma === turma);
-          for (const aluno of alunosAntigos) {
-            if (aluno.id) {
-              await this.firestoreService.deletarAluno(aluno.id);
+        // Se a turma destino ainda não foi processada, limpar alunos antigos
+        if (!turmasProcessadas.has(sheet.turmaDestino)) {
+          const alunosAntigos = this.alunos.filter(a => a.turma === sheet.turmaDestino);
+          if (alunosAntigos.length > 0) {
+            console.log(`🗑️ Deletando ${alunosAntigos.length} alunos antigos da turma "${sheet.turmaDestino}"...`);
+            for (const aluno of alunosAntigos) {
+              if (aluno.id) {
+                await this.firestoreService.deletarAluno(aluno.id);
+              }
             }
           }
+          turmasProcessadas.add(sheet.turmaDestino);
         }
-        console.log('✅ Alunos antigos deletados');
-      } else {
-        // Turma nova: apenas adicionar
-        console.log(`✨ Nova turma detectada: "${this.turmaAtualImportacao}"`);
+        
+        // Preparar alunos com a turma e série/ano destino
+        const alunosParaImportar = sheet.alunosPreview.map(a => ({
+          nome: a.nome,
+          turma: sheet.turmaDestino,
+          serie: sheet.serieDestino
+        }));
+        
+        console.log(`📥 Importando ${alunosParaImportar.length} alunos para turma "${sheet.turmaDestino}"...`);
+        const contador = await this.firestoreService.importarAlunos(this.escolaId, alunosParaImportar);
+        
+        console.log(`✅ ${contador} alunos importados`);
+        totalImportados += contador;
       }
       
-      // Importar os novos alunos
-      console.log('📥 Importando novos alunos...');
-      const contador = await this.firestoreService.importarAlunos(this.escolaId, this.alunosPreview);
+      console.log(`\n✨ Total: ${totalImportados} alunos importados`);
       
-      console.log(`✨ ${contador} alunos importados com sucesso`);
-      
+      this.sheetsMapping = [];
       this.alunosPreview = [];
       this.turmaAtualImportacao = '';
+      this.showMapeamento = false;
       this.showPreview = false;
       this.showList = true;
-      this.turmasExpandidas.clear(); // Limpar turmas expandidas
+      this.turmasExpandidas.clear();
       
       await this.carregarAlunos();
-      this.exibirMensagem(`✅ ${contador} alunos importados com sucesso!`, 'sucesso');
+      this.exibirMensagem(`✅ ${totalImportados} alunos importados com sucesso!`, 'sucesso');
       this.cdr.markForCheck();
       
     } catch (error) {
@@ -264,6 +344,8 @@ export class GerenciarAlunos implements OnInit {
   
   cancelarImportacao() {
     this.alunosPreview = [];
+    this.sheetsMapping = [];
+    this.showMapeamento = false;
     this.showPreview = false;
     this.showList = false;
     this.turmaAtualImportacao = '';
@@ -273,6 +355,9 @@ export class GerenciarAlunos implements OnInit {
     this.filtroAlunos = '';
     this.showList = false;
     this.showPreview = false;
+    this.showMapeamento = false;
+    this.sheetsMapping = [];
+    this.alunosPreview = [];
   }
   
   toggleTurma(turma: string) {
@@ -351,22 +436,74 @@ export class GerenciarAlunos implements OnInit {
     }
   }
   
+  async deletarTurma(turma: string) {
+    try {
+      const alunosDaTurma = this.alunos.filter(a => a.turma === turma);
+      
+      if (!confirm(`Deseja deletar a turma "${turma}" inteira? (${alunosDaTurma.length} alunos serão removidos)`)) {
+        return;
+      }
+      
+      this.loading = true;
+      console.log(`🗑️ Deletando turma "${turma}" com ${alunosDaTurma.length} alunos...`);
+      
+      // Deletar todos os alunos da turma
+      for (const aluno of alunosDaTurma) {
+        if (aluno.id) {
+          await this.firestoreService.deletarAluno(aluno.id);
+        }
+      }
+      
+      console.log(`✅ ${alunosDaTurma.length} alunos deletados`);
+      await this.carregarAlunos();
+      this.exibirMensagem(`✅ Turma "${turma}" deletada com sucesso! (${alunosDaTurma.length} alunos removidos)`, 'sucesso');
+      this.cdr.markForCheck();
+      
+    } catch (error) {
+      console.error('Erro ao deletar turma:', error);
+      this.exibirMensagem('Erro ao deletar turma', 'erro');
+    } finally {
+      this.loading = false;
+    }
+  }
+  
   fecharModalEdicao() {
     this.showModalEdicao = false;
     this.alunoEditando = null;
   }
   
   downloadTemplate() {
-    const dados = [
-      { Nome: 'João Silva', Turma: 'Turma A', 'Série/Ano': '7º ano' },
-      { Nome: 'Maria Santos', Turma: 'Turma A', 'Série/Ano': '7º ano' },
-      { Nome: 'Pedro Oliveira', Turma: 'Turma B', 'Série/Ano': '8º ano' }
-    ];
-    
-    const planilha = XLSX.utils.json_to_sheet(dados);
+    // Criar workbook com múltiplas abas como exemplo
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, planilha, 'Alunos');
-    XLSX.writeFile(workbook, 'template_alunos.xlsx');
+    
+    // Aba 1: Turma 6A
+    const dados6A = [
+      { Nome: 'João Silva' },
+      { Nome: 'Maria Santos' },
+      { Nome: 'Pedro Oliveira' },
+      { Nome: 'Ana Costa' }
+    ];
+    const sheet6A = XLSX.utils.json_to_sheet(dados6A);
+    XLSX.utils.book_append_sheet(workbook, sheet6A, '6A');
+    
+    // Aba 2: Turma 7B
+    const dados7B = [
+      { Nome: 'Lucas Ferreira' },
+      { Nome: 'Beatriz Lima' },
+      { Nome: 'Carlos Mendes' }
+    ];
+    const sheet7B = XLSX.utils.json_to_sheet(dados7B);
+    XLSX.utils.book_append_sheet(workbook, sheet7B, '7B');
+    
+    // Aba 3: Turma 8C
+    const dados8C = [
+      { Nome: 'Fernanda Gomes' },
+      { Nome: 'Rafael Dias' }
+    ];
+    const sheet8C = XLSX.utils.json_to_sheet(dados8C);
+    XLSX.utils.book_append_sheet(workbook, sheet8C, '8C');
+    
+    XLSX.writeFile(workbook, 'template_alunos_multiplas_turmas.xlsx');
   }
   
   exibirMensagem(texto: string, tipo: 'sucesso' | 'erro' | 'info') {
