@@ -130,13 +130,15 @@ service cloud.firestore {
 
     // Regras para coleção 'conversas'
     match /conversas/{conversaId} {
-      // Usuários da escola podem ler conversas
-      allow read: if request.auth != null && belongsToSchool(resource.data.escolaId);
+      // Usuários autenticados podem ler conversas
+      allow read: if request.auth != null;
       
-      // Secretaria pode criar, atualizar e deletar conversas
-      allow create, update, delete: if request.auth != null && 
-                                      belongsToSchool(request.resource.data.escolaId) &&
-                                      get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.role == 'secretaria';
+      // Usuários autenticados podem criar conversas
+      allow create: if request.auth != null && request.resource.data.escolaId != null;
+      
+      // Secretaria pode atualizar e deletar conversas
+      allow update, delete: if request.auth != null && 
+                             get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.role == 'secretaria';
     }
   }
 }
