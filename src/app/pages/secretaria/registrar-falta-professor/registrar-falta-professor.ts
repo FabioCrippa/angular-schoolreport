@@ -32,6 +32,7 @@ export class RegistrarFaltaProfessor implements OnInit {
   secretariaNome = '';
   secretariaId = '';
   escolaId = '';
+  professores: { id: string; nome: string }[] = [];
 
   form = {
     data: new Date().toISOString().split('T')[0],
@@ -77,6 +78,7 @@ export class RegistrarFaltaProfessor implements OnInit {
           this.secretariaNome = usuario.nome;
           this.secretariaId = user.uid;
           this.escolaId = usuario.escolaId;
+          this.professores = await this.firestoreService.listarProfessoresDaEscola(usuario.escolaId);
         }
       }
     } catch (error) {

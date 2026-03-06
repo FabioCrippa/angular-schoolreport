@@ -142,6 +142,15 @@ export interface FaltaProfessor {
   registradoPorNome: string;
 }
 
+export interface Professor {
+  id?: string;
+  escolaId: string;
+  nome: string;
+  disciplinas: string[];
+  ativo: boolean;
+  criadoEm?: Date;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -892,6 +901,22 @@ Equipe escu
     }
   }
 
+  async listarProfessoresDaEscola(escolaId: string): Promise<{ id: string; nome: string }[]> {
+    try {
+      const col = collection(this.firestore, 'usuarios');
+      const q = query(col, where('escolaId', '==', escolaId), where('role', '==', 'professor'));
+      const snap = await getDocs(q);
+      const result = snap.docs
+        .map(d => ({ id: d.id, nome: d.data()['nome'] as string }))
+        .filter(u => u.nome)
+        .sort((a, b) => a.nome.localeCompare(b.nome));
+      return result;
+    } catch (error) {
+      console.error('Erro ao listar professores da escola:', error);
+      return [];
+    }
+  }
+
   async adicionarUsuarioFirestore(usuario: Omit<Usuario, 'id' | 'criadoEm'>): Promise<string> {
     try {
       const usuariosCollection = collection(this.firestore, 'usuarios');
@@ -1591,16 +1616,68 @@ Equipe escu
   async obterFaltasProfessores(escolaId: string): Promise<FaltaProfessor[]> {
     try {
       const col = collection(this.firestore, 'faltasProfessores');
-      const q = query(col, where('escolaId', '==', escolaId), orderBy('data', 'desc'));
+      const q = query(col, where('escolaId', '==', escolaId));
       const snap = await getDocs(q);
-      return snap.docs.map(d => ({
+      const result = snap.docs.map(d => ({
         id: d.id,
         ...(d.data() as Omit<FaltaProfessor, 'id'>),
         registradoEm: d.data()['registradoEm']?.toDate()
       }));
+      // Ordenar por data decrescente em memória (evita índice composto no Firestore)
+      result.sort((a, b) => b.data.localeCompare(a.data));
+      return result;
     } catch (error) {
       console.error('Erro ao obter faltas de professores:', error);
       return [];
+    }
+  }
+
+  async obterProfessores(escolaId: string): Promise<Professor[]> {
+    try {
+      const col = collection(this.firestore, 'professores');
+      const q = query(col, where('escolaId', '==', escolaId), where('ativo', '==', true));
+      const snap = await getDocs(q);
+      const result = snap.docs.map(d => ({
+        id: d.id,
+        ...(d.data() as Omit<Professor, 'id'>),
+        criadoEm: d.data()['criadoEm']?.toDate()
+      }));
+      result.sort((a, b) => a.nome.localeCompare(b.nome));
+      return result;
+    } catch (error) {
+      console.error('Erro ao obter professores:', error);
+      return [];
+    }
+  }
+
+  async salvarProfessor(professor: Omit<Professor, 'id'>): Promise<string> {
+    try {
+      const col = collection(this.firestore, 'professores');
+      const docRef = await addDoc(col, { ...professor, criadoEm: Timestamp.now() });
+      return docRef.id;
+    } catch (error) {
+      console.error('Erro ao salvar professor:', error);
+      throw error;
+    }
+  }
+
+  async atualizarProfessor(id: string, dados: Partial<Professor>): Promise<void> {
+    try {
+      const docRef = doc(this.firestore, 'professores', id);
+      await updateDoc(docRef, dados as any);
+    } catch (error) {
+      console.error('Erro ao atualizar professor:', error);
+      throw error;
+    }
+  }
+
+  async deletarProfessor(id: string): Promise<void> {
+    try {
+      const docRef = doc(this.firestore, 'professores', id);
+      await updateDoc(docRef, { ativo: false });
+    } catch (error) {
+      console.error('Erro ao deletar professor:', error);
+      throw error;
     }
   }
 }

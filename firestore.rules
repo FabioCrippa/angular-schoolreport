@@ -168,5 +168,19 @@ service cloud.firestore {
                        belongsToSchool(resource.data.escolaId) &&
                        get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.role == 'secretaria';
     }
+
+    // Regras para coleção 'professores'
+    match /professores/{professorId} {
+      allow read: if request.auth != null && belongsToSchool(resource.data.escolaId);
+      allow create: if request.auth != null &&
+                       belongsToSchool(request.resource.data.escolaId) &&
+                       get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.role == 'secretaria';
+      allow update: if request.auth != null &&
+                       belongsToSchool(resource.data.escolaId) &&
+                       get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.role == 'secretaria';
+      allow delete: if request.auth != null &&
+                       belongsToSchool(resource.data.escolaId) &&
+                       get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.role == 'secretaria';
+    }
   }
 }

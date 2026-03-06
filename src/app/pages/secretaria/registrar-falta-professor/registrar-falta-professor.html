@@ -43,10 +43,14 @@
           <input
             type="text"
             [(ngModel)]="form.professorNome"
-            placeholder="Digite o nome completo"
+            placeholder="Digite ou selecione o nome"
             class="input"
+            list="listaProfessores"
             autocomplete="off"
           />
+          <datalist id="listaProfessores">
+            <option *ngFor="let p of professores" [value]="p.nome"></option>
+          </datalist>
         </div>
 
         <div class="form-group full-width">
@@ -56,6 +60,7 @@
             [(ngModel)]="form.professorEventual"
             placeholder="Nome do professor que substituiu (opcional)"
             class="input"
+            list="listaProfessores"
             autocomplete="off"
           />
         </div>

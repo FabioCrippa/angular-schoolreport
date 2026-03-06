@@ -110,6 +110,7 @@ export class ListaFaltasProfessores implements OnInit {
       'Data': this.formatarData(f.data),
       'Professor Ausente': f.professorNome,
       'Período': this.labelPeriodo(f.periodo),
+      'Qtd. Aulas': f.aulas.length,
       'Aulas': this.formatarAulas(f.aulas),
       'Professor Eventual': f.professorEventual || '—',
       'Registrado por': f.registradoPorNome
@@ -117,7 +118,7 @@ export class ListaFaltasProfessores implements OnInit {
 
     const ws = XLSX.utils.json_to_sheet(dados);
     ws['!cols'] = [
-      { wch: 12 }, { wch: 28 }, { wch: 10 }, { wch: 40 }, { wch: 22 }, { wch: 22 }
+      { wch: 12 }, { wch: 28 }, { wch: 10 }, { wch: 10 }, { wch: 40 }, { wch: 22 }, { wch: 22 }
     ];
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Faltas Professores');

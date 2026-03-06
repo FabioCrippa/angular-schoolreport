@@ -97,6 +97,7 @@
             </span>
           </td>
           <td class="col-aulas">
+            <span class="badge-qtd-aulas">{{ falta.aulas.length }} aula{{ falta.aulas.length !== 1 ? 's' : '' }}</span>
             <span *ngFor="let aula of falta.aulas" class="badge-aula">
               {{ aula.turma }} – {{ aula.numeroAula }}
             </span>
