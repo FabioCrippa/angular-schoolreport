@@ -1245,6 +1245,54 @@ Equipe escu
     }
   }
 
+  async deletarFaltasDoAluno(escolaId: string, alunoId: string): Promise<number> {
+    try {
+      const faltasCollection = collection(this.firestore, 'faltas');
+      const q = query(
+        faltasCollection, 
+        where('escolaId', '==', escolaId),
+        where('alunoId', '==', alunoId)
+      );
+      const querySnapshot = await getDocs(q);
+      
+      let contador = 0;
+      for (const doc_item of querySnapshot.docs) {
+        await deleteDoc(doc(this.firestore, 'faltas', doc_item.id));
+        contador++;
+      }
+      
+      console.log(`✅ ${contador} faltas deletadas do aluno ${alunoId}`);
+      return contador;
+    } catch (error) {
+      console.error('Erro ao deletar faltas do aluno:', error);
+      throw error;
+    }
+  }
+
+  async deletarFaltasDaTurma(escolaId: string, turma: string): Promise<number> {
+    try {
+      const faltasCollection = collection(this.firestore, 'faltas');
+      const q = query(
+        faltasCollection, 
+        where('escolaId', '==', escolaId),
+        where('turma', '==', turma)
+      );
+      const querySnapshot = await getDocs(q);
+      
+      let contador = 0;
+      for (const doc_item of querySnapshot.docs) {
+        await deleteDoc(doc(this.firestore, 'faltas', doc_item.id));
+        contador++;
+      }
+      
+      console.log(`✅ ${contador} faltas deletadas da turma ${turma}`);
+      return contador;
+    } catch (error) {
+      console.error('Erro ao deletar faltas da turma:', error);
+      throw error;
+    }
+  }
+
   // ================== MÉTODOS PARA GERENCIAR FALTAS ==================
 
   async registrarFaltas(escolaId: string, falta: Omit<Falta, 'id' | 'registradoEm'>): Promise<string> {

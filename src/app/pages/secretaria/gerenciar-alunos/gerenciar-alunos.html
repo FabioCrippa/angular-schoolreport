@@ -282,6 +282,12 @@
             title="Deletar turma inteira">
             🗑️ Deletar Turma
           </button>
+          <button 
+            class="btn-icon btn-limpar-historico" 
+            (click)="limparHistoricoFaltas(turmaGrupo.turma)" 
+            title="Limpar histórico de faltas">
+            🧹 Limpar Histórico
+          </button>
         </div>
         
         <div class="turma-content" *ngIf="isTurmaExpandida(turmaGrupo.turma)">

@@ -111,10 +111,15 @@ service cloud.firestore {
       // Usuários da escola podem ler alunos
       allow read: if request.auth != null && belongsToSchool(resource.data.escolaId);
       
-      // Secretaria pode criar, atualizar e deletar alunos da sua escola
-      allow create, update, delete: if request.auth != null && 
-                                      belongsToSchool(request.resource.data.escolaId) &&
-                                      get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.role == 'secretaria';
+      // Secretaria pode criar e atualizar alunos da sua escola
+      allow create, update: if request.auth != null && 
+                                belongsToSchool(request.resource.data.escolaId) &&
+                                get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.role == 'secretaria';
+
+      // Secretaria pode deletar alunos da sua escola
+      allow delete: if request.auth != null && 
+                       belongsToSchool(resource.data.escolaId) &&
+                       get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.role == 'secretaria';
     }
 
     // Regras para coleção 'faltas'
@@ -122,10 +127,15 @@ service cloud.firestore {
       // Usuários da escola podem ler faltas
       allow read: if request.auth != null && belongsToSchool(resource.data.escolaId);
       
-      // Secretaria pode criar, atualizar e deletar faltas
-      allow create, update, delete: if request.auth != null && 
-                                      belongsToSchool(request.resource.data.escolaId) &&
-                                      get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.role == 'secretaria';
+      // Secretaria pode criar e atualizar faltas
+      allow create, update: if request.auth != null && 
+                                belongsToSchool(request.resource.data.escolaId) &&
+                                get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.role == 'secretaria';
+
+      // Secretaria pode deletar faltas (usa resource.data, não request.resource)
+      allow delete: if request.auth != null && 
+                       belongsToSchool(resource.data.escolaId) &&
+                       get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.role == 'secretaria';
     }
 
     // Regras para coleção 'conversas'

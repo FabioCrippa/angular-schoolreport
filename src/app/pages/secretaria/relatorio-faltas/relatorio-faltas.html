@@ -10,6 +10,11 @@
     <p class="subtitle">Acompanhamento de Faltas e Busca Ativa</p>
   </div>
 
+  <!-- Mensagem de Feedback -->
+  <div *ngIf="mensagem" class="mensagem-box" [class]="'mensagem-' + tipoMensagem">
+    {{ mensagem }}
+  </div>
+
   <!-- Loading -->
   <div *ngIf="loading" class="loading">
     <div class="spinner"></div>
@@ -124,6 +129,25 @@
         </select>
       </div>
 
+    </div>
+
+  </div>
+
+  <!-- Limpar Histórico -->
+  <div *ngIf="!loading && turmasDisponiveis.length > 0" class="limpar-historico-section">
+    <h3>🧹 Limpar Histórico de Faltas</h3>
+    <p class="limpar-desc">Remove permanentemente os registros de faltas de uma turma do banco de dados.</p>
+    <div class="limpar-row">
+      <select [(ngModel)]="turmaSelecionadaLimpar" class="filtro-select">
+        <option value="">Selecione a turma...</option>
+        <option *ngFor="let turma of turmasDisponiveis" [value]="turma">{{ turma }}</option>
+      </select>
+      <button 
+        class="btn btn-limpar-historico" 
+        [disabled]="!turmaSelecionadaLimpar"
+        (click)="limparHistoricoFaltas(turmaSelecionadaLimpar)">
+        🧹 Limpar Histórico
+      </button>
     </div>
   </div>
 

@@ -78,6 +78,13 @@ export class RelatorioFaltas implements OnInit {
   // Dados filtered
   listaFiltrada: AlunoFalta[] = [];
   turmasDisponiveis: string[] = [];
+
+  // Mensagem de feedback
+  mensagem = '';
+  tipoMensagem: 'sucesso' | 'erro' | 'info' = 'sucesso';
+
+  // Limpar Histórico
+  turmaSelecionadaLimpar = '';
   
   ngOnInit() {
     this.carregarDados();
@@ -427,6 +434,39 @@ export class RelatorioFaltas implements OnInit {
     return textos[resultado] || resultado;
   }
   
+  exibirMensagem(texto: string, tipo: 'sucesso' | 'erro' | 'info' = 'sucesso') {
+    this.mensagem = texto;
+    this.tipoMensagem = tipo;
+    this.cdr.markForCheck();
+    setTimeout(() => {
+      this.mensagem = '';
+      this.cdr.markForCheck();
+    }, 4000);
+  }
+
+  async limparHistoricoFaltas(turma: string) {
+    try {
+      const faltasQtd = await this.firestoreService.deletarFaltasDaTurma(this.escolaId, turma);
+      if (faltasQtd === 0) {
+        this.exibirMensagem(`ℹ️ Nenhuma falta encontrada para turma "${turma}"`, 'info');
+        return;
+      }
+      if (!confirm(`Deseja deletar permanentemente o histórico de ${faltasQtd} faltas da turma "${turma}"?\n\nEsta ação não pode ser desfeita.`)) return;
+      this.loading = true;
+      await this.firestoreService.deletarFaltasDaTurma(this.escolaId, turma);
+      await this.procesarFaltas();
+      this.filtroTurma = '';
+      this.turmaSelecionadaLimpar = '';
+      this.aplicarFiltros();
+      this.exibirMensagem(`✅ Histórico limpo! ${faltasQtd} faltas removidas da turma "${turma}"`, 'sucesso');
+    } catch (error) {
+      console.error('Erro ao limpar histórico:', error);
+      this.exibirMensagem('Erro ao limpar histórico de faltas. Tente novamente.', 'erro');
+    } finally {
+      this.loading = false;
+    }
+  }
+
   voltar() {
     this.router.navigate(['/secretaria/dashboard']);
   }

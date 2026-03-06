@@ -467,6 +467,35 @@ export class GerenciarAlunos implements OnInit {
     }
   }
   
+  async limparHistoricoFaltas(turma: string) {
+    try {
+      const faltasQtd = await this.firestoreService.deletarFaltasDaTurma(this.escolaId, turma);
+      
+      if (faltasQtd === 0) {
+        this.exibirMensagem(`ℹ️ Nenhuma falta encontrada para turma "${turma}"`, 'info');
+        return;
+      }
+      
+      if (!confirm(`Deseja deletar permanentemente o histórico de ${faltasQtd} faltas da turma "${turma}"? Esta ação não pode ser desfeita.`)) {
+        return;
+      }
+      
+      this.loading = true;
+      console.log(`🧹 Limpando histórico de faltas da turma "${turma}"...`);
+      
+      const deletados = await this.firestoreService.deletarFaltasDaTurma(this.escolaId, turma);
+      
+      console.log(`✅ ${deletados} faltas deletadas`);
+      this.exibirMensagem(`✅ Histórico limpo! ${deletados} faltas removidas da turma "${turma}"`, 'sucesso');
+      
+    } catch (error) {
+      console.error('Erro ao limpar histórico:', error);
+      this.exibirMensagem('Erro ao limpar histórico de faltas', 'erro');
+    } finally {
+      this.loading = false;
+    }
+  }
+  
   fecharModalEdicao() {
     this.showModalEdicao = false;
     this.alunoEditando = null;

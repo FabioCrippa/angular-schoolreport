@@ -717,6 +717,29 @@
         border-color: rgba(231, 76, 60, 0.9);
       }
     }
+    
+    .btn-limpar-historico {
+      background: rgba(255, 255, 255, 0.15);
+      color: white;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      padding: 0.6rem 1rem;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      white-space: nowrap;
+      margin-right: 1rem;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      flex-shrink: 0;
+      
+      &:hover {
+        background: rgba(230, 126, 34, 0.7);
+        border-color: rgba(230, 126, 34, 0.9);
+      }
+    }
   }
 }
 
