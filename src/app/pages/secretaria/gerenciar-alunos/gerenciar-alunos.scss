@@ -54,7 +54,6 @@
   }
 }
 
-// Mensagens de feedback
 .mensagem {
   padding: 1rem;
   border-radius: 8px;
@@ -92,7 +91,6 @@
   }
 }
 
-// Step Indicator
 .step-indicator {
   display: flex;
   justify-content: center;
@@ -222,7 +220,6 @@
   }
 }
 
-// Área de upload
 .upload-area {
   border: 2px dashed #3498db;
   border-radius: 8px;
@@ -259,7 +256,6 @@
   }
 }
 
-// Botões
 .btn {
   padding: 0.75rem 1.5rem;
   border: none;
@@ -331,7 +327,6 @@
   }
 }
 
-// Informações de formato
 .formato-info {
   background-color: #f8fbff;
   border-left: 4px solid #3498db;
@@ -435,7 +430,6 @@
   margin-bottom: 1.5rem;
 }
 
-// Info Importação
 .info-importacao {
   display: flex;
   gap: 1rem;
@@ -548,7 +542,6 @@
   }
 }
 
-// Lista de alunos
 .info-lista {
   background-color: #ecf0f1;
   padding: 0.75rem 1rem;
@@ -575,7 +568,6 @@
   }
 }
 
-// Grupo de inputs
 .input-group {
   flex: 1;
   min-width: 200px;
