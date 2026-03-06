@@ -28,6 +28,7 @@ interface Conversa {
   alunoNome: string;
   responsavel: string;
   telefonado: boolean;
+  resultadoContato: 'conversa' | 'nao_conseguiu' | 'recado' | 'liga_devolvida';
   assunto: 'falta_justificada' | 'sem_justificativa' | 'doente' | 'trabalho' | 'outro';
   notas: string;
   registradoEm: Date;
@@ -67,6 +68,7 @@ export class RelatorioFaltas implements OnInit {
   novaConversa = {
     responsavel: '',
     telefonado: true,
+    resultadoContato: 'conversa' as 'conversa' | 'nao_conseguiu' | 'recado' | 'liga_devolvida',
     assunto: 'sem_justificativa' as 'falta_justificada' | 'sem_justificativa' | 'doente' | 'trabalho' | 'outro',
     notas: ''
   };
@@ -180,6 +182,9 @@ export class RelatorioFaltas implements OnInit {
       // Gerar resumo
       this.gerarResumo();
       
+      // Carregar status de contato (para marcar checkbox)
+      await this.carregarStatusesContato();
+      
       // Aplicar filtros
       this.aplicarFiltros();
       
@@ -291,6 +296,7 @@ export class RelatorioFaltas implements OnInit {
       this.novaConversa = {
         responsavel: '',
         telefonado: true,
+        resultadoContato: 'conversa' as 'conversa' | 'nao_conseguiu' | 'recado' | 'liga_devolvida',
         assunto: 'sem_justificativa',
         notas: ''
       };
@@ -310,6 +316,21 @@ export class RelatorioFaltas implements OnInit {
     this.alunoSelecionado = null;
     this.conversasHistorico = [];
     this.cdr.markForCheck();
+  }
+
+  async carregarStatusesContato() {
+    try {
+      // Para cada aluno, buscar status de contato e marcar como contatado se existir
+      for (const aluno of this.alunosFaltosos) {
+        const status = await this.firestoreService.obterStatusBuscaAtiva(this.escolaId, aluno.alunoId);
+        if (status) {
+          aluno.contatado = true;
+        }
+      }
+      this.cdr.markForCheck();
+    } catch (error) {
+      console.error('Erro ao carregar status de contato:', error);
+    }
   }
   
   async carregarHistoricoConversas(alunoId: string) {
@@ -339,6 +360,7 @@ export class RelatorioFaltas implements OnInit {
         alunoNome: this.alunoSelecionado.alunoNome,
         responsavel: this.novaConversa.responsavel,
         telefonado: this.novaConversa.telefonado,
+        resultadoContato: this.novaConversa.resultadoContato,
         assunto: this.novaConversa.assunto,
         notas: this.novaConversa.notas,
         registradoEm: new Date(),
@@ -347,6 +369,17 @@ export class RelatorioFaltas implements OnInit {
       };
       
       await this.firestoreService.salvarConversa(this.escolaId, conversa);
+      
+      // Registrar status de busca ativa (para persistir o checkbox)
+      await this.firestoreService.registrarStatusBuscaAtiva(this.escolaId, {
+        escolaId: this.escolaId,
+        alunoId: this.alunoSelecionado.alunoId,
+        alunoNome: this.alunoSelecionado.alunoNome,
+        ultimoContato: new Date(),
+        resultado: this.novaConversa.resultadoContato,
+        registradoPor: this.usuarioId,
+        registradoPorNome: this.usuarioNome
+      });
       
       // Marcar aluno como contatado
       this.alunoSelecionado.contatado = true;
@@ -360,6 +393,7 @@ export class RelatorioFaltas implements OnInit {
       this.novaConversa = {
         responsavel: '',
         telefonado: true,
+        resultadoContato: 'conversa' as 'conversa' | 'nao_conseguiu' | 'recado' | 'liga_devolvida',
         assunto: 'sem_justificativa',
         notas: ''
       };
@@ -379,6 +413,16 @@ export class RelatorioFaltas implements OnInit {
       'outro': '📌 Outro'
     };
     return labels[assunto] || assunto;
+  }
+
+  obterLabelResultado(resultado: string): string {
+    const labels: { [key: string]: string } = {
+      'conversa': '✅ Conversa com Responsável',
+      'nao_conseguiu': '❌ Não Conseguiu Contato',
+      'recado': '⏳ Deixou Recado',
+      'liga_devolvida': '📞 Liga Devolvida'
+    };
+    return labels[resultado] || resultado;
   }
   
   voltar() {

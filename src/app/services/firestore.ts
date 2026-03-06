@@ -14,6 +14,7 @@ import {
   orderBy,
   Timestamp 
 } from '@angular/fire/firestore';
+import { Auth } from '@angular/fire/auth';
 
 export interface Escola {
   id?: string;
@@ -106,9 +107,21 @@ export interface Conversa {
   alunoNome: string;
   responsavel: string;
   telefonado: boolean;
+  resultadoContato: 'conversa' | 'nao_conseguiu' | 'recado' | 'liga_devolvida';
   assunto: 'falta_justificada' | 'sem_justificativa' | 'doente' | 'trabalho' | 'outro';
   notas: string;
   registradoEm: Date;
+  registradoPor: string;
+  registradoPorNome: string;
+}
+
+export interface StatusBuscaAtiva {
+  id?: string;
+  escolaId: string;
+  alunoId: string;
+  alunoNome: string;
+  ultimoContato: Date;
+  resultado: 'conversa' | 'nao_conseguiu' | 'recado' | 'liga_devolvida';
   registradoPor: string;
   registradoPorNome: string;
 }
@@ -119,6 +132,7 @@ export interface Conversa {
 export class FirestoreService {
   
   private firestore = inject(Firestore);
+  private auth = inject(Auth);
   private ocorrenciasCollection = collection(this.firestore, 'ocorrencias');
   
   async adicionarOcorrencia(ocorrencia: Omit<Ocorrencia, 'id' | 'criadoEm'>, escolaData?: { nome: string, emailCoordenacao: string, emailDirecao: string }): Promise<string> {
@@ -1414,6 +1428,7 @@ Equipe escu
           alunoNome: data['alunoNome'],
           responsavel: data['responsavel'],
           telefonado: data['telefonado'],
+          resultadoContato: data['resultadoContato'] || 'conversa',
           assunto: data['assunto'],
           notas: data['notas'],
           registradoEm: data['registradoEm']?.toDate(),
@@ -1426,6 +1441,74 @@ Equipe escu
     } catch (error) {
       console.error('Erro ao obter conversas:', error);
       throw error;
+    }
+  }
+
+  async registrarStatusBuscaAtiva(escolaId: string, status: Omit<StatusBuscaAtiva, 'id'>): Promise<string> {
+    try {
+      const buscaAtivaCollection = collection(this.firestore, 'buscaAtivaStatus');
+      // Procurar se já existe registro para este aluno
+      const q = query(
+        buscaAtivaCollection,
+        where('escolaId', '==', escolaId),
+        where('alunoId', '==', status.alunoId)
+      );
+      
+      const querySnapshot = await getDocs(q);
+      
+      if (querySnapshot.size > 0) {
+        // Atualizar registro existente
+        const docRef = querySnapshot.docs[0].ref;
+        await updateDoc(docRef, {
+          ...status,
+          ultimoContato: Timestamp.now()
+        });
+        console.log('✅ Status de busca ativa atualizado:', docRef.id);
+        return docRef.id;
+      } else {
+        // Criar novo registro
+        const docRef = await addDoc(buscaAtivaCollection, {
+          ...status,
+          ultimoContato: Timestamp.now()
+        });
+        console.log('✅ Status de busca ativa registrado:', docRef.id);
+        return docRef.id;
+      }
+    } catch (error) {
+      console.error('Erro ao registrar status de busca ativa:', error);
+      throw error;
+    }
+  }
+
+  async obterStatusBuscaAtiva(escolaId: string, alunoId: string): Promise<StatusBuscaAtiva | null> {
+    try {
+      const buscaAtivaCollection = collection(this.firestore, 'buscaAtivaStatus');
+      const q = query(
+        buscaAtivaCollection,
+        where('escolaId', '==', escolaId),
+        where('alunoId', '==', alunoId)
+      );
+      
+      const querySnapshot = await getDocs(q);
+      
+      if (querySnapshot.size > 0) {
+        const data = querySnapshot.docs[0].data();
+        return {
+          id: querySnapshot.docs[0].id,
+          escolaId: data['escolaId'],
+          alunoId: data['alunoId'],
+          alunoNome: data['alunoNome'],
+          ultimoContato: data['ultimoContato']?.toDate(),
+          resultado: data['resultado'],
+          registradoPor: data['registradoPor'],
+          registradoPorNome: data['registradoPorNome']
+        };
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Erro ao obter status de busca ativa:', error);
+      return null;
     }
   }
 }

@@ -245,6 +245,16 @@
           </div>
 
           <div class="form-group">
+            <label>📞 Resultado do Contato</label>
+            <select [(ngModel)]="novaConversa.resultadoContato" class="form-select">
+              <option value="conversa">✅ Conversa com Responsável</option>
+              <option value="nao_conseguiu">❌ Não Conseguiu Contato</option>
+              <option value="recado">⏳ Deixou Recado</option>
+              <option value="liga_devolvida">📞 Liga Devolvida</option>
+            </select>
+          </div>
+
+          <div class="form-group">
             <label>📝 Notas da Conversa</label>
             <textarea 
               [(ngModel)]="novaConversa.notas"
@@ -280,6 +290,7 @@
             </div>
             <div class="conversa-info">
               <p><strong>Responsável:</strong> {{ conversa.responsavel }}</p>
+              <p><strong>Resultado:</strong> {{ obterLabelResultado(conversa.resultadoContato) }}</p>
               <p><strong>Registrado por:</strong> {{ conversa.registradoPorNome }}</p>
               <p *ngIf="conversa.notas"><strong>Notas:</strong> {{ conversa.notas }}</p>
             </div>
