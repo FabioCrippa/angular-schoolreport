@@ -2,6 +2,21 @@
   "firestore": {
     "rules": "firestore.rules"
   },
+  "hosting": {
+    "site": "reportonclass",
+    "public": "dist/angular-schoolreport/browser",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  },
   "functions": [
     {
       "source": "functions",
