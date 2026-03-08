@@ -3,7 +3,7 @@ import { Router, CanActivateFn } from '@angular/router';
 import { AuthService } from '../services/auth';
 import { map, take } from 'rxjs/operators';
 
-const ADMIN_EMAILS = ['sowlfy.tech@gmail.com'];
+const ADMIN_EMAILS = ['admin@escu.com.br'];
 
 export const adminGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthService);

@@ -6,7 +6,7 @@ service cloud.firestore {
     // Função auxiliar para verificar se é admin
     function isAdmin() {
       return request.auth != null && request.auth.token.email in [
-        'sowlfy.tech@gmail.com'
+        'admin@escu.com.br'
       ];
     }
     

@@ -15,7 +15,7 @@ export class AuthService {
   
   user$ = user(this.auth);
   
-  private ADMIN_EMAILS = ['sowlfy.tech@gmail.com'];
+  private ADMIN_EMAILS = ['admin@escu.com.br'];
   
   private isAdmin(email: string | null): boolean {
     return email ? this.ADMIN_EMAILS.includes(email) : false;
