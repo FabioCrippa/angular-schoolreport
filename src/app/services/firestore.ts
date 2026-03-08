@@ -1085,10 +1085,10 @@ Equipe escu
 
   // ===== AGENDA DE EQUIPAMENTOS =====
 
-  async obterAgendaEquipamentos(): Promise<any[]> {
+  async obterAgendaEquipamentos(escolaId: string): Promise<any[]> {
     try {
       const agendaCollection = collection(this.firestore, 'agendaEquipamentos');
-      const q = query(agendaCollection, orderBy('dataReserva', 'asc'));
+      const q = query(agendaCollection, where('escolaId', '==', escolaId), orderBy('dataReserva', 'asc'));
       const querySnapshot = await getDocs(q);
       
       const reservas: any[] = [];

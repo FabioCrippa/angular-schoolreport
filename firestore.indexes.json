@@ -1,0 +1,13 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "agendaEquipamentos",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "escolaId", "order": "ASCENDING" },
+        { "fieldPath": "dataReserva", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

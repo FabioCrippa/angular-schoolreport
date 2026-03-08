@@ -17,6 +17,7 @@ interface Reserva {
   turmaDescricao: string;
   atividade: string;
   status: 'confirmada' | 'cancelada';
+  escolaId: string;
   criadoEm: any;
 }
 
@@ -51,6 +52,7 @@ export class AgendamentoEquipamentosComponent implements OnInit {
   // Data para usuario logado
   usuarioId = '';
   usuarioNome = '';
+  escolaId = '';
   turmas: any[] = [];
   
   // Tipos de Ensino e Turmas
@@ -93,11 +95,16 @@ export class AgendamentoEquipamentosComponent implements OnInit {
 
   async inicializar() {
     try {
+      const escolaId = await this.auth.getEscolaId();
+      if (!escolaId) return;
+      this.escolaId = escolaId;
+
+      await this.carregarReservas();
+
       const usuario = this.auth.getCurrentUser();
       if (usuario) {
         this.usuarioId = usuario.uid;
         this.usuarioNome = usuario.displayName || 'Professor';
-        await this.carregarReservas();
         await this.carregarTurmas();
       }
     } catch (erro) {
@@ -107,7 +114,7 @@ export class AgendamentoEquipamentosComponent implements OnInit {
 
   async carregarReservas() {
     try {
-      this.reservas = await this.firestore.obterAgendaEquipamentos();
+      this.reservas = await this.firestore.obterAgendaEquipamentos(this.escolaId);
     } catch (erro) {
       console.error('Erro ao carregar reservas:', erro);
       this.mensagemErro = 'Erro ao carregar agendamentos';
@@ -207,6 +214,7 @@ export class AgendamentoEquipamentosComponent implements OnInit {
         turmaDescricao: this.turmaId,
         atividade: this.atividade,
         status: 'confirmada',
+        escolaId: this.escolaId,
         criadoEm: new Date()
       };
 
