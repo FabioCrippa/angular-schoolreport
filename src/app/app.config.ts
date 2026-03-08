@@ -1,5 +1,6 @@
-import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
+import { ApplicationConfig, provideBrowserGlobalErrorListeners, isDevMode } from '@angular/core';
 import { provideRouter } from '@angular/router';
+import { provideServiceWorker } from '@angular/service-worker';
 // import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 
 // Imports do Firebase
@@ -31,6 +32,10 @@ export const appConfig: ApplicationConfig = {
     provideFirestore(() => getFirestore()),
 
     // Configuração do Chart.js com todos os componentes padrão
-    provideCharts(withDefaultRegisterables())
+    provideCharts(withDefaultRegisterables()),
+    provideServiceWorker('ngsw-worker.js', {
+      enabled: !isDevMode(),
+      registrationStrategy: 'registerWhenStable:30000'
+    })
   ]
 };
