@@ -3,7 +3,7 @@
   "short_name": "escu",
   "description": "Gestão escolar simplificada",
   "theme_color": "#3B82F6",
-  "background_color": "#F0F4FF",
+  "background_color": "#3B82F6",
   "display": "standalone",
   "scope": "/",
   "start_url": "/",
@@ -41,12 +41,14 @@
     {
       "src": "icons/icon-384x384.png",
       "sizes": "384x384",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
       "src": "icons/icon-512x512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
