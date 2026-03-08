@@ -1,4 +1,4 @@
-<ng-container *ngIf="userRole">
+<ng-container *ngIf="userRole === 'direcao'">
   <header class="dir-header">
     <a routerLink="/" class="dir-logo">
       <img src="/logo2.png" class="dir-logo-icon" alt="Escu Logo">
@@ -8,7 +8,7 @@
       <div class="dir-user-info">
         <span class="dir-user-name">{{ userName }}</span>
         <span class="dir-user-email">{{ userEmail }}</span>
-        <span class="dir-user-role">{{ roleLabel }}</span>
+        <span class="dir-user-role">Diretor(a)</span>
       </div>
       <button class="dir-btn-logout" (click)="logout()">Sair</button>
     </div>
@@ -16,32 +16,10 @@
 
   <nav class="dir-nav">
     <div class="dir-nav-inner">
-
-      <ng-container *ngIf="userRole === 'professor'">
-        <a class="dir-nav-item" routerLink="/dashboard" routerLinkActive="dir-nav-item--active" [routerLinkActiveOptions]="{exact: true}"><span>🏠</span> Painel</a>
-        <a class="dir-nav-item" routerLink="/registro" routerLinkActive="dir-nav-item--active"><span>✏️</span> Registrar</a>
-        <a class="dir-nav-item" routerLink="/ocorrencias" routerLinkActive="dir-nav-item--active"><span>📋</span> Ocorrências</a>
-        <a class="dir-nav-item" routerLink="/agendamento-equipamentos" routerLinkActive="dir-nav-item--active"><span>📅</span> Agendamentos</a>
-      </ng-container>
-
-      <ng-container *ngIf="userRole === 'coordenacao'">
-        <a class="dir-nav-item" routerLink="/dashboard" routerLinkActive="dir-nav-item--active" [routerLinkActiveOptions]="{exact: true}"><span>🏠</span> Painel</a>
-        <a class="dir-nav-item" routerLink="/ocorrencias" routerLinkActive="dir-nav-item--active"><span>📋</span> Ocorrências</a>
-        <a class="dir-nav-item" routerLink="/agendamento-equipamentos" routerLinkActive="dir-nav-item--active"><span>📅</span> Agendamentos</a>
-      </ng-container>
-
-      <ng-container *ngIf="userRole === 'direcao'">
-        <a class="dir-nav-item" routerLink="/dashboard" routerLinkActive="dir-nav-item--active" [routerLinkActiveOptions]="{exact: true}"><span>🏠</span> Painel</a>
-        <a class="dir-nav-item" routerLink="/ocorrencias" routerLinkActive="dir-nav-item--active"><span>📋</span> Ocorrências</a>
-        <a class="dir-nav-item" routerLink="/secretaria/dashboard" routerLinkActive="dir-nav-item--active"><span>🗂️</span> Secretaria</a>
-        <a class="dir-nav-item" routerLink="/agendamento-equipamentos" routerLinkActive="dir-nav-item--active"><span>📅</span> Agendamentos</a>
-      </ng-container>
-
-      <ng-container *ngIf="userRole === 'secretaria'">
-        <a class="dir-nav-item" routerLink="/dashboard" routerLinkActive="dir-nav-item--active" [routerLinkActiveOptions]="{exact: true}"><span>🏠</span> Painel</a>
-        <a class="dir-nav-item" routerLink="/secretaria/dashboard" routerLinkActive="dir-nav-item--active"><span>🗂️</span> Secretaria</a>
-      </ng-container>
-
+      <a class="dir-nav-item" routerLink="/dashboard" routerLinkActive="dir-nav-item--active" [routerLinkActiveOptions]="{exact: true}"><span>🏠</span> Painel</a>
+      <a class="dir-nav-item" routerLink="/ocorrencias" routerLinkActive="dir-nav-item--active"><span>📋</span> Ocorrências</a>
+      <a class="dir-nav-item" routerLink="/secretaria/dashboard" routerLinkActive="dir-nav-item--active"><span>🗂️</span> Secretaria</a>
+      <a class="dir-nav-item" routerLink="/agendamento-equipamentos" routerLinkActive="dir-nav-item--active"><span>📅</span> Agendamentos</a>
     </div>
   </nav>
 </ng-container>

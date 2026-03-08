@@ -18,6 +18,7 @@ export class DashboardSecretaria implements OnInit {
   private cdr = inject(ChangeDetectorRef);
   
   userName: string | null = null;
+  userRole = '';
   loading = true;
   atrasosHoje = 0;
   saidasHoje = 0;
@@ -40,6 +41,7 @@ export class DashboardSecretaria implements OnInit {
       // Buscar nome do usuário no Firestore
       const usuario = await this.firestoreService.buscarUsuario(user.uid);
       this.userName = usuario?.nome || user.displayName || user.email || 'Secretaria';
+      this.userRole = usuario?.role || '';
       
       // Buscar estatísticas do dia
       const escolaId = await this.authService.getEscolaId();
@@ -62,6 +64,10 @@ export class DashboardSecretaria implements OnInit {
     }
   }
   
+  voltar() {
+    this.router.navigate(['/dashboard']);
+  }
+
   logout() {
     this.authService.logout();
     this.router.navigate(['/login']);

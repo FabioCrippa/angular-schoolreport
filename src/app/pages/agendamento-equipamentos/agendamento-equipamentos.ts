@@ -4,7 +4,6 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { FirestoreService } from '../../services/firestore';
 import { AuthService } from '../../services/auth';
-import { DirecaoHeaderComponent } from '../../components/direcao-header/direcao-header';
 
 interface Reserva {
   id?: string;
@@ -25,7 +24,7 @@ interface Reserva {
 @Component({
   selector: 'app-agendamento-equipamentos',
   standalone: true,
-  imports: [CommonModule, FormsModule, DirecaoHeaderComponent],
+  imports: [CommonModule, FormsModule],
   templateUrl: './agendamento-equipamentos.html',
   styleUrl: './agendamento-equipamentos.scss'
 })

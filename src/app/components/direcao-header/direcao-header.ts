@@ -33,16 +33,6 @@ export class DirecaoHeaderComponent implements OnInit {
     this.userName = usuario?.nome || user.displayName || user.email || '';
   }
 
-  get roleLabel(): string {
-    const labels: Record<string, string> = {
-      professor: 'Professor',
-      coordenacao: 'Coordenador(a)',
-      direcao: 'Diretor(a)',
-      secretaria: 'Secretaria',
-    };
-    return labels[this.userRole] || '';
-  }
-
   logout() {
     this.authService.logout();
     this.router.navigate(['/login']);

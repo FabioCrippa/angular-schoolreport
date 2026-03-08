@@ -104,18 +104,21 @@
         <div class="card-icon">📝</div>
         <h3>Registrar Ocorrência</h3>
         <p>Registre uma nova ocorrência de aluno</p>
+        <div class="card-arrow">→</div>
       </div>
       
       <div class="card" (click)="goToOcorrencias()">
         <div class="card-icon">📋</div>
         <h3>Minhas Ocorrências</h3>
         <p>Visualize suas ocorrências registradas</p>
+        <div class="card-arrow">→</div>
       </div>
 
       <div class="card" (click)="goToAgendamento()">
         <div class="card-icon">📅</div>
         <h3>Agendar Equipamentos</h3>
         <p>Reserve tablet, notebook ou sala de informática</p>
+        <div class="card-arrow">→</div>
       </div>
     </div>
     
@@ -129,24 +132,28 @@
           <div class="card-icon">📝</div>
           <h3>Registrar Ocorrência</h3>
           <p>Registre uma nova ocorrência de aluno</p>
+          <div class="card-arrow">→</div>
         </div>
         
         <div class="card card-highlight" (click)="goToOcorrencias()">
           <div class="card-icon">📋</div>
           <h3>Todas as Ocorrências</h3>
           <p>Visualize todas as ocorrências da escola</p>
+          <div class="card-arrow">→</div>
         </div>
 
         <div class="card card-export" (click)="exportarExcel()" *ngIf="estatisticas">
           <div class="card-icon">📤</div>
           <h3>Exportar Relatório de Ocorrências</h3>
           <p>Baixe o relatório completo em Excel</p>
+          <div class="card-arrow">→</div>
         </div>
 
         <div class="card" (click)="goToAgendamento()">
           <div class="card-icon">📅</div>
           <h3>Agendar Equipamentos</h3>
           <p>Reserve tablet, notebook ou sala de informática</p>
+          <div class="card-arrow">→</div>
         </div>
       </div>
 
@@ -158,21 +165,25 @@
             <div class="card-icon">🏫</div>
             <h3>Dashboard Secretaria</h3>
             <p>Acesse o painel completo da secretaria</p>
+            <div class="card-arrow">→</div>
           </div>
           <div class="card" (click)="navigateTo('/secretaria/relatorio-faltas')">
             <div class="card-icon">📊</div>
             <h3>Relatório de Faltas</h3>
             <p>Visualize o relatório de faltas dos alunos</p>
+            <div class="card-arrow">→</div>
           </div>
           <div class="card" (click)="navigateTo('/secretaria/lista-faltas-professores')">
             <div class="card-icon">📋</div>
             <h3>Faltas de Professores</h3>
             <p>Histórico de ausências de professores</p>
+            <div class="card-arrow">→</div>
           </div>
           <div class="card" (click)="navigateTo('/secretaria/lista-controles')">
             <div class="card-icon">🚪</div>
             <h3>Controle de Entrada/Saída</h3>
             <p>Registro de atrasos e saídas antecipadas</p>
+            <div class="card-arrow">→</div>
           </div>
         </div>
       </ng-container>
