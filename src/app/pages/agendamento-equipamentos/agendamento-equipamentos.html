@@ -1,4 +1,7 @@
 <div class="agendamento-container">
+
+  <app-direcao-header></app-direcao-header>
+
   <!-- HEADER -->
   <div class="header">
     <div class="header-content">
@@ -6,9 +9,6 @@
       <p>Tablet - Notebook - Sala de Informática</p>
     </div>
     <div class="header-buttons">
-      <button class="btn-voltar" (click)="voltar()">
-        ← Voltar
-      </button>
       <button class="btn-novo" (click)="abrirModal()" *ngIf="!mostrarModal">
         + Novo Agendamento
       </button>

@@ -616,6 +616,19 @@ Acesse o sistema para mais detalhes.
         } as Usuario;
       }
       
+      // Fallback: document may have been created with addDoc (random ID instead of UID)
+      const currentEmail = this.auth.currentUser?.email;
+      if (currentEmail) {
+        console.log('🔄 UID não encontrado, tentando busca por email:', currentEmail);
+        const porEmail = await this.buscarUsuarioPorEmail(currentEmail);
+        if (porEmail) {
+          console.log('✅ Usuário encontrado por email');
+          // Migrate document to use UID as ID so future lookups work
+          this.adicionarUsuarioComId(userId, porEmail).catch(() => {});
+          return porEmail;
+        }
+      }
+
       console.log('❌ Documento não existe');
       return null;
       

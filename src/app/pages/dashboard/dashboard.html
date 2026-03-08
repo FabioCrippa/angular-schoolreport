@@ -1,8 +1,8 @@
 <div class="dashboard-container">
   <header class="dashboard-header">
     <a routerLink="/" class="logo-link">
-      <span class="logo-icon">🎓</span>
-      <span class="logo-text">Ocorrências Escolares</span>
+        <img src="/logo2.png" class="logo-icon" alt="Escu Logo">
+        <span class="logo-text">Gestão escolar simplificada</span>
     </a>
     <div class="header-right">
       <div class="user-info">
@@ -139,7 +139,7 @@
 
         <div class="card card-export" (click)="exportarExcel()" *ngIf="estatisticas">
           <div class="card-icon">📤</div>
-          <h3>Exportar Relatório</h3>
+          <h3>Exportar Relatório de Ocorrências</h3>
           <p>Baixe o relatório completo em Excel</p>
         </div>
 
@@ -179,7 +179,7 @@
 
       <!-- Filtros de Período -->
       <div class="filtros-periodo" *ngIf="estatisticas">
-        <h2 class="filtros-titulo">📊 Análise de Período</h2>
+        <h2 class="filtros-titulo">📊 Análise de Período das Ocorrências</h2>
         <div class="filtros-container">
           <div class="filtro-botoes">
             <button 
