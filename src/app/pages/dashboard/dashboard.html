@@ -24,6 +24,73 @@
     </div>
   </header>
 
+  <!-- ===== HORIZONTAL NAV ===== -->
+  <nav class="main-nav" *ngIf="!loading && userRole">
+    <div class="nav-inner">
+
+      <ng-container *ngIf="userRole === 'professor'">
+        <a class="nav-item" routerLink="/dashboard" routerLinkActive="nav-item--active" [routerLinkActiveOptions]="{exact: true}">
+          <span class="nav-icon">🏠</span> Painel
+        </a>
+        <a class="nav-item" routerLink="/registro">
+          <span class="nav-icon">📝</span> Nova Ocorrência
+        </a>
+        <a class="nav-item" routerLink="/ocorrencias">
+          <span class="nav-icon">📋</span> Ocorrências
+        </a>
+        <a class="nav-item" routerLink="/agendamento-equipamentos">
+          <span class="nav-icon">📅</span> Agendamentos
+        </a>
+      </ng-container>
+
+      <ng-container *ngIf="userRole === 'coordenacao'">
+        <a class="nav-item" routerLink="/dashboard" routerLinkActive="nav-item--active" [routerLinkActiveOptions]="{exact: true}">
+          <span class="nav-icon">🏠</span> Painel
+        </a>
+        <a class="nav-item" routerLink="/ocorrencias">
+          <span class="nav-icon">📋</span> Ocorrências
+        </a>
+        <a class="nav-item" routerLink="/agendamento-equipamentos">
+          <span class="nav-icon">📅</span> Agendamentos
+        </a>
+      </ng-container>
+
+      <ng-container *ngIf="userRole === 'direcao'">
+        <a class="nav-item" routerLink="/dashboard" routerLinkActive="nav-item--active" [routerLinkActiveOptions]="{exact: true}">
+          <span class="nav-icon">🏠</span> Painel
+        </a>
+        <a class="nav-item" routerLink="/ocorrencias">
+          <span class="nav-icon">📋</span> Ocorrências
+        </a>
+        <a class="nav-item" routerLink="/secretaria/dashboard">
+          <span class="nav-icon">🗂️</span> Secretaria
+        </a>
+        <a class="nav-item" routerLink="/agendamento-equipamentos">
+          <span class="nav-icon">📅</span> Agendamentos
+        </a>
+      </ng-container>
+
+      <ng-container *ngIf="userRole === 'secretaria'">
+        <a class="nav-item" routerLink="/secretaria/dashboard">
+          <span class="nav-icon">🏫</span> Dashboard
+        </a>
+        <a class="nav-item" routerLink="/secretaria/gerenciar-alunos">
+          <span class="nav-icon">👥</span> Alunos
+        </a>
+        <a class="nav-item" routerLink="/secretaria/relatorio-faltas">
+          <span class="nav-icon">📊</span> Faltas Alunos
+        </a>
+        <a class="nav-item" routerLink="/secretaria/lista-faltas-professores">
+          <span class="nav-icon">👨‍🏫</span> Faltas Prof.
+        </a>
+        <a class="nav-item" routerLink="/secretaria/lista-controles">
+          <span class="nav-icon">🚪</span> Controles
+        </a>
+      </ng-container>
+
+    </div>
+  </nav>
+
   <main class="dashboard-content">
     <h1 class="page-title">{{ userRole === 'professor' ? 'Ações Rápidas' : 'Painel de Gestão' }}</h1>
     
@@ -55,7 +122,8 @@
     <!-- Dashboard para Coordenação/Direção -->
     <div *ngIf="!loading && (userRole === 'coordenacao' || userRole === 'direcao')">
 
-      <!-- Ações Rápidas -->
+      <!-- Ações Rápidas - Coordenação -->
+      <h2 class="section-title">🏫 Coordenação</h2>
       <div class="action-cards">
         <div class="card" (click)="goToRegistro()">
           <div class="card-icon">📝</div>
@@ -81,6 +149,33 @@
           <p>Reserve tablet, notebook ou sala de informática</p>
         </div>
       </div>
+
+      <!-- Ações Rápidas - Secretaria (só Direção) -->
+      <ng-container *ngIf="userRole === 'direcao'">
+        <h2 class="section-title">🗂️ Secretaria</h2>
+        <div class="action-cards">
+          <div class="card" (click)="navigateTo('/secretaria/dashboard')">
+            <div class="card-icon">🏫</div>
+            <h3>Dashboard Secretaria</h3>
+            <p>Acesse o painel completo da secretaria</p>
+          </div>
+          <div class="card" (click)="navigateTo('/secretaria/relatorio-faltas')">
+            <div class="card-icon">📊</div>
+            <h3>Relatório de Faltas</h3>
+            <p>Visualize o relatório de faltas dos alunos</p>
+          </div>
+          <div class="card" (click)="navigateTo('/secretaria/lista-faltas-professores')">
+            <div class="card-icon">📋</div>
+            <h3>Faltas de Professores</h3>
+            <p>Histórico de ausências de professores</p>
+          </div>
+          <div class="card" (click)="navigateTo('/secretaria/lista-controles')">
+            <div class="card-icon">🚪</div>
+            <h3>Controle de Entrada/Saída</h3>
+            <p>Registro de atrasos e saídas antecipadas</p>
+          </div>
+        </div>
+      </ng-container>
 
       <!-- Filtros de Período -->
       <div class="filtros-periodo" *ngIf="estatisticas">
@@ -179,5 +274,6 @@
         <p>Carregando estatísticas...</p>
       </div>
     </div>
+
   </main>
 </div>

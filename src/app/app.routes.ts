@@ -41,61 +41,61 @@ export const routes: Routes = [
         path: 'secretaria/dashboard',
         loadComponent: () => import('./pages/secretaria/dashboard-secretaria/dashboard-secretaria').then(m => m.DashboardSecretaria),
         canActivate: [authGuard, roleGuard],
-        data: { roles: ['secretaria'] }
+        data: { roles: ['secretaria', 'direcao'] }
     },
     {
         path: 'secretaria/registrar-atraso',
         loadComponent: () => import('./pages/secretaria/registrar-atraso/registrar-atraso').then(m => m.RegistrarAtraso),
         canActivate: [authGuard, roleGuard],
-        data: { roles: ['secretaria'] }
+        data: { roles: ['secretaria', 'direcao'] }
     },
     {
         path: 'secretaria/registrar-saida',
         loadComponent: () => import('./pages/secretaria/registrar-saida/registrar-saida').then(m => m.RegistrarSaida),
         canActivate: [authGuard, roleGuard],
-        data: { roles: ['secretaria'] }
+        data: { roles: ['secretaria', 'direcao'] }
     },
     {
         path: 'secretaria/relatorio-dia',
         loadComponent: () => import('./pages/secretaria/relatorio-dia/relatorio-dia').then(m => m.RelatorioDia),
         canActivate: [authGuard, roleGuard],
-        data: { roles: ['secretaria'] }
+        data: { roles: ['secretaria', 'direcao'] }
     },
     {
         path: 'secretaria/lista-controles',
         loadComponent: () => import('./pages/secretaria/lista-controles/lista-controles').then(m => m.ListaControles),
         canActivate: [authGuard, roleGuard],
-        data: { roles: ['secretaria'] }
+        data: { roles: ['secretaria', 'direcao'] }
     },
     {
         path: 'secretaria/gerenciar-alunos',
         loadComponent: () => import('./pages/secretaria/gerenciar-alunos/gerenciar-alunos').then(m => m.GerenciarAlunos),
         canActivate: [authGuard, roleGuard],
-        data: { roles: ['secretaria'] }
+        data: { roles: ['secretaria', 'direcao'] }
     },
     {
         path: 'secretaria/registrar-faltas',
         loadComponent: () => import('./pages/secretaria/registrar-faltas/registrar-faltas').then(m => m.RegistrarFaltas),
         canActivate: [authGuard, roleGuard],
-        data: { roles: ['secretaria'] }
+        data: { roles: ['secretaria', 'direcao'] }
     },
     {
         path: 'secretaria/relatorio-faltas',
         loadComponent: () => import('./pages/secretaria/relatorio-faltas/relatorio-faltas').then(m => m.RelatorioFaltas),
         canActivate: [authGuard, roleGuard],
-        data: { roles: ['secretaria'] }
+        data: { roles: ['secretaria', 'direcao'] }
     },
     {
         path: 'secretaria/registrar-falta-professor',
         loadComponent: () => import('./pages/secretaria/registrar-falta-professor/registrar-falta-professor').then(m => m.RegistrarFaltaProfessor),
         canActivate: [authGuard, roleGuard],
-        data: { roles: ['secretaria'] }
+        data: { roles: ['secretaria', 'direcao'] }
     },
     {
         path: 'secretaria/lista-faltas-professores',
         loadComponent: () => import('./pages/secretaria/lista-faltas-professores/lista-faltas-professores').then(m => m.ListaFaltasProfessores),
         canActivate: [authGuard, roleGuard],
-        data: { roles: ['secretaria'] }
+        data: { roles: ['secretaria', 'direcao'] }
     },
     {
         path: 'agendamento-equipamentos',

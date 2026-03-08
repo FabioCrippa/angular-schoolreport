@@ -478,4 +478,8 @@ export class Dashboard implements OnInit {
   goToAgendamento() {
     this.router.navigate(['/agendamento-equipamentos']);
   }
+
+  navigateTo(path: string) {
+    this.router.navigate([path]);
+  }
 }
