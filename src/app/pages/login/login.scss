@@ -327,3 +327,33 @@ input {
         }
     }
 }
+
+// ===== LANDSCAPE MOBILE =====
+@media (max-height: 600px) and (orientation: landscape) {
+    .login-left {
+        padding: 1rem 2rem;
+        justify-content: flex-start;
+        overflow-y: auto;
+    }
+    
+    .logo-header {
+        margin-bottom: 0.75rem;
+    }
+    
+    .logo-link .logo-icon {
+        height: 3rem;
+    }
+    
+    .card-header {
+        margin-bottom: 0.75rem;
+        
+        h1 {
+            font-size: 1.5rem;
+            margin-bottom: 0.25rem;
+        }
+    }
+    
+    .form-group {
+        margin-bottom: 0.75rem;
+    }
+}

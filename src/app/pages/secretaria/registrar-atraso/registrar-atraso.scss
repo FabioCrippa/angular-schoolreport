@@ -318,3 +318,42 @@ $error-red: #EF4444;
     }
   }
 }
+
+@media (max-width: 480px) {
+  .registro-container {
+    padding: 0.75rem;
+  }
+  
+  .form-container {
+    padding: 1rem;
+    border-radius: 12px;
+  }
+  
+  .registro-header {
+    .header-content {
+      h1 {
+        font-size: 1.5rem;
+      }
+      
+      .subtitle {
+        font-size: 0.875rem;
+      }
+    }
+  }
+}
+
+@media (orientation: landscape) and (max-height: 600px) {
+  .registro-header {
+    margin-bottom: 1rem;
+    
+    .header-content {
+      h1 {
+        font-size: 1.5rem;
+      }
+    }
+  }
+  
+  .form-container {
+    padding: 1.5rem;
+  }
+}

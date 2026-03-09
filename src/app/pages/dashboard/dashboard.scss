@@ -643,3 +643,29 @@ $border-color: #E5E7EB;
     gap: 2rem;
   }
 }
+
+@media (max-width: 480px) {
+  .dashboard-header {
+    padding: 0.5rem 0.75rem;
+  }
+  
+  .page-title {
+    font-size: 1.5rem;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 600px) {
+  .dashboard-header {
+    padding: 0.5rem 1rem;
+    flex-wrap: nowrap;
+  }
+  
+  .main-nav {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    
+    .nav-inner {
+      white-space: nowrap;
+    }
+  }
+}
