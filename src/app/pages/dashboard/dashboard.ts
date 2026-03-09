@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FirestoreService, Ocorrencia } from '../../services/firestore';
 import { RelatoriosService, EstatisticasGerais } from '../../services/relatorios.service';
+import { NotificationService } from '../../services/notification.service';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartData, ChartOptions } from 'chart.js';
 import * as XLSX from 'xlsx';
@@ -21,6 +22,7 @@ export class Dashboard implements OnInit {
   private router = inject(Router);
   private firestoreService = inject(FirestoreService);
   private relatoriosService = inject(RelatoriosService);
+  private notificationService = inject(NotificationService);
   private cdr = inject(ChangeDetectorRef);
   private ngZone = inject(NgZone);
 
@@ -164,6 +166,10 @@ export class Dashboard implements OnInit {
 
         // Carregar estatísticas para coordenação e direção
         if (this.userRole === 'coordenacao' || this.userRole === 'direcao') {
+          // Configurar notificações push
+          this.notificationService.configurar();
+          this.notificationService.escutarMensagensForeground();
+
           console.log('Carregando estatísticas para coordenação/direção');
           try {
             await this.carregarEstatisticas();

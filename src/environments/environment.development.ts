@@ -2,6 +2,7 @@
 // Este arquivo é usado quando rodamos 'ng serve' (localhost)
 export const environment = {
   production: false,  // Indica ambiente de desenvolvimento
+  vapidKey: 'BNuYgtIIj9_JY7CeMIs7QY0xdKpEEWEO_5f626KaSHDQa5tKlwZdLN6_IAso68QE9plKyJTqvnxptpul90Vc6Ig',
   
   // Credenciais do projeto Firebase
   firebaseConfig: {

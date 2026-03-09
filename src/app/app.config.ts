@@ -7,6 +7,7 @@ import { provideServiceWorker } from '@angular/service-worker';
 import { provideFirebaseApp, initializeApp } from '@angular/fire/app';
 import { provideAuth, getAuth } from '@angular/fire/auth';
 import { provideFirestore, getFirestore } from '@angular/fire/firestore';
+import { provideMessaging, getMessaging } from '@angular/fire/messaging';
 
 // Importar configurações do ambiente
 import { environment } from '../environments/environment.development';
@@ -30,6 +31,9 @@ export const appConfig: ApplicationConfig = {
     
     // Fornecer serviço de Firestore (banco de dados)
     provideFirestore(() => getFirestore()),
+
+    // Fornecer serviço de Mensagens Push (FCM)
+    provideMessaging(() => getMessaging()),
 
     // Configuração do Chart.js com todos os componentes padrão
     provideCharts(withDefaultRegisterables()),
