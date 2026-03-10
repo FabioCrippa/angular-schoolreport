@@ -39,8 +39,13 @@ export class GerenciarProfessores implements OnInit {
 
   // form isolado por professor
   forms: Record<string, {
-    nomeCompleto: string; rg: string; cpf: string;
-    matricula: string; cargo: string; lotacao: string; pisPasep: string;
+    nomeCompleto: string; dataNascimento: string; sexo: string;
+    rg: string; cpf: string; matricula: string;
+    cargo: string; categoria: string; orgaoClassificacao: string;
+    municipio: string; lotacao: string; pisPasep: string;
+    horarioTrabalho: string; horarioEstudante: string; localFuncao: string;
+    inicioNoCargo: string; inicioServicoPublico: string; acumulaCargo: string;
+    observacoes: string;
   }> = {};
 
   get professoresFiltrados(): ProfessorComDados[] {
@@ -87,12 +92,24 @@ export class GerenciarProfessores implements OnInit {
       for (const p of this.professores) {
         this.forms[p.id] = {
           nomeCompleto: p.dados?.nomeCompleto ?? p.nome,
+          dataNascimento: p.dados?.dataNascimento ?? '',
+          sexo: p.dados?.sexo ?? '',
           rg: p.dados?.rg ?? '',
           cpf: p.dados?.cpf ?? '',
           matricula: p.dados?.matricula ?? '',
           cargo: p.dados?.cargo ?? '',
+          categoria: p.dados?.categoria ?? '',
+          orgaoClassificacao: p.dados?.orgaoClassificacao ?? '',
+          municipio: p.dados?.municipio ?? '',
           lotacao: p.dados?.lotacao ?? '',
-          pisPasep: p.dados?.pisPasep ?? ''
+          pisPasep: p.dados?.pisPasep ?? '',
+          horarioTrabalho: p.dados?.horarioTrabalho ?? '',
+          horarioEstudante: p.dados?.horarioEstudante ?? '',
+          localFuncao: p.dados?.localFuncao ?? '',
+          inicioNoCargo: p.dados?.inicioNoCargo ?? '',
+          inicioServicoPublico: p.dados?.inicioServicoPublico ?? '',
+          acumulaCargo: p.dados?.acumulaCargo ?? '',
+          observacoes: p.dados?.observacoes ?? ''
         };
       }
     } catch (error) {
@@ -121,14 +138,27 @@ export class GerenciarProfessores implements OnInit {
 
   cancelarEdicao(professor: ProfessorComDados) {
     // Restaurar valores originais
+    const d = professor.dados;
     this.forms[professor.id] = {
-      nomeCompleto: professor.dados?.nomeCompleto ?? professor.nome,
-      rg: professor.dados?.rg ?? '',
-      cpf: professor.dados?.cpf ?? '',
-      matricula: professor.dados?.matricula ?? '',
-      cargo: professor.dados?.cargo ?? '',
-      lotacao: professor.dados?.lotacao ?? '',
-      pisPasep: professor.dados?.pisPasep ?? ''
+      nomeCompleto: d?.nomeCompleto ?? professor.nome,
+      dataNascimento: d?.dataNascimento ?? '',
+      sexo: d?.sexo ?? '',
+      rg: d?.rg ?? '',
+      cpf: d?.cpf ?? '',
+      matricula: d?.matricula ?? '',
+      cargo: d?.cargo ?? '',
+      categoria: d?.categoria ?? '',
+      orgaoClassificacao: d?.orgaoClassificacao ?? '',
+      municipio: d?.municipio ?? '',
+      lotacao: d?.lotacao ?? '',
+      pisPasep: d?.pisPasep ?? '',
+      horarioTrabalho: d?.horarioTrabalho ?? '',
+      horarioEstudante: d?.horarioEstudante ?? '',
+      localFuncao: d?.localFuncao ?? '',
+      inicioNoCargo: d?.inicioNoCargo ?? '',
+      inicioServicoPublico: d?.inicioServicoPublico ?? '',
+      acumulaCargo: d?.acumulaCargo ?? '',
+      observacoes: d?.observacoes ?? ''
     };
     professor.editando = false;
     this.professorAtivoId = null;
@@ -145,12 +175,24 @@ export class GerenciarProfessores implements OnInit {
         professorId: professor.id,
         escolaId: this.escolaId,
         nomeCompleto: f.nomeCompleto,
+        dataNascimento: f.dataNascimento,
+        sexo: f.sexo,
         rg: f.rg,
         cpf: f.cpf,
         matricula: f.matricula,
         cargo: f.cargo,
+        categoria: f.categoria,
+        orgaoClassificacao: f.orgaoClassificacao,
+        municipio: f.municipio,
         lotacao: f.lotacao,
         pisPasep: f.pisPasep,
+        horarioTrabalho: f.horarioTrabalho,
+        horarioEstudante: f.horarioEstudante,
+        localFuncao: f.localFuncao,
+        inicioNoCargo: f.inicioNoCargo,
+        inicioServicoPublico: f.inicioServicoPublico,
+        acumulaCargo: f.acumulaCargo,
+        observacoes: f.observacoes,
         atualizadoPor: this.usuarioNome
       });
 

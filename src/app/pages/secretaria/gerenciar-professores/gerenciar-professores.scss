@@ -200,11 +200,26 @@
   &.aberto { transform: rotate(180deg); color: #3b82f6; }
 }
 
-/* FORMULÁRIO EXPANDIDO */
 .form-expandido {
   padding: 20px;
   border-top: 1px solid #e2e8f0;
   background: #fafeff;
+}
+
+.form-secao {
+  margin-bottom: 20px;
+  &:last-of-type { margin-bottom: 0; }
+}
+
+.form-secao-titulo {
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #2563eb;
+  margin: 0 0 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #dbeafe;
 }
 
 .form-info {
@@ -240,6 +255,7 @@
   background: #f8fafc;
   transition: border-color 0.2s;
   &:focus { outline: none; border-color: #3b82f6; background: #fff; }
+  &.textarea { resize: vertical; font-family: inherit; }
 }
 
 .form-actions {

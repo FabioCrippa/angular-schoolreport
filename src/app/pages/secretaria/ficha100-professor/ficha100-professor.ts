@@ -60,7 +60,7 @@ export class Ficha100Professor implements OnInit {
 
   dias = Array.from({ length: 31 }, (_, i) => i + 1);
 
-  // grade[diaIndex][mesIndex] = tipoAfastamento code or ''
+  // grade[mesIndex][diaIndex] = tipoAfastamento code or ''
   grade: string[][] = [];
 
   fichaCarregada = false;
@@ -152,14 +152,15 @@ export class Ficha100Professor implements OnInit {
   }
 
   construirGrade() {
-    this.grade = Array.from({ length: 31 }, () => Array(12).fill(''));
+    // grade[mesIndex][diaIndex] — linhas = meses, colunas = dias
+    this.grade = Array.from({ length: 12 }, () => Array(31).fill(''));
     for (const falta of this.faltas) {
       const parts = falta.data.split('-');
       if (parts.length !== 3) continue;
       const mes = parseInt(parts[1], 10) - 1;
       const dia = parseInt(parts[2], 10) - 1;
       if (dia >= 0 && dia < 31 && mes >= 0 && mes < 12) {
-        this.grade[dia][mes] = falta.tipoAfastamento || 'F';
+        this.grade[mes][dia] = falta.tipoAfastamento || 'F';
       }
     }
   }
@@ -179,7 +180,12 @@ export class Ficha100Professor implements OnInit {
   }
 
   contarPorMes(mesIndex: number): number {
-    return this.grade.filter(row => row[mesIndex] !== '').length;
+    // grade[mesIndex] is a row of 31 days
+    return (this.grade[mesIndex] || []).filter(v => v !== '').length;
+  }
+
+  totalAno(): number {
+    return this.grade.reduce((sum, row) => sum + row.filter(v => v !== '').length, 0);
   }
 
   async exportarPDF() {
@@ -193,120 +199,175 @@ export class Ficha100Professor implements OnInit {
       const pdfFonts = await import('pdfmake/build/vfs_fonts');
       (pdfMake as any).default.vfs = (pdfFonts as any).default;
 
-      const nomeProf = this.dadosFuncionais?.nomeCompleto || this.professorSelecionado;
+      const d = this.dadosFuncionais;
+      const nomeProf = d?.nomeCompleto || this.professorSelecionado;
 
-      // Build main grid table body
-      const tableBody: any[][] = [];
+      // Helper: one info row as a single-row borderless table with bottom-border cells
+      const infoLinha = (fields: { label: string; value: string | undefined }[]) => ({
+        table: {
+          widths: fields.map(() => '*'),
+          body: [[
+            ...fields.map(f => ({
+              stack: [
+                { text: f.label, fontSize: 6.5, color: '#64748B' },
+                { text: f.value || '—', fontSize: 8.5 }
+              ],
+              border: [false, false, false, true],
+              borderColor: [null, null, null, '#CBD5E1'],
+              margin: [2, 0, 2, 2]
+            }))
+          ]]
+        },
+        layout: {
+          hLineWidth: (i: number, node: any) => (i === node.table.body.length) ? 0.3 : 0,
+          vLineWidth: () => 0,
+          hLineColor: () => '#CBD5E1'
+        },
+        margin: [0, 0, 0, 3]
+      });
 
-      // Header row
-      tableBody.push([
-        { text: 'DIA', style: 'thCell' },
-        ...this.mesesAbrev.map(m => ({ text: m, style: 'thCell' }))
-      ]);
+      // Frequency table — rows = meses, cols = dias 1-31 + total
+      const freqHeader: any[] = [
+        { text: 'MÊS', style: 'th', fillColor: '#E2E8F0' },
+        ...this.dias.map(n => ({ text: String(n), style: 'th', fillColor: '#E2E8F0' })),
+        { text: 'TOTAL', style: 'th', fillColor: '#E2E8F0' }
+      ];
 
-      // Day rows
-      for (let d = 0; d < 31; d++) {
-        const row: any[] = [{ text: String(d + 1), alignment: 'center', fontSize: 8 }];
-        for (let m = 0; m < 12; m++) {
-          const val = this.grade[d][m];
+      const freqRows: any[][] = this.mesesAbrev.map((mes, mi) => {
+        const row: any[] = [{ text: mes, style: 'th', fillColor: '#F1F5F9' }];
+        for (let di = 0; di < 31; di++) {
+          const val = this.grade[mi]?.[di] || '';
           row.push({
             text: val,
             alignment: 'center',
-            fontSize: 8,
+            fontSize: 7,
             bold: !!val,
             fillColor: val ? '#DBEAFE' : null,
             color: val ? '#1E40AF' : '#000000'
           });
         }
-        tableBody.push(row);
-      }
+        const total = this.contarPorMes(mi);
+        row.push({ text: total > 0 ? String(total) : '', style: 'th', fillColor: '#F1F5F9' });
+        return row;
+      });
 
-      // Totals row
-      const totaisRow: any[] = [{ text: 'TOTAL', style: 'thCell', fontSize: 7 }];
-      for (let m = 0; m < 12; m++) {
-        const count = this.contarPorMes(m);
-        totaisRow.push({ text: count > 0 ? String(count) : '', alignment: 'center', fontSize: 8, bold: true });
-      }
-      tableBody.push(totaisRow);
-
-      // Summary table body
-      const summaryBody = [
-        this.tiposAfastamento.map(t => ({ text: t.sigla, style: 'thCell', fontSize: 8 })),
-        this.tiposAfastamento.map(t => ({ text: String(this.contarPorTipo(t.sigla)), alignment: 'center', fontSize: 9 }))
-      ];
+      const legendaTexto = this.tiposAfastamento.map(t => `${t.sigla} = ${t.desc}`).join('   |   ');
 
       const docDefinition: any = {
         pageOrientation: 'landscape',
         pageMargins: [20, 20, 20, 20],
         content: [
+          // Título
           { text: 'FICHA DE FREQUÊNCIA DO PROFESSOR (FICHA 100)', style: 'title' },
-          { text: `Ano Letivo: ${this.anoSelecionado}${this.escolaNome ? '   |   ' + this.escolaNome : ''}`, style: 'subtitle' },
-          { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 800, y2: 0, lineWidth: 0.8, lineColor: '#9CA3AF' }], margin: [0, 4, 0, 6] },
-          {
-            columns: [
-              { text: `Nome: ${nomeProf}`, fontSize: 9, width: '*' },
-              { text: `Matrícula: ${this.dadosFuncionais?.matricula || '___________'}`, fontSize: 9, width: 160 },
-              { text: `Cargo: ${this.dadosFuncionais?.cargo || '___________'}`, fontSize: 9, width: 160 }
-            ],
-            margin: [0, 0, 0, 4]
-          },
-          {
-            columns: [
-              { text: `RG: ${this.dadosFuncionais?.rg || '___________'}`, fontSize: 9, width: 140 },
-              { text: `CPF: ${this.dadosFuncionais?.cpf || '___________'}`, fontSize: 9, width: 160 },
-              { text: `PIS/PASEP: ${this.dadosFuncionais?.pisPasep || '___________'}`, fontSize: 9, width: '*' },
-              { text: `Lotação: ${this.dadosFuncionais?.lotacao || '___________'}`, fontSize: 9, width: 160 }
-            ],
-            margin: [0, 0, 0, 8]
-          },
+          { text: `${this.escolaNome ? this.escolaNome + '   —   ' : ''}Ano Letivo: ${this.anoSelecionado}`, style: 'subtitle' },
+          { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 800, y2: 0, lineWidth: 1, lineColor: '#64748B' }], margin: [0, 4, 0, 5] },
+
+          // Linha 1 — Dados pessoais
+          infoLinha([
+            { label: 'Nome completo', value: nomeProf },
+            { label: 'Data de nascimento', value: d?.dataNascimento },
+            { label: 'Sexo', value: d?.sexo },
+            { label: 'Matrícula', value: d?.matricula },
+            { label: 'RG', value: d?.rg },
+            { label: 'CPF', value: d?.cpf }
+          ]),
+
+          // Linha 2 — Dados do cargo
+          infoLinha([
+            { label: 'Cargo / Função', value: d?.cargo },
+            { label: 'Categoria', value: d?.categoria },
+            { label: 'Órgão de Classificação', value: d?.orgaoClassificacao },
+            { label: 'Município', value: d?.municipio },
+            { label: 'Lotação', value: d?.lotacao },
+            { label: 'PIS / PASEP', value: d?.pisPasep }
+          ]),
+
+          // Linha 3 — Horários
+          infoLinha([
+            { label: 'Horário de Trabalho', value: d?.horarioTrabalho },
+            { label: 'Horário de Estudante', value: d?.horarioEstudante },
+            { label: 'Local da Função', value: d?.localFuncao }
+          ]),
+
+          // Linha 4 — Início e acúmulo
+          infoLinha([
+            { label: 'Início no Cargo', value: d?.inicioNoCargo },
+            { label: 'Início no Serviço Público', value: d?.inicioServicoPublico },
+            { label: 'Acumula Cargo (S/N)', value: d?.acumulaCargo }
+          ]),
+
+          // Tabela de frequência
           {
             table: {
               headerRows: 1,
-              widths: [22, ...Array(12).fill('*')],
-              body: tableBody
+              widths: [28, ...Array(31).fill(21), 28],
+              body: [freqHeader, ...freqRows]
             },
             layout: {
               hLineWidth: () => 0.4,
               vLineWidth: () => 0.4,
-              hLineColor: () => '#9CA3AF',
-              vLineColor: () => '#9CA3AF'
-            }
+              hLineColor: () => '#94A3B8',
+              vLineColor: () => '#94A3B8',
+              paddingLeft: () => 1,
+              paddingRight: () => 1,
+              paddingTop: () => 1,
+              paddingBottom: () => 1
+            },
+            margin: [0, 5, 0, 5]
           },
+
+          // Legenda
           {
-            text: 'LEGENDA: FM=Falta c/Motivo  |  J=Justificada  |  I=Injustificada  |  F=Falta  |  LS=Lic.Saúde  |  LG=Lic.Gestante  |  LP=Lic.Paternidade  |  N=Nojo  |  RE=Representação  |  SP=Serv.Ponto',
-            fontSize: 7,
-            color: '#6B7280',
-            margin: [0, 6, 0, 6]
+            text: [{ text: 'LEGENDA:  ', bold: true, fontSize: 7 }, { text: legendaTexto, fontSize: 7 }],
+            color: '#374151',
+            margin: [0, 0, 0, 5]
           },
+
+          // Observações
           {
             table: {
-              widths: Array(this.tiposAfastamento.length).fill('*'),
-              body: summaryBody
+              widths: ['*'],
+              body: [[{
+                stack: [
+                  { text: 'Observações:', fontSize: 7, bold: true, color: '#64748B', margin: [0, 0, 0, 2] },
+                  { text: d?.observacoes || ' ', fontSize: 8.5 }
+                ],
+                border: [false, false, false, true],
+                borderColor: [null, null, null, '#CBD5E1'],
+                margin: [2, 2, 2, 4]
+              }]]
             },
-            layout: {
-              hLineWidth: () => 0.4,
-              vLineWidth: () => 0.4,
-              hLineColor: () => '#9CA3AF',
-              vLineColor: () => '#9CA3AF'
-            }
+            layout: { hLineWidth: () => 0.4, vLineWidth: () => 0, hLineColor: () => '#CBD5E1' },
+            margin: [0, 0, 0, 18]
           },
+
+          // Assinaturas
           {
             columns: [
-              { text: `Total de afastamentos no ano: ${this.totalFaltas()}`, fontSize: 9, bold: true, margin: [0, 8, 0, 0] },
-              { text: '', width: '*' }
+              {
+                stack: [
+                  { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 210, y2: 0, lineWidth: 0.8, lineColor: '#374151' }] },
+                  { text: 'Responsável pelo preenchimento', fontSize: 8, alignment: 'center', margin: [0, 2, 0, 0] },
+                  { text: 'Data: ____/____/________', fontSize: 8, alignment: 'center', color: '#6B7280' }
+                ],
+                width: 230
+              },
+              { text: '', width: '*' },
+              {
+                stack: [
+                  { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 210, y2: 0, lineWidth: 0.8, lineColor: '#374151' }] },
+                  { text: 'Diretor(a) / Dirigente', fontSize: 8, alignment: 'center', margin: [0, 2, 0, 0] },
+                  { text: 'Data: ____/____/________', fontSize: 8, alignment: 'center', color: '#6B7280' }
+                ],
+                width: 230
+              }
             ]
-          },
-          {
-            text: '_______________________________\nAssinatura do Responsável',
-            alignment: 'right',
-            fontSize: 9,
-            margin: [0, 20, 0, 0]
           }
         ],
         styles: {
-          title: { fontSize: 13, bold: true, alignment: 'center', margin: [0, 0, 0, 4] },
-          subtitle: { fontSize: 9, alignment: 'center', color: '#4B5563', margin: [0, 0, 0, 2] },
-          thCell: { bold: true, fontSize: 8, alignment: 'center', fillColor: '#EFF6FF', color: '#1E40AF' }
+          title: { fontSize: 12, bold: true, alignment: 'center', margin: [0, 0, 0, 2] },
+          subtitle: { fontSize: 8.5, alignment: 'center', color: '#475569', margin: [0, 0, 0, 2] },
+          th: { bold: true, fontSize: 7, alignment: 'center', color: '#1E293B' }
         }
       };
 

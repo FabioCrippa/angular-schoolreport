@@ -146,13 +146,29 @@ export interface FaltaProfessor {
 export interface DadosFuncionaisProfessor {
   professorId: string;
   escolaId: string;
+  // Dados pessoais (Seção 1)
   nomeCompleto: string;
+  dataNascimento?: string;  // YYYY-MM-DD
+  sexo?: string;            // M / F
+  matricula: string;
   rg: string;
   cpf: string;
-  matricula: string;
+  // Dados de cargo (Seção 1 + 2)
   cargo: string;
+  categoria?: string;
+  orgaoClassificacao?: string;
+  municipio?: string;
   lotacao: string;
   pisPasep: string;
+  // Informações funcionais (Seção 2)
+  horarioTrabalho?: string;
+  horarioEstudante?: string;
+  localFuncao?: string;
+  inicioNoCargo?: string;        // YYYY-MM-DD
+  inicioServicoPublico?: string; // YYYY-MM-DD
+  acumulaCargo?: string;         // S / N
+  // Observações (Seção 5)
+  observacoes?: string;
   atualizadoEm?: Date;
   atualizadoPor?: string;
 }

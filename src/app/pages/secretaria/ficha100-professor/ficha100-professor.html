@@ -62,12 +62,23 @@
       <div class="dados-view" *ngIf="dadosFuncionais">
         <div class="dados-grid">
           <div class="dado-item"><span class="dado-label">Nome completo</span><span class="dado-valor">{{ dadosFuncionais.nomeCompleto }}</span></div>
+          <div class="dado-item"><span class="dado-label">Data de nascimento</span><span class="dado-valor">{{ dadosFuncionais.dataNascimento || '—' }}</span></div>
+          <div class="dado-item"><span class="dado-label">Sexo</span><span class="dado-valor">{{ dadosFuncionais.sexo || '—' }}</span></div>
           <div class="dado-item"><span class="dado-label">Matrícula</span><span class="dado-valor">{{ dadosFuncionais.matricula || '—' }}</span></div>
-          <div class="dado-item"><span class="dado-label">Cargo</span><span class="dado-valor">{{ dadosFuncionais.cargo || '—' }}</span></div>
-          <div class="dado-item"><span class="dado-label">Lotação</span><span class="dado-valor">{{ dadosFuncionais.lotacao || '—' }}</span></div>
           <div class="dado-item"><span class="dado-label">RG</span><span class="dado-valor">{{ dadosFuncionais.rg || '—' }}</span></div>
           <div class="dado-item"><span class="dado-label">CPF</span><span class="dado-valor">{{ dadosFuncionais.cpf || '—' }}</span></div>
-          <div class="dado-item"><span class="dado-label">PIS/PASEP</span><span class="dado-valor">{{ dadosFuncionais.pisPasep || '—' }}</span></div>
+          <div class="dado-item"><span class="dado-label">Cargo / Função</span><span class="dado-valor">{{ dadosFuncionais.cargo || '—' }}</span></div>
+          <div class="dado-item"><span class="dado-label">Categoria</span><span class="dado-valor">{{ dadosFuncionais.categoria || '—' }}</span></div>
+          <div class="dado-item"><span class="dado-label">Órgão de Classificação</span><span class="dado-valor">{{ dadosFuncionais.orgaoClassificacao || '—' }}</span></div>
+          <div class="dado-item"><span class="dado-label">Município</span><span class="dado-valor">{{ dadosFuncionais.municipio || '—' }}</span></div>
+          <div class="dado-item"><span class="dado-label">Lotação</span><span class="dado-valor">{{ dadosFuncionais.lotacao || '—' }}</span></div>
+          <div class="dado-item"><span class="dado-label">PIS / PASEP</span><span class="dado-valor">{{ dadosFuncionais.pisPasep || '—' }}</span></div>
+          <div class="dado-item"><span class="dado-label">Horário de Trabalho</span><span class="dado-valor">{{ dadosFuncionais.horarioTrabalho || '—' }}</span></div>
+          <div class="dado-item"><span class="dado-label">Horário de Estudante</span><span class="dado-valor">{{ dadosFuncionais.horarioEstudante || '—' }}</span></div>
+          <div class="dado-item"><span class="dado-label">Local da Função</span><span class="dado-valor">{{ dadosFuncionais.localFuncao || '—' }}</span></div>
+          <div class="dado-item"><span class="dado-label">Início no Cargo</span><span class="dado-valor">{{ dadosFuncionais.inicioNoCargo || '—' }}</span></div>
+          <div class="dado-item"><span class="dado-label">Início no Serviço Público</span><span class="dado-valor">{{ dadosFuncionais.inicioServicoPublico || '—' }}</span></div>
+          <div class="dado-item"><span class="dado-label">Acumula Cargo</span><span class="dado-valor">{{ dadosFuncionais.acumulaCargo || '—' }}</span></div>
         </div>
       </div>
 
@@ -82,8 +93,8 @@
       <div class="grade-header">
         <h3>📅 Frequência {{ anoSelecionado }}</h3>
         <div class="grade-actions">
-          <span class="total-badge" *ngIf="totalFaltas() > 0">{{ totalFaltas() }} afastamento{{ totalFaltas() !== 1 ? 's' : '' }} no ano</span>
-          <span class="total-badge sem-faltas" *ngIf="totalFaltas() === 0">Sem afastamentos registrados</span>
+          <span class="total-badge" *ngIf="totalAno() > 0">{{ totalAno() }} afastamento{{ totalAno() !== 1 ? 's' : '' }} no ano</span>
+          <span class="total-badge sem-faltas" *ngIf="totalAno() === 0">Sem afastamentos registrados</span>
           <button class="btn-pdf" (click)="exportarPDF()" [disabled]="exportandoPdf">
             {{ exportandoPdf ? 'Gerando...' : '📥 Exportar PDF' }}
           </button>
@@ -95,26 +106,27 @@
         <table class="grade-table">
           <thead>
             <tr>
-              <th class="dia-col">Dia</th>
-              <th *ngFor="let m of meses; let i = index" class="mes-col">{{ mesesAbrev[i] }}</th>
+              <th class="mes-col">Mês</th>
+              <th *ngFor="let d of dias" class="dia-col">{{ d }}</th>
+              <th class="total-col">Total</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let d of dias; let di = index">
-              <td class="dia-num">{{ d }}</td>
-              <td *ngFor="let m of meses; let mi = index"
+            <tr *ngFor="let m of meses; let mi = index">
+              <td class="mes-label">{{ mesesAbrev[mi] }}</td>
+              <td *ngFor="let d of dias; let di = index"
                 class="celula"
-                [class.com-falta]="grade[di][mi]">
-                {{ grade[di][mi] }}
+                [class.com-falta]="grade[mi]?.[di]">
+                {{ grade[mi]?.[di] }}
               </td>
+              <td class="celula total-cell"><strong>{{ contarPorMes(mi) || '' }}</strong></td>
             </tr>
           </tbody>
           <tfoot>
             <tr class="totais-row">
-              <td class="dia-num"><strong>Total</strong></td>
-              <td *ngFor="let m of meses; let mi = index" class="celula totais-cell">
-                <strong>{{ contarPorMes(mi) || '' }}</strong>
-              </td>
+              <td class="mes-label"><strong>Total Ano</strong></td>
+              <td [attr.colspan]="31" class="celula totais-cell"><strong>{{ totalAno() }}</strong></td>
+              <td class="celula totais-cell"><strong>{{ totalAno() }}</strong></td>
             </tr>
           </tfoot>
         </table>

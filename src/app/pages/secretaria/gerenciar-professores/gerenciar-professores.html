@@ -74,36 +74,109 @@
         <!-- Formulário expandido -->
         <div class="form-expandido" *ngIf="p.editando">
           <p class="form-info">Estes dados ficam restritos à secretaria e aparecem automaticamente na Ficha 100.</p>
-          <div class="form-grid">
-            <div class="form-group full-width">
-              <label>Nome completo (para o documento oficial)</label>
-              <input type="text" [(ngModel)]="forms[p.id].nomeCompleto" class="input" placeholder="Nome conforme RG" />
-            </div>
-            <div class="form-group">
-              <label>Matrícula</label>
-              <input type="text" [(ngModel)]="forms[p.id].matricula" class="input" placeholder="Número de matrícula" />
-            </div>
-            <div class="form-group">
-              <label>Cargo</label>
-              <input type="text" [(ngModel)]="forms[p.id].cargo" class="input" placeholder="Ex: Professor de Educação Básica II" />
-            </div>
-            <div class="form-group">
-              <label>Lotação</label>
-              <input type="text" [(ngModel)]="forms[p.id].lotacao" class="input" placeholder="Nome da escola / unidade" />
-            </div>
-            <div class="form-group">
-              <label>RG</label>
-              <input type="text" [(ngModel)]="forms[p.id].rg" class="input" placeholder="Número do RG" />
-            </div>
-            <div class="form-group">
-              <label>CPF</label>
-              <input type="text" [(ngModel)]="forms[p.id].cpf" class="input" placeholder="000.000.000-00" />
-            </div>
-            <div class="form-group">
-              <label>PIS/PASEP</label>
-              <input type="text" [(ngModel)]="forms[p.id].pisPasep" class="input" placeholder="Número do PIS/PASEP" />
+
+          <div class="form-secao">
+            <h4 class="form-secao-titulo">Dados Pessoais</h4>
+            <div class="form-grid">
+              <div class="form-group full-width">
+                <label>Nome completo (para o documento oficial)</label>
+                <input type="text" [(ngModel)]="forms[p.id].nomeCompleto" class="input" placeholder="Nome conforme RG" />
+              </div>
+              <div class="form-group">
+                <label>Data de Nascimento</label>
+                <input type="date" [(ngModel)]="forms[p.id].dataNascimento" class="input" />
+              </div>
+              <div class="form-group">
+                <label>Sexo</label>
+                <select [(ngModel)]="forms[p.id].sexo" class="input">
+                  <option value="">Selecione</option>
+                  <option value="M">Masculino</option>
+                  <option value="F">Feminino</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Matrícula</label>
+                <input type="text" [(ngModel)]="forms[p.id].matricula" class="input" placeholder="Número de matrícula" />
+              </div>
+              <div class="form-group">
+                <label>RG</label>
+                <input type="text" [(ngModel)]="forms[p.id].rg" class="input" placeholder="Número do RG" />
+              </div>
+              <div class="form-group">
+                <label>CPF</label>
+                <input type="text" [(ngModel)]="forms[p.id].cpf" class="input" placeholder="000.000.000-00" />
+              </div>
+              <div class="form-group">
+                <label>PIS/PASEP</label>
+                <input type="text" [(ngModel)]="forms[p.id].pisPasep" class="input" placeholder="Número do PIS/PASEP" />
+              </div>
             </div>
           </div>
+
+          <div class="form-secao">
+            <h4 class="form-secao-titulo">Dados do Cargo</h4>
+            <div class="form-grid">
+              <div class="form-group full-width">
+                <label>Cargo / Função</label>
+                <input type="text" [(ngModel)]="forms[p.id].cargo" class="input" placeholder="Ex: Professor de Educação Básica II" />
+              </div>
+              <div class="form-group">
+                <label>Categoria</label>
+                <input type="text" [(ngModel)]="forms[p.id].categoria" class="input" placeholder="Ex: Efetivo / Contratado" />
+              </div>
+              <div class="form-group">
+                <label>Órgão de Classificação</label>
+                <input type="text" [(ngModel)]="forms[p.id].orgaoClassificacao" class="input" placeholder="Ex: SEE-SP" />
+              </div>
+              <div class="form-group">
+                <label>Município</label>
+                <input type="text" [(ngModel)]="forms[p.id].municipio" class="input" placeholder="Município de exercício" />
+              </div>
+              <div class="form-group">
+                <label>Local da Função / Lotação</label>
+                <input type="text" [(ngModel)]="forms[p.id].lotacao" class="input" placeholder="Nome da escola" />
+              </div>
+            </div>
+          </div>
+
+          <div class="form-secao">
+            <h4 class="form-secao-titulo">Informações Funcionais</h4>
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Horário de Trabalho</label>
+                <input type="text" [(ngModel)]="forms[p.id].horarioTrabalho" class="input" placeholder="Ex: 07h00–12h00" />
+              </div>
+              <div class="form-group">
+                <label>Horário de Estudante</label>
+                <input type="text" [(ngModel)]="forms[p.id].horarioEstudante" class="input" placeholder="Se aplicável" />
+              </div>
+              <div class="form-group">
+                <label>Início no Cargo</label>
+                <input type="date" [(ngModel)]="forms[p.id].inicioNoCargo" class="input" />
+              </div>
+              <div class="form-group">
+                <label>Início no Serviço Público</label>
+                <input type="date" [(ngModel)]="forms[p.id].inicioServicoPublico" class="input" />
+              </div>
+              <div class="form-group">
+                <label>Acumula Cargo / Função?</label>
+                <select [(ngModel)]="forms[p.id].acumulaCargo" class="input">
+                  <option value="">Selecione</option>
+                  <option value="S">Sim</option>
+                  <option value="N">Não</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-secao">
+            <h4 class="form-secao-titulo">Observações</h4>
+            <div class="form-group">
+              <textarea [(ngModel)]="forms[p.id].observacoes" class="input textarea"
+                placeholder="Anotações livres sobre o professor..." rows="3"></textarea>
+            </div>
+          </div>
+
           <div class="form-actions">
             <button class="btn-cancel" (click)="cancelarEdicao(p)" [disabled]="p.salvando">Cancelar</button>
             <button class="btn-primary" (click)="salvar(p)" [disabled]="p.salvando">
