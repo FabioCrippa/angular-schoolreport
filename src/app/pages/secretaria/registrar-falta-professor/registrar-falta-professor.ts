@@ -34,10 +34,24 @@ export class RegistrarFaltaProfessor implements OnInit {
   escolaId = '';
   professores: { id: string; nome: string }[] = [];
 
+  tiposAfastamento = [
+    { sigla: 'FM', desc: 'Falta com Motivo' },
+    { sigla: 'J', desc: 'Justificada' },
+    { sigla: 'I', desc: 'Injustificada' },
+    { sigla: 'F', desc: 'Falta' },
+    { sigla: 'LS', desc: 'Licença Saúde' },
+    { sigla: 'LG', desc: 'Licença Gestante' },
+    { sigla: 'LP', desc: 'Licença Paternidade' },
+    { sigla: 'N', desc: 'Nojo (Luto)' },
+    { sigla: 'RE', desc: 'Representação' },
+    { sigla: 'SP', desc: 'Serviço de Ponto' }
+  ];
+
   form = {
     data: new Date().toISOString().split('T')[0],
     professorNome: '',
     periodo: '' as 'manha' | 'tarde' | 'noite' | '',
+    tipoAfastamento: '',
     professorEventual: ''
   };
 
@@ -120,6 +134,7 @@ export class RegistrarFaltaProfessor implements OnInit {
         data: this.form.data,
         professorNome: this.form.professorNome.trim(),
         periodo: this.form.periodo as 'manha' | 'tarde' | 'noite',
+        tipoAfastamento: this.form.tipoAfastamento || 'F',
         aulas: this.aulas.map(a => ({ turma: a.turma, numeroAula: a.numeroAula })),
         professorEventual: this.form.professorEventual.trim(),
         registradoPor: this.secretariaId,
@@ -141,6 +156,7 @@ export class RegistrarFaltaProfessor implements OnInit {
       data: new Date().toISOString().split('T')[0],
       professorNome: '',
       periodo: '',
+      tipoAfastamento: '',
       professorEventual: ''
     };
     this.aulas = [];

@@ -53,6 +53,14 @@
           </datalist>
         </div>
 
+        <div class="form-group">
+          <label>Tipo de Afastamento *</label>
+          <select [(ngModel)]="form.tipoAfastamento" class="input">
+            <option value="">Selecione</option>
+            <option *ngFor="let t of tiposAfastamento" [value]="t.sigla">{{ t.sigla }} – {{ t.desc }}</option>
+          </select>
+        </div>
+
         <div class="form-group full-width">
           <label>Professor Eventual (substituto)</label>
           <input

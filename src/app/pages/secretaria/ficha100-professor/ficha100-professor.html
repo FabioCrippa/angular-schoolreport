@@ -1,0 +1,176 @@
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-top">
+      <button class="btn-voltar" (click)="voltar()">← Voltar</button>
+      <h1>📋 Ficha 100 – Professor</h1>
+      <div class="spacer"></div>
+    </div>
+    <p class="subtitle">Frequência anual do professor para fins administrativos</p>
+  </div>
+
+  <!-- Mensagem -->
+  <div *ngIf="mensagem" class="mensagem" [class]="'mensagem-' + tipoMensagem">
+    {{ mensagem }}
+  </div>
+
+  <!-- SELEÇÃO -->
+  <div class="selecao-card" *ngIf="!loading">
+    <div class="selecao-grid">
+      <div class="form-group">
+        <label>Professor *</label>
+        <select [(ngModel)]="professorSelecionado" class="input" (ngModelChange)="fichaCarregada = false">
+          <option value="">Selecione o professor</option>
+          <option *ngFor="let p of professores" [value]="p.nome">{{ p.nome }}</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Ano letivo *</label>
+        <select [(ngModel)]="anoSelecionado" class="input" (ngModelChange)="fichaCarregada = false">
+          <option *ngFor="let a of anos" [value]="a">{{ a }}</option>
+        </select>
+      </div>
+      <div class="form-group btn-group">
+        <button class="btn-primary" (click)="carregarFicha()"
+          [disabled]="!professorSelecionado || carregandoFicha">
+          {{ carregandoFicha ? 'Carregando...' : 'Ver Ficha' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOADING -->
+  <div class="loading-container" *ngIf="loading || carregandoFicha">
+    <div class="spinner"></div>
+    <p>Carregando...</p>
+  </div>
+
+  <!-- FICHA CARREGADA -->
+  <ng-container *ngIf="fichaCarregada && !carregandoFicha">
+
+    <!-- DADOS FUNCIONAIS -->
+    <div class="dados-card">
+      <div class="dados-header">
+        <h3>📝 Dados Funcionais</h3>
+        <button class="btn-edit" *ngIf="!editandoDados" (click)="editandoDados = true">
+          ✏️ {{ dadosFuncionais ? 'Editar' : 'Preencher dados' }}
+        </button>
+      </div>
+
+      <!-- Visualização dos dados -->
+      <div class="dados-view" *ngIf="!editandoDados && dadosFuncionais">
+        <div class="dados-grid">
+          <div class="dado-item"><span class="dado-label">Nome completo</span><span class="dado-valor">{{ dadosFuncionais.nomeCompleto }}</span></div>
+          <div class="dado-item"><span class="dado-label">Matrícula</span><span class="dado-valor">{{ dadosFuncionais.matricula || '—' }}</span></div>
+          <div class="dado-item"><span class="dado-label">Cargo</span><span class="dado-valor">{{ dadosFuncionais.cargo || '—' }}</span></div>
+          <div class="dado-item"><span class="dado-label">Lotação</span><span class="dado-valor">{{ dadosFuncionais.lotacao || '—' }}</span></div>
+          <div class="dado-item"><span class="dado-label">RG</span><span class="dado-valor">{{ dadosFuncionais.rg || '—' }}</span></div>
+          <div class="dado-item"><span class="dado-label">CPF</span><span class="dado-valor">{{ dadosFuncionais.cpf || '—' }}</span></div>
+          <div class="dado-item"><span class="dado-label">PIS/PASEP</span><span class="dado-valor">{{ dadosFuncionais.pisPasep || '—' }}</span></div>
+        </div>
+      </div>
+
+      <!-- Aviso quando não há dados -->
+      <div class="dados-aviso" *ngIf="!editandoDados && !dadosFuncionais">
+        <p>⚠️ Dados funcionais não preenchidos. Clique em "Preencher dados" para completar o cadastro.</p>
+      </div>
+
+      <!-- Formulário de edição -->
+      <div class="dados-form" *ngIf="editandoDados">
+        <p class="form-info">Estes dados são visíveis apenas para a secretaria e serão impressos na Ficha 100.</p>
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label>Nome completo (para o documento oficial)</label>
+            <input type="text" [(ngModel)]="formDados.nomeCompleto" class="input" placeholder="Nome conforme RG" />
+          </div>
+          <div class="form-group">
+            <label>Matrícula</label>
+            <input type="text" [(ngModel)]="formDados.matricula" class="input" placeholder="Número de matrícula" />
+          </div>
+          <div class="form-group">
+            <label>Cargo</label>
+            <input type="text" [(ngModel)]="formDados.cargo" class="input" placeholder="Ex: Professor de Educação Básica II" />
+          </div>
+          <div class="form-group">
+            <label>Lotação</label>
+            <input type="text" [(ngModel)]="formDados.lotacao" class="input" placeholder="Nome da escola / unidade" />
+          </div>
+          <div class="form-group">
+            <label>RG</label>
+            <input type="text" [(ngModel)]="formDados.rg" class="input" placeholder="Número do RG" />
+          </div>
+          <div class="form-group">
+            <label>CPF</label>
+            <input type="text" [(ngModel)]="formDados.cpf" class="input" placeholder="000.000.000-00" />
+          </div>
+          <div class="form-group">
+            <label>PIS/PASEP</label>
+            <input type="text" [(ngModel)]="formDados.pisPasep" class="input" placeholder="Número do PIS/PASEP" />
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn-cancel" *ngIf="dadosFuncionais" (click)="editandoDados = false">Cancelar</button>
+          <button class="btn-primary" (click)="salvarDadosFuncionais()" [disabled]="salvandoDados">
+            {{ salvandoDados ? 'Salvando...' : 'Salvar dados' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- GRADE DE FALTAS -->
+    <div class="grade-card">
+      <div class="grade-header">
+        <h3>📅 Frequência {{ anoSelecionado }}</h3>
+        <div class="grade-actions">
+          <span class="total-badge" *ngIf="totalFaltas() > 0">{{ totalFaltas() }} afastamento{{ totalFaltas() !== 1 ? 's' : '' }} no ano</span>
+          <span class="total-badge sem-faltas" *ngIf="totalFaltas() === 0">Sem afastamentos registrados</span>
+          <button class="btn-pdf" (click)="exportarPDF()" [disabled]="exportandoPdf">
+            {{ exportandoPdf ? 'Gerando...' : '📥 Exportar PDF' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Tabela responsiva -->
+      <div class="table-wrapper">
+        <table class="grade-table">
+          <thead>
+            <tr>
+              <th class="dia-col">Dia</th>
+              <th *ngFor="let m of meses; let i = index" class="mes-col">{{ mesesAbrev[i] }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let d of dias; let di = index">
+              <td class="dia-num">{{ d }}</td>
+              <td *ngFor="let m of meses; let mi = index"
+                class="celula"
+                [class.com-falta]="grade[di][mi]">
+                {{ grade[di][mi] }}
+              </td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr class="totais-row">
+              <td class="dia-num"><strong>Total</strong></td>
+              <td *ngFor="let m of meses; let mi = index" class="celula totais-cell">
+                <strong>{{ contarPorMes(mi) || '' }}</strong>
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <!-- Legenda -->
+      <div class="legenda">
+        <div class="legenda-item" *ngFor="let t of tiposAfastamento">
+          <span class="legenda-sigla">{{ t.sigla }}</span>
+          <span class="legenda-desc">{{ t.desc }}</span>
+          <span class="legenda-count" *ngIf="contarPorTipo(t.sigla) > 0">{{ contarPorTipo(t.sigla) }}×</span>
+        </div>
+      </div>
+    </div>
+
+  </ng-container>
+
+</div>

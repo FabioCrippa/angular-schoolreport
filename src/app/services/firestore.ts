@@ -135,11 +135,26 @@ export interface FaltaProfessor {
   data: string; // YYYY-MM-DD
   professorNome: string;
   periodo: 'manha' | 'tarde' | 'noite';
+  tipoAfastamento?: string; // FM, J, I, F, LS, LG, LP, N, RE, SP
   aulas: AulaFaltaProfessor[];
   professorEventual: string;
   registradoEm?: Date;
   registradoPor: string;
   registradoPorNome: string;
+}
+
+export interface DadosFuncionaisProfessor {
+  professorId: string;
+  escolaId: string;
+  nomeCompleto: string;
+  rg: string;
+  cpf: string;
+  matricula: string;
+  cargo: string;
+  lotacao: string;
+  pisPasep: string;
+  atualizadoEm?: Date;
+  atualizadoPor?: string;
 }
 
 export interface Professor {
@@ -1642,6 +1657,34 @@ Equipe escu
     } catch (error) {
       console.error('Erro ao obter faltas de professores:', error);
       return [];
+    }
+  }
+
+  async buscarDadosFuncionaisProfessor(professorId: string): Promise<DadosFuncionaisProfessor | null> {
+    try {
+      const docRef = doc(this.firestore, 'dadosFuncionaisProfessores', professorId);
+      const snap = await getDoc(docRef);
+      if (snap.exists()) {
+        return {
+          professorId: snap.id,
+          ...(snap.data() as Omit<DadosFuncionaisProfessor, 'professorId'>),
+          atualizadoEm: snap.data()['atualizadoEm']?.toDate()
+        };
+      }
+      return null;
+    } catch (error) {
+      console.error('Erro ao buscar dados funcionais do professor:', error);
+      return null;
+    }
+  }
+
+  async salvarDadosFuncionaisProfessor(dados: Omit<DadosFuncionaisProfessor, 'atualizadoEm'>): Promise<void> {
+    try {
+      const docRef = doc(this.firestore, 'dadosFuncionaisProfessores', dados.professorId);
+      await setDoc(docRef, { ...dados, atualizadoEm: Timestamp.now() }, { merge: true });
+    } catch (error) {
+      console.error('Erro ao salvar dados funcionais do professor:', error);
+      throw error;
     }
   }
 
