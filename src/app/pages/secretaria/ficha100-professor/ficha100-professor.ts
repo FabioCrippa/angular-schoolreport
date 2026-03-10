@@ -269,20 +269,29 @@ export class Ficha100Professor implements OnInit {
         pageOrientation: 'landscape',
         pageMargins: [20, 20, 20, 20],
         content: [
-          // Cabeçalho: logo à esquerda + título centralizado
+          // Cabeçalho: [logo + descrição | título centrado | espaço espelho]
           {
             columns: [
-              logoBase64
-                ? { image: logoBase64, width: 54, margin: [0, 0, 8, 0] }
-                : { text: '', width: 62 },
+              // Coluna esquerda: logo + nome da secretaria
               {
                 stack: [
-                  { text: 'Secretaria da Educação do Estado de São Paulo', fontSize: 8, color: '#475569' },
+                  ...(logoBase64 ? [{ image: logoBase64, width: 72, margin: [0, 0, 0, 4] }] : []),
+                  { text: 'Secretaria da Educação', fontSize: 7.5, bold: true, color: '#1e3a5f' },
+                  { text: 'do Estado de São Paulo', fontSize: 7.5, color: '#1e3a5f' }
+                ],
+                width: 120
+              },
+              // Coluna central: título da ficha
+              {
+                stack: [
                   { text: 'FICHA DE FREQUÊNCIA DO PROFESSOR (FICHA 100)', style: 'title' },
                   { text: `${this.escolaNome ? this.escolaNome + '   —   ' : ''}Ano Letivo: ${this.anoSelecionado}`, style: 'subtitle' }
                 ],
-                alignment: 'center'
-              }
+                alignment: 'center',
+                width: '*'
+              },
+              // Coluna direita: espelho para equilíbrio visual
+              { text: '', width: 120 }
             ],
             margin: [0, 0, 0, 4]
           },
