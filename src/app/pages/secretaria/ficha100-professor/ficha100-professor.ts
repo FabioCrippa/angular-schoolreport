@@ -199,6 +199,18 @@ export class Ficha100Professor implements OnInit {
       const pdfFonts = await import('pdfmake/build/vfs_fonts');
       (pdfMake as any).default.vfs = (pdfFonts as any).default;
 
+      // Fetch logo as base64 for pdfmake
+      let logoBase64: string | null = null;
+      try {
+        const resp = await fetch('/logo-secretaria-educacao-sp.png');
+        const blob = await resp.blob();
+        logoBase64 = await new Promise<string>(resolve => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.readAsDataURL(blob);
+        });
+      } catch { /* logo optional */ }
+
       const d = this.dadosFuncionais;
       const nomeProf = d?.nomeCompleto || this.professorSelecionado;
 
@@ -257,10 +269,24 @@ export class Ficha100Professor implements OnInit {
         pageOrientation: 'landscape',
         pageMargins: [20, 20, 20, 20],
         content: [
-          // Título
-          { text: 'FICHA DE FREQUÊNCIA DO PROFESSOR (FICHA 100)', style: 'title' },
-          { text: `${this.escolaNome ? this.escolaNome + '   —   ' : ''}Ano Letivo: ${this.anoSelecionado}`, style: 'subtitle' },
-          { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 800, y2: 0, lineWidth: 1, lineColor: '#64748B' }], margin: [0, 4, 0, 5] },
+          // Cabeçalho: logo à esquerda + título centralizado
+          {
+            columns: [
+              logoBase64
+                ? { image: logoBase64, width: 54, margin: [0, 0, 8, 0] }
+                : { text: '', width: 62 },
+              {
+                stack: [
+                  { text: 'Secretaria da Educação do Estado de São Paulo', fontSize: 8, color: '#475569' },
+                  { text: 'FICHA DE FREQUÊNCIA DO PROFESSOR (FICHA 100)', style: 'title' },
+                  { text: `${this.escolaNome ? this.escolaNome + '   —   ' : ''}Ano Letivo: ${this.anoSelecionado}`, style: 'subtitle' }
+                ],
+                alignment: 'center'
+              }
+            ],
+            margin: [0, 0, 0, 4]
+          },
+          { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 800, y2: 0, lineWidth: 1, lineColor: '#64748B' }], margin: [0, 2, 0, 5] },
 
           // Linha 1 — Dados pessoais
           infoLinha([
