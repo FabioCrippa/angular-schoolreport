@@ -21,7 +21,6 @@ export class Ficha100Professor implements OnInit {
 
   loading = false;
   carregandoFicha = false;
-  salvandoDados = false;
   exportandoPdf = false;
   mensagem = '';
   tipoMensagem: 'sucesso' | 'erro' = 'sucesso';
@@ -138,9 +137,7 @@ export class Ficha100Professor implements OnInit {
           };
           this.editandoDados = false;
         } else {
-          // No functional data yet — open form pre-filled with the professor's display name
-          this.formDados = { nomeCompleto: this.professorSelecionado, rg: '', cpf: '', matricula: '', cargo: '', lotacao: '', pisPasep: '' };
-          this.editandoDados = true;
+          this.editandoDados = false;
         }
       }
 
@@ -167,28 +164,10 @@ export class Ficha100Professor implements OnInit {
     }
   }
 
-  async salvarDadosFuncionais() {
-    const prof = this.professores.find(p => p.nome === this.professorSelecionado);
-    if (!prof) return;
+  async salvarDadosFuncionais() { /* kept for TS compatibility, not used in template */ }
 
-    try {
-      this.salvandoDados = true;
-      await this.firestoreService.salvarDadosFuncionaisProfessor({
-        professorId: prof.id,
-        escolaId: this.escolaId,
-        ...this.formDados,
-        atualizadoPor: this.usuarioNome
-      });
-      this.dadosFuncionais = { professorId: prof.id, escolaId: this.escolaId, ...this.formDados };
-      this.editandoDados = false;
-      this.exibirMensagem('Dados funcionais salvos com sucesso!', 'sucesso');
-    } catch (error) {
-      console.error('Erro ao salvar dados funcionais:', error);
-      this.exibirMensagem('Erro ao salvar dados. Tente novamente.', 'erro');
-    } finally {
-      this.salvandoDados = false;
-      this.cdr.markForCheck();
-    }
+  irParaCadastro() {
+    this.router.navigate(['/secretaria/gerenciar-professores']);
   }
 
   contarPorTipo(sigla: string): number {

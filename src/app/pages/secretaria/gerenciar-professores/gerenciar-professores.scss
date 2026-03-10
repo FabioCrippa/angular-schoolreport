@@ -1,0 +1,286 @@
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* HEADER */
+.header {
+  margin-bottom: 24px;
+}
+.header-top {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+.header-top h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+}
+.spacer { flex: 1; }
+.subtitle { color: #64748b; font-size: 0.9rem; margin: 0; }
+
+.btn-voltar {
+  background: none;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 8px 14px;
+  cursor: pointer;
+  color: #64748b;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+  white-space: nowrap;
+  &:hover { background: #f1f5f9; color: #1e293b; }
+}
+
+/* MENSAGEM */
+.mensagem {
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 0.9rem;
+  &.mensagem-sucesso { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+  &.mensagem-erro { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+}
+
+/* LOADING */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 60px;
+  color: #64748b;
+}
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid #e2e8f0;
+  border-top-color: #3b82f6;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 12px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* TOOLBAR */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.input-busca {
+  flex: 1;
+  min-width: 200px;
+  padding: 10px 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: #1e293b;
+  background: #f8fafc;
+  transition: border-color 0.2s;
+  &:focus { outline: none; border-color: #3b82f6; background: #fff; }
+}
+
+.resumo {
+  display: flex;
+  gap: 8px;
+}
+
+.badge {
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 20px;
+  &.completo { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+  &.pendente { background: #fef9c3; color: #713f12; border: 1px solid #fde047; }
+}
+
+/* EMPTY */
+.empty {
+  text-align: center;
+  padding: 40px;
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+
+/* LISTA */
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.professor-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.07);
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+  transition: box-shadow 0.2s;
+
+  &:hover { box-shadow: 0 3px 12px rgba(0, 0, 0, 0.10); }
+  &.expandido { border-color: #bfdbfe; box-shadow: 0 3px 12px rgba(59, 130, 246, 0.12); }
+}
+
+.professor-linha {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  cursor: pointer;
+  user-select: none;
+  gap: 12px;
+}
+
+.professor-info {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 1;
+  min-width: 0;
+}
+
+.professor-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #eff6ff;
+  color: #2563eb;
+  font-size: 1.1rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  text-transform: uppercase;
+}
+
+.professor-nome {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1e293b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.professor-cargo {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin-top: 2px;
+  &.sem-dados { color: #94a3b8; font-style: italic; }
+}
+
+.professor-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.status-badge {
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+  &.completo { background: #dcfce7; color: #166534; }
+  &.incompleto { background: #fef9c3; color: #713f12; }
+}
+
+.expand-icon {
+  color: #94a3b8;
+  font-size: 0.75rem;
+  transition: transform 0.25s;
+  &.aberto { transform: rotate(180deg); color: #3b82f6; }
+}
+
+/* FORMULÁRIO EXPANDIDO */
+.form-expandido {
+  padding: 20px;
+  border-top: 1px solid #e2e8f0;
+  background: #fafeff;
+}
+
+.form-info {
+  font-size: 0.83rem;
+  color: #64748b;
+  background: #eff6ff;
+  border-radius: 6px;
+  padding: 8px 12px;
+  margin-bottom: 16px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+
+  label { font-size: 0.82rem; font-weight: 500; color: #475569; }
+  &.full-width { grid-column: 1 / -1; }
+}
+
+.input {
+  padding: 10px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: #1e293b;
+  background: #f8fafc;
+  transition: border-color 0.2s;
+  &:focus { outline: none; border-color: #3b82f6; background: #fff; }
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.btn-primary {
+  background: #3b82f6;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 22px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  &:hover:not(:disabled) { background: #2563eb; }
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+}
+
+.btn-cancel {
+  background: none;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  color: #64748b;
+  transition: all 0.2s;
+  &:hover { background: #f1f5f9; }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+
+/* RESPONSIVE */
+@media (max-width: 600px) {
+  .form-grid { grid-template-columns: 1fr; }
+  .toolbar { flex-direction: column; align-items: stretch; }
+  .professor-linha { padding: 14px 16px; }
+  .professor-nome { font-size: 0.88rem; }
+  .status-badge { display: none; }
+}

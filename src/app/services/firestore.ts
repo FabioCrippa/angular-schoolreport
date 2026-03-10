@@ -1688,6 +1688,22 @@ Equipe escu
     }
   }
 
+  async listarDadosFuncionaisProfessores(escolaId: string): Promise<DadosFuncionaisProfessor[]> {
+    try {
+      const col = collection(this.firestore, 'dadosFuncionaisProfessores');
+      const q = query(col, where('escolaId', '==', escolaId));
+      const snap = await getDocs(q);
+      return snap.docs.map(d => ({
+        professorId: d.id,
+        ...(d.data() as Omit<DadosFuncionaisProfessor, 'professorId'>),
+        atualizadoEm: d.data()['atualizadoEm']?.toDate()
+      }));
+    } catch (error) {
+      console.error('Erro ao listar dados funcionais:', error);
+      return [];
+    }
+  }
+
   async obterProfessores(escolaId: string): Promise<Professor[]> {
     try {
       const col = collection(this.firestore, 'professores');

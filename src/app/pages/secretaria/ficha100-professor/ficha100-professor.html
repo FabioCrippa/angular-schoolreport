@@ -53,13 +53,13 @@
     <div class="dados-card">
       <div class="dados-header">
         <h3>📝 Dados Funcionais</h3>
-        <button class="btn-edit" *ngIf="!editandoDados" (click)="editandoDados = true">
-          ✏️ {{ dadosFuncionais ? 'Editar' : 'Preencher dados' }}
+        <button class="btn-edit" (click)="irParaCadastro()">
+          ✏️ {{ dadosFuncionais ? 'Editar no Cadastro' : 'Preencher no Cadastro' }}
         </button>
       </div>
 
       <!-- Visualização dos dados -->
-      <div class="dados-view" *ngIf="!editandoDados && dadosFuncionais">
+      <div class="dados-view" *ngIf="dadosFuncionais">
         <div class="dados-grid">
           <div class="dado-item"><span class="dado-label">Nome completo</span><span class="dado-valor">{{ dadosFuncionais.nomeCompleto }}</span></div>
           <div class="dado-item"><span class="dado-label">Matrícula</span><span class="dado-valor">{{ dadosFuncionais.matricula || '—' }}</span></div>
@@ -72,49 +72,8 @@
       </div>
 
       <!-- Aviso quando não há dados -->
-      <div class="dados-aviso" *ngIf="!editandoDados && !dadosFuncionais">
-        <p>⚠️ Dados funcionais não preenchidos. Clique em "Preencher dados" para completar o cadastro.</p>
-      </div>
-
-      <!-- Formulário de edição -->
-      <div class="dados-form" *ngIf="editandoDados">
-        <p class="form-info">Estes dados são visíveis apenas para a secretaria e serão impressos na Ficha 100.</p>
-        <div class="form-grid">
-          <div class="form-group full-width">
-            <label>Nome completo (para o documento oficial)</label>
-            <input type="text" [(ngModel)]="formDados.nomeCompleto" class="input" placeholder="Nome conforme RG" />
-          </div>
-          <div class="form-group">
-            <label>Matrícula</label>
-            <input type="text" [(ngModel)]="formDados.matricula" class="input" placeholder="Número de matrícula" />
-          </div>
-          <div class="form-group">
-            <label>Cargo</label>
-            <input type="text" [(ngModel)]="formDados.cargo" class="input" placeholder="Ex: Professor de Educação Básica II" />
-          </div>
-          <div class="form-group">
-            <label>Lotação</label>
-            <input type="text" [(ngModel)]="formDados.lotacao" class="input" placeholder="Nome da escola / unidade" />
-          </div>
-          <div class="form-group">
-            <label>RG</label>
-            <input type="text" [(ngModel)]="formDados.rg" class="input" placeholder="Número do RG" />
-          </div>
-          <div class="form-group">
-            <label>CPF</label>
-            <input type="text" [(ngModel)]="formDados.cpf" class="input" placeholder="000.000.000-00" />
-          </div>
-          <div class="form-group">
-            <label>PIS/PASEP</label>
-            <input type="text" [(ngModel)]="formDados.pisPasep" class="input" placeholder="Número do PIS/PASEP" />
-          </div>
-        </div>
-        <div class="form-actions">
-          <button class="btn-cancel" *ngIf="dadosFuncionais" (click)="editandoDados = false">Cancelar</button>
-          <button class="btn-primary" (click)="salvarDadosFuncionais()" [disabled]="salvandoDados">
-            {{ salvandoDados ? 'Salvando...' : 'Salvar dados' }}
-          </button>
-        </div>
+      <div class="dados-aviso" *ngIf="!dadosFuncionais">
+        <p>⚠️ Dados funcionais não preenchidos. Acesse <strong>Cadastro de Professores</strong> no painel da secretaria para completar o cadastro. O PDF será gerado com os campos em branco.</p>
       </div>
     </div>
 
