@@ -272,14 +272,12 @@ export class Ficha100Professor implements OnInit {
           // Cabeçalho: [logo + descrição | título centrado | espaço espelho]
           {
             columns: [
-              // Coluna esquerda: logo + nome da secretaria
+              // Coluna esquerda: logo
               {
                 stack: [
-                  ...(logoBase64 ? [{ image: logoBase64, width: 72, margin: [0, 0, 0, 4] }] : []),
-                  { text: 'Secretaria da Educação', fontSize: 7.5, bold: true, color: '#1e3a5f' },
-                  { text: 'do Estado de São Paulo', fontSize: 7.5, color: '#1e3a5f' }
+                  ...(logoBase64 ? [{ image: logoBase64, width: 110 }] : [])
                 ],
-                width: 120
+                width: 130
               },
               // Coluna central: título da ficha
               {
@@ -291,7 +289,7 @@ export class Ficha100Professor implements OnInit {
                 width: '*'
               },
               // Coluna direita: espelho para equilíbrio visual
-              { text: '', width: 120 }
+              { text: '', width: 130 }
             ],
             margin: [0, 0, 0, 4]
           },
