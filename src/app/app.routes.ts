@@ -134,6 +134,12 @@ export const routes: Routes = [
         data: { roles: ['coordenacao', 'direcao'] }
     },
     {
+        path: 'coordenacao/painel-busca-ativa',
+        loadComponent: () => import('./pages/coordenacao/painel-busca-ativa/painel-busca-ativa').then(m => m.PainelBuscaAtiva),
+        canActivate: [authGuard, roleGuard],
+        data: { roles: ['coordenacao', 'direcao'] }
+    },
+    {
         path: '**',
         redirectTo: 'login'
     }

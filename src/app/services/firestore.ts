@@ -1643,6 +1643,33 @@ Equipe escu
     }
   }
 
+  async obterTodosBuscaAtiva(escolaId: string): Promise<StatusBuscaAtiva[]> {
+    try {
+      const buscaAtivaCollection = collection(this.firestore, 'buscaAtivaStatus');
+      const q = query(
+        buscaAtivaCollection,
+        where('escolaId', '==', escolaId)
+      );
+      const querySnapshot = await getDocs(q);
+      return querySnapshot.docs.map(d => {
+        const data = d.data();
+        return {
+          id: d.id,
+          escolaId: data['escolaId'],
+          alunoId: data['alunoId'],
+          alunoNome: data['alunoNome'],
+          ultimoContato: data['ultimoContato']?.toDate(),
+          resultado: data['resultado'],
+          registradoPor: data['registradoPor'],
+          registradoPorNome: data['registradoPorNome']
+        };
+      });
+    } catch (error) {
+      console.error('Erro ao obter todos status busca ativa:', error);
+      return [];
+    }
+  }
+
   async salvarFaltaProfessor(falta: Omit<FaltaProfessor, 'id'>): Promise<string> {
     try {
       const col = collection(this.firestore, 'faltasProfessores');

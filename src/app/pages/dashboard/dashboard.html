@@ -59,6 +59,9 @@
         <a class="nav-item" routerLink="/coordenacao/ficha-aluno">
           <span class="nav-icon">🧑‍🎓</span> Ficha do Aluno
         </a>
+        <a class="nav-item" routerLink="/coordenacao/painel-busca-ativa">
+          <span class="nav-icon">🔍</span> Busca Ativa
+        </a>
         <a class="nav-item" routerLink="/agendamento-equipamentos">
           <span class="nav-icon">📅</span> Agendamentos
         </a>
@@ -176,6 +179,13 @@
           <div class="card-icon">🧑‍🎓</div>
           <h3>Ficha do Aluno</h3>
           <p>Consulte frequência e histórico de ocorrências de qualquer aluno</p>
+          <div class="card-arrow">→</div>
+        </div>
+
+        <div class="card card-highlight" (click)="navigateTo('/coordenacao/painel-busca-ativa')">
+          <div class="card-icon">🔍</div>
+          <h3>Busca Ativa</h3>
+          <p>Acompanhe e registre contatos com responsáveis de alunos em risco</p>
           <div class="card-arrow">→</div>
         </div>
 

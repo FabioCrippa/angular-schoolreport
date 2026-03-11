@@ -1,0 +1,178 @@
+<div class="busca-container">
+
+  <!-- Cabeçalho -->
+  <div class="page-header">
+    <button class="btn-back" (click)="voltar()">← Voltar</button>
+    <div class="header-content">
+      <h1>🔍 Busca Ativa</h1>
+      <p class="subtitle">Acompanhamento de alunos em risco de reprovação por falta</p>
+    </div>
+  </div>
+
+  <!-- Linha: Filtros -->
+  <div class="filtros-row">
+    <div class="filtro-ano">
+      <label>Ano:</label>
+      <select [(ngModel)]="anoSelecionado" (change)="onAnoChange()">
+        <option *ngFor="let ano of anos" [value]="ano">{{ ano }}</option>
+      </select>
+    </div>
+    <div class="filtro-turma">
+      <label>Turma:</label>
+      <select [(ngModel)]="filtroTurma" (change)="aplicarFiltros()">
+        <option value="">Todas</option>
+        <option *ngFor="let t of turmas" [value]="t">{{ t }}</option>
+      </select>
+    </div>
+    <div class="filtro-status-tabs">
+      <button class="tab-btn" [class.tab-btn--ativo]="filtroStatus === 'todos'"
+        (click)="filtroStatus = 'todos'; aplicarFiltros()">Todos</button>
+      <button class="tab-btn tab-btn--sem" [class.tab-btn--ativo]="filtroStatus === 'sem_contato'"
+        (click)="filtroStatus = 'sem_contato'; aplicarFiltros()">
+        Sem contato
+        <span class="tab-badge tab-badge--sem" *ngIf="totalSemContato > 0">{{ totalSemContato }}</span>
+      </button>
+      <button class="tab-btn tab-btn--pendente" [class.tab-btn--ativo]="filtroStatus === 'pendente'"
+        (click)="filtroStatus = 'pendente'; aplicarFiltros()">
+        Pendentes
+        <span class="tab-badge tab-badge--pendente" *ngIf="totalPendentes > 0">{{ totalPendentes }}</span>
+      </button>
+      <button class="tab-btn tab-btn--ok" [class.tab-btn--ativo]="filtroStatus === 'contatado'"
+        (click)="filtroStatus = 'contatado'; aplicarFiltros()">
+        Contatados
+        <span class="tab-badge tab-badge--ok" *ngIf="totalContatados > 0">{{ totalContatados }}</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-state" *ngIf="loading">
+    <p>Carregando dados...</p>
+  </div>
+
+  <!-- Sem alunos em risco -->
+  <div class="empty-state" *ngIf="!loading && todosAlunos.length === 0">
+    <div class="empty-icon">🎉</div>
+    <p>Nenhum aluno em risco de reprovação por falta em {{ anoSelecionado }}.</p>
+  </div>
+
+  <!-- Sem resultados no filtro -->
+  <div class="empty-state" *ngIf="!loading && todosAlunos.length > 0 && alunosFiltrados.length === 0">
+    <div class="empty-icon">🔎</div>
+    <p>Nenhum aluno encontrado com os filtros selecionados.</p>
+  </div>
+
+  <!-- Cards de resumo -->
+  <div class="resumo-cards" *ngIf="!loading && todosAlunos.length > 0">
+    <div class="resumo-card resumo-card--total">
+      <span class="resumo-numero">{{ todosAlunos.length }}</span>
+      <span class="resumo-label">Total em acompanhamento</span>
+    </div>
+    <div class="resumo-card resumo-card--sem" (click)="filtroStatus = 'sem_contato'; aplicarFiltros()">
+      <span class="resumo-numero">{{ totalSemContato }}</span>
+      <span class="resumo-label">Sem contato</span>
+    </div>
+    <div class="resumo-card resumo-card--pendente" (click)="filtroStatus = 'pendente'; aplicarFiltros()">
+      <span class="resumo-numero">{{ totalPendentes }}</span>
+      <span class="resumo-label">Pendentes</span>
+    </div>
+    <div class="resumo-card resumo-card--ok" (click)="filtroStatus = 'contatado'; aplicarFiltros()">
+      <span class="resumo-numero">{{ totalContatados }}</span>
+      <span class="resumo-label">Contatados</span>
+    </div>
+  </div>
+
+  <!-- Lista de alunos -->
+  <div class="alunos-lista" *ngIf="!loading && alunosFiltrados.length > 0">
+    <div class="aluno-card" *ngFor="let a of alunosFiltrados"
+      [class.aluno-card--risco]="a.nivel === 'risco'"
+      [class.aluno-card--atencao]="a.nivel === 'atencao'">
+
+      <!-- Linha principal -->
+      <div class="aluno-row">
+        <div class="aluno-info">
+          <div class="aluno-nome-row">
+            <span class="badge-nivel"
+              [class.badge-nivel--risco]="a.nivel === 'risco'"
+              [class.badge-nivel--atencao]="a.nivel === 'atencao'"
+            >
+              {{ a.nivel === 'risco' ? '🔴 Reprovado' : '🟡 Atenção' }}
+            </span>
+            <span class="aluno-nome">{{ a.alunoNome }}</span>
+          </div>
+          <div class="aluno-meta">
+            <span class="badge-turma">{{ a.turma }}</span>
+            <span class="faltas-count">{{ a.totalFaltas }}/{{ LIMITE_FALTAS }} faltas</span>
+            <div class="falta-bar-wrap">
+              <div class="falta-bar"
+                [style.width.%]="[[(a.totalFaltas / LIMITE_FALTAS) * 100 | number:'1.0-0']]"
+                [class.falta-bar--risco]="a.nivel === 'risco'"
+                [class.falta-bar--atencao]="a.nivel === 'atencao'"
+              ></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Status de contato -->
+        <div class="status-contato">
+          <ng-container *ngIf="!a.status">
+            <span class="badge-sem-contato">📵 Sem contato</span>
+          </ng-container>
+          <ng-container *ngIf="a.status">
+            <span class="badge-resultado"
+              [class.resultado--conversa]="a.status.resultado === 'conversa'"
+              [class.resultado--recado]="a.status.resultado === 'recado'"
+              [class.resultado--ligar]="a.status.resultado === 'ligar_novamente'"
+              [class.resultado--nao]="a.status.resultado === 'nao_conseguiu'"
+            >
+              {{ getIconeResultado(a.status.resultado) }} {{ getLabelResultado(a.status.resultado) }}
+            </span>
+            <span class="contato-quando">{{ getDiasDesdeContato(a.status.ultimoContato) }}</span>
+          </ng-container>
+        </div>
+
+        <!-- Ações -->
+        <div class="aluno-actions">
+          <button class="btn-registrar" (click)="toggleForm(a)">
+            {{ a.mostrarForm ? '✕' : '📞 Registrar' }}
+          </button>
+          <button class="btn-ficha" (click)="verFicha(a)">🧑‍🎓 Ficha</button>
+        </div>
+      </div>
+
+      <!-- Formulário inline de contato -->
+      <div class="form-inline" *ngIf="a.mostrarForm">
+        <div class="form-row">
+          <input
+            type="text"
+            [(ngModel)]="a.form.responsavel"
+            placeholder="Nome do responsável *"
+            class="form-input"
+          />
+        </div>
+        <div class="opcoes-resultado">
+          <label class="opcao-btn"
+            *ngFor="let op of opcoesResultado"
+            [class.opcao-btn--selecionada]="a.form.resultadoContato === op.valor"
+          >
+            <input type="radio" [name]="'resultado-' + a.alunoId" [value]="op.valor"
+              [(ngModel)]="a.form.resultadoContato" style="display:none" />
+            {{ op.icone }} {{ op.label }}
+          </label>
+        </div>
+        <div class="form-row">
+          <textarea [(ngModel)]="a.form.notas" placeholder="Observações (opcional)"
+            class="form-textarea" rows="2"></textarea>
+        </div>
+        <div class="form-erro" *ngIf="a.erroForm">{{ a.erroForm }}</div>
+        <div class="form-actions">
+          <button class="btn-salvar" (click)="salvarContato(a)" [disabled]="a.salvando">
+            {{ a.salvando ? 'Salvando...' : '💾 Salvar' }}
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
