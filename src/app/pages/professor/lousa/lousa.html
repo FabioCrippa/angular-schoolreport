@@ -3,8 +3,8 @@
   [class.tema-verde]="tema === 'verde'"
   [class.tema-preta]="tema === 'preta'">
 
-  <!-- ── Toolbar ── -->
-  <div class="lousa-toolbar">
+  <!-- ── Toolbar (oculta no modo projetor) ── -->
+  <div class="lousa-toolbar" *ngIf="!modoProjetor">
 
     <button class="tb-btn tb-btn--back" (click)="irParaDiario()" title="Voltar ao Diário">
       ← Diário
@@ -18,7 +18,7 @@
       <button class="tema-btn"
         *ngFor="let t of TEMAS"
         [class.tema-btn--ativo]="tema === t.valor"
-        (click)="tema = t.valor"
+        (click)="onTemaChange(t.valor)"
         [title]="t.label">
         {{ t.label }}
       </button>
@@ -32,8 +32,26 @@
       <button class="tamanho-btn"
         *ngFor="let t of TAMANHOS"
         [class.tamanho-btn--ativo]="tamanhoFonte === t.valor"
-        (click)="tamanhoFonte = t.valor">
+        (click)="onTamanhoChange(t.valor)">
         {{ t.label }}
+      </button>
+    </div>
+
+    <div class="tb-sep"></div>
+
+    <!-- Modo de edição -->
+    <div class="tb-group">
+      <button class="modo-btn"
+        [class.modo-btn--ativo]="modoEdicao === 'texto'"
+        (click)="modoEdicao === 'desenho' && toggleModoEdicao()"
+        title="Digitar texto">
+        ✏️ Digitar
+      </button>
+      <button class="modo-btn"
+        [class.modo-btn--ativo]="modoEdicao === 'desenho'"
+        (click)="modoEdicao === 'texto' && toggleModoEdicao()"
+        title="Desenho à mão livre">
+        🖌️ Mão livre
       </button>
     </div>
 
@@ -54,18 +72,31 @@
 
   </div>
 
-  <!-- ── Área de escrita ── -->
-  <textarea
-    #lousaArea
-    class="lousa-area"
-    [class.fonte-normal]="tamanhoFonte === 'normal'"
-    [class.fonte-grande]="tamanhoFonte === 'grande'"
-    [class.fonte-enorme]="tamanhoFonte === 'enorme'"
-    [(ngModel)]="texto"
-    (ngModelChange)="onTextoChange()"
-    placeholder="Comece a escrever na lousa... 🖊️"
-    spellcheck="false"
-    autocomplete="off"
-  ></textarea>
+  <!-- ── Área de conteúdo ── -->
+  <div class="lousa-conteudo">
+
+    <!-- Textarea — modo texto -->
+    <textarea
+      #lousaArea
+      class="lousa-area"
+      [class.fonte-normal]="tamanhoFonte === 'normal'"
+      [class.fonte-grande]="tamanhoFonte === 'grande'"
+      [class.fonte-enorme]="tamanhoFonte === 'enorme'"
+      [readonly]="modoProjetor || modoEdicao === 'desenho'"
+      [(ngModel)]="texto"
+      (ngModelChange)="!modoProjetor && onTextoChange()"
+      placeholder="Comece a escrever na lousa... 🖊️"
+      spellcheck="false"
+      autocomplete="off"
+    ></textarea>
+
+    <!-- Canvas — modo mão livre -->
+    <canvas
+      #lousaCanvas
+      class="lousa-canvas"
+      [class.canvas-ativo]="modoEdicao === 'desenho'"
+    ></canvas>
+
+  </div>
 
 </div>

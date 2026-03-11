@@ -122,10 +122,20 @@
   &:nth-child(3) { font-size: 1.05rem; }
 }
 
+/* ── Área de conteúdo (wrapper relativo para sobrepor textarea + canvas) ── */
+.lousa-conteudo {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+}
+
 /* ── Área de escrita ── */
 .lousa-area {
-  flex: 1;
+  position: absolute;
+  inset: 0;
+  z-index: 1;
   width: 100%;
+  height: 100%;
   padding: 32px 48px;
   border: none;
   outline: none;
@@ -145,9 +155,42 @@
     font-style: italic;
   }
 
-  /* Scrollbar discreta no tema escuro */
   scrollbar-width: thin;
   scrollbar-color: var(--toolbar-border) transparent;
+}
+
+/* ── Canvas mão livre ── */
+.lousa-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  cursor: default;
+
+  &.canvas-ativo {
+    pointer-events: auto;
+    cursor: crosshair;
+  }
+}
+
+/* ── Botões de modo (Digitar / Mão livre) ── */
+.modo-btn {
+  padding: 5px 13px;
+  border-radius: 7px;
+  border: 1.5px solid var(--toolbar-border);
+  background: transparent;
+  color: var(--lousa-text);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.12s;
+  white-space: nowrap;
+  &:hover { background: var(--toolbar-border); }
+  &.modo-btn--ativo {
+    border-color: #3b82f6;
+    background: #3b82f6;
+    color: #fff;
+    cursor: default;
+  }
 }
 
 /* ── Responsive ── */

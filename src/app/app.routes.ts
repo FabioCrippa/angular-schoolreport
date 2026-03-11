@@ -152,6 +152,12 @@ export const routes: Routes = [
         data: { roles: ['professor', 'coordenacao', 'direcao'] }
     },
     {
+        // Rota pública para projeção — sem autenticação
+        path: 'projetar',
+        loadComponent: () => import('./pages/professor/lousa/lousa').then(m => m.Lousa),
+        data: { projetor: true }
+    },
+    {
         path: '**',
         redirectTo: 'login'
     }
