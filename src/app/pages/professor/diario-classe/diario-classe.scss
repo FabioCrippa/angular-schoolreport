@@ -396,19 +396,19 @@
 .entrada-card {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
-  padding: 12px 10px 12px 12px;
+  gap: 14px;
+  padding: 14px 10px 14px 14px;
   border-radius: 0 10px 10px 0;
   border-left: 3px solid transparent;
-  border-bottom: 1px solid rgba(208,198,182,.5);
+  border-bottom: 1px solid rgba(208,198,182,.45);
   transition: all .15s ease;
 
   &:last-child { border-bottom: none; }
 
   &:hover {
-    background: rgba(255,255,255,.72);
+    background: rgba(255,255,255,.78);
     border-left-color: #c9973a;
-    box-shadow: 2px 2px 10px rgba(0,0,0,.07);
+    box-shadow: 2px 2px 12px rgba(0,0,0,.08);
     .entrada-actions { opacity: 1; }
   }
 }
@@ -417,35 +417,45 @@
 .entrada-data-col {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-width: 44px;
-  width: 44px;
-  height: 54px;
-  border: 1px solid #d8ccba;
-  border-radius: 8px;
-  box-shadow: 1px 1px 4px rgba(0,0,0,.08);
+  align-items: stretch;     /* children fill full width */
+  justify-content: flex-start;
+  min-width: 52px;
+  width: 52px;
+  height: 60px;
+  border: 1px solid #c8bcaa;
+  border-radius: 9px;
+  box-shadow: 1px 2px 6px rgba(0,0,0,.10);
   flex-shrink: 0;
   overflow: hidden;
-  background: linear-gradient(to bottom, #1c3460 0%, #1c3460 38%, #fff 38%);
+  /* 50/50 split — matches exactly the two child halves */
+  background: linear-gradient(to bottom, #1c3460 0%, #1c3460 50%, #fff 50%);
 }
 
 .entrada-dia {
-  font-size: 1.3rem;
+  /* top half — on navy background */
+  height: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
   font-weight: 700;
   color: #fff;
-  line-height: 1;
-  padding-top: 2px;
   font-family: 'Caveat', cursive;
+  line-height: 1;
 }
 
 .entrada-diasem {
-  font-size: .6rem;
-  color: #6b5a4a;
+  /* bottom half — on white background */
+  height: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .62rem;
+  color: #5a4a38;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: .04em;
-  margin-top: 4px;
+  letter-spacing: .05em;
+  background: #f5f0e8;   /* warm off-white to distinguish from page */
 }
 
 /* ── Entry body ── */
