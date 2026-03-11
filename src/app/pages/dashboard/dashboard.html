@@ -50,8 +50,11 @@
         <a class="nav-item" routerLink="/ocorrencias">
           <span class="nav-icon">📋</span> Ocorrências
         </a>
+        <a class="nav-item" routerLink="/coordenacao/estatisticas-ocorrencias">
+          <span class="nav-icon">📊</span> Estatísticas
+        </a>
         <a class="nav-item" routerLink="/coordenacao/painel-frequencia">
-          <span class="nav-icon">📊</span> Frequência
+          <span class="nav-icon">📈</span> Frequência
         </a>
         <a class="nav-item" routerLink="/agendamento-equipamentos">
           <span class="nav-icon">📅</span> Agendamentos
@@ -149,6 +152,13 @@
           <div class="card-icon">📤</div>
           <h3>Exportar Relatório de Ocorrências</h3>
           <p>Baixe o relatório completo em Excel</p>
+          <div class="card-arrow">→</div>
+        </div>
+
+        <div class="card" (click)="navigateTo('/coordenacao/estatisticas-ocorrencias')">
+          <div class="card-icon">📊</div>
+          <h3>Estatísticas de Ocorrências</h3>
+          <p>Análise por tipo, turma, aluno e tendência mensal</p>
           <div class="card-arrow">→</div>
         </div>
 

@@ -1,0 +1,160 @@
+<div class="estatisticas-container">
+
+  <!-- Cabeçalho -->
+  <div class="page-header">
+    <button class="btn-back" (click)="voltar()">← Voltar</button>
+    <div class="header-content">
+      <h1>📊 Estatísticas de Ocorrências</h1>
+      <p class="subtitle">Análise por tipo, turma e período</p>
+    </div>
+  </div>
+
+  <!-- Filtro de Ano -->
+  <div class="filtro-ano">
+    <label>Ano:</label>
+    <select [(ngModel)]="anoSelecionado" (change)="onAnoChange()">
+      <option *ngFor="let ano of anos" [value]="ano">{{ ano }}</option>
+    </select>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-state" *ngIf="loading">
+    <p>Carregando estatísticas...</p>
+  </div>
+
+  <!-- Sem dados -->
+  <div class="empty-state" *ngIf="!loading && totalOcorrencias === 0">
+    <div class="empty-icon">📂</div>
+    <p>Nenhuma ocorrência registrada em {{ anoSelecionado }}.</p>
+  </div>
+
+  <ng-container *ngIf="!loading && totalOcorrencias > 0">
+
+    <!-- Cards de Resumo -->
+    <div class="summary-cards">
+      <div class="summary-card">
+        <div class="summary-icon">📋</div>
+        <div class="summary-info">
+          <span class="summary-number">{{ totalOcorrencias }}</span>
+          <span class="summary-label">Total de<br>Ocorrências</span>
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-icon">👥</div>
+        <div class="summary-info">
+          <span class="summary-number">{{ totalAlunosUnicos }}</span>
+          <span class="summary-label">Alunos<br>Envolvidos</span>
+        </div>
+      </div>
+      <div class="summary-card summary-card--highlight">
+        <div class="summary-icon">⚠️</div>
+        <div class="summary-info">
+          <span class="summary-number summary-number--sm">{{ tipoMaisFrequente }}</span>
+          <span class="summary-label">Tipo mais<br>frequente</span>
+        </div>
+      </div>
+      <div class="summary-card summary-card--highlight">
+        <div class="summary-icon">🏫</div>
+        <div class="summary-info">
+          <span class="summary-number summary-number--sm">{{ turmaMaisOcorrencias }}</span>
+          <span class="summary-label">Turma com mais<br>ocorrências</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tendência Mensal -->
+    <div class="section-card">
+      <h2 class="section-title">📅 Ocorrências por Mês</h2>
+      <div class="chart-mensal">
+        <div class="chart-bar-col" *ngFor="let m of porMes">
+          <div class="chart-bar-wrap">
+            <span class="chart-bar-value" *ngIf="m.total > 0">{{ m.total }}</span>
+            <div class="chart-bar" [style.height.%]="m.pct || 2"
+                 [class.chart-bar--zero]="m.total === 0"></div>
+          </div>
+          <span class="chart-bar-label">{{ m.mes }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Grid: Tipo + Turma -->
+    <div class="ranking-grid">
+
+      <!-- Por Tipo -->
+      <div class="section-card">
+        <h2 class="section-title">🏷️ Por Tipo de Ocorrência</h2>
+        <div class="ranking-list">
+          <div class="ranking-item" *ngFor="let item of porTipo; let i = index">
+            <span class="ranking-pos">{{ i + 1 }}</span>
+            <div class="ranking-info">
+              <span class="ranking-label">{{ item.label }}</span>
+              <div class="ranking-bar-wrap">
+                <div class="ranking-bar" [style.width.%]="item.pct"></div>
+              </div>
+            </div>
+            <span class="ranking-total">{{ item.total }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Por Turma -->
+      <div class="section-card">
+        <h2 class="section-title">🏫 Por Turma</h2>
+        <div class="ranking-list">
+          <div class="ranking-item" *ngFor="let item of porTurma; let i = index">
+            <span class="ranking-pos">{{ i + 1 }}</span>
+            <div class="ranking-info">
+              <span class="ranking-label">{{ item.label }}</span>
+              <div class="ranking-bar-wrap">
+                <div class="ranking-bar ranking-bar--turma" [style.width.%]="item.pct"></div>
+              </div>
+            </div>
+            <span class="ranking-total">{{ item.total }}</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Grid: Alunos + Professores -->
+    <div class="ranking-grid">
+
+      <!-- Top Alunos -->
+      <div class="section-card">
+        <h2 class="section-title">👤 Alunos com Mais Ocorrências (Top 10)</h2>
+        <div class="ranking-list">
+          <div class="ranking-item" *ngFor="let item of porAluno; let i = index">
+            <span class="ranking-pos" [class.ranking-pos--top]="i < 3">{{ i + 1 }}</span>
+            <div class="ranking-info">
+              <span class="ranking-label">{{ item.label }}</span>
+              <div class="ranking-bar-wrap">
+                <div class="ranking-bar ranking-bar--aluno" [style.width.%]="item.pct"></div>
+              </div>
+            </div>
+            <span class="ranking-total">{{ item.total }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top Professores -->
+      <div class="section-card">
+        <h2 class="section-title">👩‍🏫 Professores que Mais Registraram (Top 10)</h2>
+        <div class="ranking-list">
+          <div class="ranking-item" *ngFor="let item of porProfessor; let i = index">
+            <span class="ranking-pos">{{ i + 1 }}</span>
+            <div class="ranking-info">
+              <span class="ranking-label">{{ item.label }}</span>
+              <div class="ranking-bar-wrap">
+                <div class="ranking-bar ranking-bar--professor" [style.width.%]="item.pct"></div>
+              </div>
+            </div>
+            <span class="ranking-total">{{ item.total }}</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </ng-container>
+
+</div>

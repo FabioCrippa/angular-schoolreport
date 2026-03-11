@@ -1,0 +1,304 @@
+.estatisticas-container {
+  padding: 1.5rem;
+  max-width: 1100px;
+  margin: 0 auto;
+  font-family: inherit;
+}
+
+/* ── Header ── */
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.btn-back {
+  background: none;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #475569;
+  white-space: nowrap;
+  transition: background 0.2s;
+
+  &:hover {
+    background: #f1f5f9;
+  }
+}
+
+.header-content h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #1e293b;
+}
+
+.subtitle {
+  margin: 0.2rem 0 0;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+/* ── Filtro ── */
+.filtro-ano {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+  color: #64748b;
+  font-weight: 600;
+
+  select {
+    padding: 0.4rem 0.75rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    background: #fff;
+    color: #1e293b;
+    cursor: pointer;
+
+    &:focus {
+      outline: none;
+      border-color: #3b82f6;
+    }
+  }
+}
+
+/* ── Estados ── */
+.loading-state,
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #64748b;
+}
+
+.empty-icon {
+  font-size: 3rem;
+  margin-bottom: 0.5rem;
+}
+
+/* ── Summary Cards ── */
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.summary-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+
+  &--highlight {
+    border-color: #bfdbfe;
+    background: linear-gradient(135deg, #eff6ff, #dbeafe);
+  }
+}
+
+.summary-icon {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.summary-number {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #1e293b;
+  line-height: 1;
+
+  &--sm {
+    font-size: 1.1rem;
+    font-weight: 700;
+  }
+}
+
+.summary-label {
+  font-size: 0.78rem;
+  color: #64748b;
+  line-height: 1.4;
+  margin-top: 0.15rem;
+}
+
+/* ── Section Cards ── */
+.section-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.25rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  margin-bottom: 1.5rem;
+}
+
+.section-title {
+  margin: 0 0 1.25rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+/* ── Gráfico Mensal ── */
+.chart-mensal {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.4rem;
+  height: 140px;
+  padding-bottom: 1.5rem;
+  position: relative;
+}
+
+.chart-bar-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  position: relative;
+}
+
+.chart-bar-wrap {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 3px;
+}
+
+.chart-bar-value {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1;
+}
+
+.chart-bar {
+  width: 70%;
+  background: #3b82f6;
+  border-radius: 4px 4px 0 0;
+  min-height: 3px;
+  transition: height 0.3s ease;
+
+  &--zero {
+    background: #e2e8f0;
+  }
+}
+
+.chart-bar-label {
+  position: absolute;
+  bottom: -1.3rem;
+  font-size: 0.72rem;
+  color: #94a3b8;
+  text-align: center;
+}
+
+/* ── Ranking Grid ── */
+.ranking-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+
+  @media (max-width: 700px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Ranking List ── */
+.ranking-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.ranking-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.ranking-pos {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  &--top {
+    background: #fef3c7;
+    color: #92400e;
+  }
+}
+
+.ranking-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.ranking-label {
+  display: block;
+  font-size: 0.85rem;
+  color: #1e293b;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 3px;
+}
+
+.ranking-bar-wrap {
+  height: 6px;
+  background: #f1f5f9;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.ranking-bar {
+  height: 100%;
+  border-radius: 3px;
+  background: #3b82f6;
+  transition: width 0.4s ease;
+
+  &--turma    { background: #8b5cf6; }
+  &--aluno    { background: #ef4444; }
+  &--professor { background: #10b981; }
+}
+
+.ranking-total {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #475569;
+  min-width: 24px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* ── Responsivo ── */
+@media (max-width: 600px) {
+  .estatisticas-container {
+    padding: 1rem;
+  }
+
+  .summary-cards {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .chart-mensal {
+    height: 100px;
+  }
+}

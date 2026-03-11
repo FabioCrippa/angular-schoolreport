@@ -122,6 +122,12 @@ export const routes: Routes = [
         data: { roles: ['coordenacao', 'direcao'] }
     },
     {
+        path: 'coordenacao/estatisticas-ocorrencias',
+        loadComponent: () => import('./pages/coordenacao/estatisticas-ocorrencias/estatisticas-ocorrencias').then(m => m.EstatisticasOcorrencias),
+        canActivate: [authGuard, roleGuard],
+        data: { roles: ['coordenacao', 'direcao'] }
+    },
+    {
         path: '**',
         redirectTo: 'login'
     }
