@@ -2,7 +2,7 @@ import { Component, inject, OnInit, ChangeDetectionStrategy, ChangeDetectorRef }
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { FirestoreService, Aluno, Ocorrencia, Falta } from '../../../services/firestore';
+import { FirestoreService, Aluno, Ocorrencia, Falta, Conversa, Usuario } from '../../../services/firestore';
 import { AuthService } from '../../../services/auth';
 
 interface DadosFicha {
@@ -15,6 +15,8 @@ interface DadosFicha {
   ocorrencias: Ocorrencia[];
   totalOcorrencias: number;
   tiposMaisFrequentes: { tipo: string; total: number }[];
+  // Contatos
+  conversas: Conversa[];
 }
 
 @Component({
@@ -54,6 +56,26 @@ export class FichaAluno implements OnInit {
   anoSelecionado: number = new Date().getFullYear();
   anos: number[] = [];
 
+  // Usuário logado (para registrar contatos)
+  private usuarioLogado: Usuario | null = null;
+
+  // Formulário de novo contato
+  mostrarFormContato = false;
+  salvandoContato = false;
+  erroContato = '';
+  formContato = {
+    responsavel: '',
+    resultadoContato: 'conversa' as Conversa['resultadoContato'],
+    notas: ''
+  };
+
+  readonly opcoesResultado: { valor: Conversa['resultadoContato']; label: string; icone: string }[] = [
+    { valor: 'conversa',        label: 'Conversa realizada',    icone: '✅' },
+    { valor: 'recado',          label: 'Deixou recado',         icone: '📝' },
+    { valor: 'ligar_novamente', label: 'Ligar novamente',       icone: '🔁' },
+    { valor: 'nao_conseguiu',   label: 'Não conseguiu contato', icone: '❌' },
+  ];
+
   // Cache de dados brutos (recarregado apenas ao mudar ano)
   private todasFaltas: Falta[] = [];
   private todasOcorrencias: Ocorrencia[] = [];
@@ -86,6 +108,7 @@ export class FichaAluno implements OnInit {
       this.todosAlunos = alunos;
       this.todasFaltas = faltas;
       this.todasOcorrencias = ocorrencias;
+      this.usuarioLogado = usuario;
 
     } catch (error) {
       console.error('Erro ao carregar dados:', error);
@@ -133,20 +156,27 @@ export class FichaAluno implements OnInit {
     this.mostrarSugestoes = false;
     this.alunosFiltrados = [];
     this.ocorrenciaExpandida = null;
+    this.mostrarFormContato = false;
+    this.erroContato = '';
 
     this.loadingFicha = true;
     this.ficha = null;
     this.cdr.markForCheck();
 
     try {
-      this.ficha = this.montarFicha(aluno);
+      const conversas = aluno.id
+        ? await this.firestoreService.obterConversas(this.escolaId, aluno.id)
+        : [];
+      // Ordem mais recente primeiro
+      conversas.sort((a, b) => b.registradoEm.getTime() - a.registradoEm.getTime());
+      this.ficha = this.montarFicha(aluno, conversas);
     } finally {
       this.loadingFicha = false;
       this.cdr.markForCheck();
     }
   }
 
-  private montarFicha(aluno: Aluno): DadosFicha {
+  private montarFicha(aluno: Aluno, conversas: Conversa[] = []): DadosFicha {
     const anoStr = String(this.anoSelecionado);
 
     // --- Frequência ---
@@ -196,8 +226,67 @@ export class FichaAluno implements OnInit {
       nivel,
       ocorrencias,
       totalOcorrencias: ocorrencias.length,
-      tiposMaisFrequentes
+      tiposMaisFrequentes,
+      conversas
     };
+  }
+
+  // ── Contato com responsável ──────────────────────────────
+
+  toggleFormContato() {
+    this.mostrarFormContato = !this.mostrarFormContato;
+    if (this.mostrarFormContato) {
+      this.formContato = { responsavel: '', resultadoContato: 'conversa', notas: '' };
+      this.erroContato = '';
+    }
+    this.cdr.markForCheck();
+  }
+
+  async salvarContato() {
+    if (!this.ficha || !this.ficha.aluno.id) return;
+    if (!this.formContato.responsavel.trim()) {
+      this.erroContato = 'Informe o nome do responsável.';
+      this.cdr.markForCheck();
+      return;
+    }
+
+    this.salvandoContato = true;
+    this.erroContato = '';
+    this.cdr.markForCheck();
+
+    try {
+      const user = this.authService.getCurrentUser();
+      await this.firestoreService.salvarConversa(this.escolaId, {
+        alunoId: this.ficha.aluno.id!,
+        alunoNome: this.ficha.aluno.nome,
+        responsavel: this.formContato.responsavel.trim(),
+        resultadoContato: this.formContato.resultadoContato,
+        notas: this.formContato.notas.trim(),
+        registradoEm: new Date(),
+        registradoPor: user?.uid ?? '',
+        registradoPorNome: this.usuarioLogado?.nome ?? ''
+      });
+
+      // Recarregar conversas e atualizar ficha sem perder o estado
+      const conversas = await this.firestoreService.obterConversas(this.escolaId, this.ficha.aluno.id!);
+      conversas.sort((a, b) => b.registradoEm.getTime() - a.registradoEm.getTime());
+      this.ficha = { ...this.ficha, conversas };
+      this.mostrarFormContato = false;
+    } catch (err) {
+      console.error('Erro ao salvar contato:', err);
+      this.erroContato = 'Erro ao salvar. Tente novamente.';
+    } finally {
+      this.salvandoContato = false;
+      this.cdr.markForCheck();
+    }
+  }
+
+  getLabelResultado(resultado: Conversa['resultadoContato']): string {
+    return this.opcoesResultado.find(o => o.valor === resultado)?.label ?? resultado;
+  }
+
+  getIconeResultado(resultado: Conversa['resultadoContato']): string {
+    return this.opcoesResultado.find(o => o.valor === resultado)?.icone ?? '';
   }
 
   fecharSugestoes() {

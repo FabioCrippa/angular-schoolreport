@@ -171,6 +171,87 @@
       </div>
     </div>
 
+    <!-- Contato com Responsável -->
+    <div class="section-contato">
+      <div class="contato-header">
+        <h3 class="section-title">📞 Contato com Responsável</h3>
+        <button class="btn-novo-contato" (click)="toggleFormContato()">
+          {{ mostrarFormContato ? '✕ Cancelar' : '+ Registrar Contato' }}
+        </button>
+      </div>
+
+      <!-- Formulário inline -->
+      <div class="form-contato" *ngIf="mostrarFormContato">
+        <div class="form-row">
+          <label>Nome do responsável *</label>
+          <input
+            type="text"
+            [(ngModel)]="formContato.responsavel"
+            placeholder="Ex: Maria (mãe)"
+            class="form-input"
+          />
+        </div>
+        <div class="form-row">
+          <label>Resultado do contato *</label>
+          <div class="opcoes-resultado">
+            <label
+              class="opcao-btn"
+              *ngFor="let op of opcoesResultado"
+              [class.opcao-btn--selecionada]="formContato.resultadoContato === op.valor"
+            >
+              <input
+                type="radio"
+                name="resultado"
+                [value]="op.valor"
+                [(ngModel)]="formContato.resultadoContato"
+                style="display:none"
+              />
+              {{ op.icone }} {{ op.label }}
+            </label>
+          </div>
+        </div>
+        <div class="form-row">
+          <label>Observações</label>
+          <textarea
+            [(ngModel)]="formContato.notas"
+            placeholder="Detalhes da conversa, combinados, etc."
+            class="form-textarea"
+            rows="3"
+          ></textarea>
+        </div>
+        <div class="form-erro" *ngIf="erroContato">{{ erroContato }}</div>
+        <div class="form-actions">
+          <button class="btn-salvar" (click)="salvarContato()" [disabled]="salvandoContato">
+            {{ salvandoContato ? 'Salvando...' : '💾 Salvar Contato' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Lista de contatos -->
+      <div class="sem-contatos" *ngIf="ficha.conversas.length === 0 && !mostrarFormContato">
+        <span>Nenhum contato registrado ainda.</span>
+      </div>
+
+      <div class="contatos-lista" *ngIf="ficha.conversas.length > 0">
+        <div class="contato-item" *ngFor="let c of ficha.conversas">
+          <div class="contato-top">
+            <span class="contato-resultado"
+              [class.resultado--conversa]="c.resultadoContato === 'conversa'"
+              [class.resultado--recado]="c.resultadoContato === 'recado'"
+              [class.resultado--ligar]="c.resultadoContato === 'ligar_novamente'"
+              [class.resultado--nao]="c.resultadoContato === 'nao_conseguiu'"
+            >
+              {{ getIconeResultado(c.resultadoContato) }} {{ getLabelResultado(c.resultadoContato) }}
+            </span>
+            <span class="contato-data">{{ c.registradoEm | date:'dd/MM/yyyy HH:mm' }}</span>
+          </div>
+          <div class="contato-responsavel">Responsável: <strong>{{ c.responsavel }}</strong></div>
+          <div class="contato-notas" *ngIf="c.notas">{{ c.notas }}</div>
+          <div class="contato-registrador">Registrado por: {{ c.registradoPorNome || 'Coordenação' }}</div>
+        </div>
+      </div>
+    </div>
+
   </div>
 
 </div>
