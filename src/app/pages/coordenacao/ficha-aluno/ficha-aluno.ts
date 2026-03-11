@@ -1,7 +1,7 @@
 import { Component, inject, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { FirestoreService, Aluno, Ocorrencia, Falta, Conversa, Usuario } from '../../../services/firestore';
 import { AuthService } from '../../../services/auth';
 
@@ -32,6 +32,7 @@ export class FichaAluno implements OnInit {
   private firestoreService = inject(FirestoreService);
   private authService = inject(AuthService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private cdr = inject(ChangeDetectorRef);
 
   readonly DIAS_LETIVOS = 200;
@@ -109,6 +110,18 @@ export class FichaAluno implements OnInit {
       this.todasFaltas = faltas;
       this.todasOcorrencias = ocorrencias;
       this.usuarioLogado = usuario;
+
+      // Auto-selecionar aluno via queryParam ?nome=
+      const nomeParam = this.route.snapshot.queryParamMap.get('nome');
+      if (nomeParam) {
+        const encontrado = alunos.find(
+          a => a.nome.toLowerCase() === nomeParam.toLowerCase()
+        );
+        if (encontrado) {
+          this.termoBusca = encontrado.nome;
+          await this.selecionarAluno(encontrado);
+        }
+      }
 
     } catch (error) {
       console.error('Erro ao carregar dados:', error);
