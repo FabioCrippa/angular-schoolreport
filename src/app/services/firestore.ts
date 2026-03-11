@@ -120,6 +120,7 @@ export interface StatusBuscaAtiva {
   alunoNome: string;
   ultimoContato: Date;
   resultado: 'conversa' | 'nao_conseguiu' | 'recado' | 'ligar_novamente';
+  motivo?: 'consecutivas' | 'alto_indice' | 'ambos';
   registradoPor: string;
   registradoPorNome: string;
 }

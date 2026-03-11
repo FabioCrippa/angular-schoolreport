@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { FirestoreService, Falta, StatusBuscaAtiva, Conversa, Usuario } from '../../../services/firestore';
 import { AuthService } from '../../../services/auth';
 
+type FiltroGatilho = 'todos' | 'urgente' | 'alto_indice';
 type FiltroStatus = 'todos' | 'sem_contato' | 'pendente' | 'contatado';
 
 interface AlunoEmRisco {
@@ -12,7 +13,9 @@ interface AlunoEmRisco {
   alunoNome: string;
   turma: string;
   totalFaltas: number;
-  nivel: 'atencao' | 'risco';
+  faltasConsecutivas: number;   // streak atual de faltas consecutivas
+  gatilho: 'urgente' | 'alto_indice' | 'ambos';
+  nivel: 'atencao' | 'risco';  // baseado nos 38/50 totais
   // Status de busca ativa
   status: StatusBuscaAtiva | null;
   // Controle UI
@@ -44,6 +47,7 @@ export class PainelBuscaAtiva implements OnInit {
   readonly DIAS_LETIVOS = 200;
   readonly LIMITE_FALTAS = 50;
   readonly LIMITE_ATENCAO = 38;
+  readonly LIMITE_CONSECUTIVAS = 3;
 
   escolaId = '';
   loading = false;
@@ -53,6 +57,7 @@ export class PainelBuscaAtiva implements OnInit {
 
   // Filtros
   filtroTurma = '';
+  filtroGatilho: FiltroGatilho = 'todos';
   filtroStatus: FiltroStatus = 'todos';
 
   // Dados
@@ -61,6 +66,8 @@ export class PainelBuscaAtiva implements OnInit {
   turmas: string[] = [];
 
   // Resumo
+  totalUrgente = 0;
+  totalAltoIndice = 0;
   totalSemContato = 0;
   totalPendentes = 0;
   totalContatados = 0;
@@ -127,36 +134,57 @@ export class PainelBuscaAtiva implements OnInit {
 
     // Mapa alunoId → StatusBuscaAtiva
     const statusMap = new Map<string, StatusBuscaAtiva>();
-    for (const s of statusList) {
-      statusMap.set(s.alunoId, s);
-    }
+    for (const s of statusList) statusMap.set(s.alunoId, s);
 
-    // Contar faltas por aluno
-    const alunoMap = new Map<string, { nome: string; turma: string; faltas: number }>();
+    // Coletar por aluno: total de faltas + todos os registros de presença (para calcular streak)
+    const alunoMap = new Map<string, {
+      nome: string;
+      turma: string;
+      faltas: number;
+      registros: { data: string; presente: boolean }[];
+    }>();
 
     for (const falta of faltas) {
       if (!falta.data.startsWith(anoStr) || !falta.alunos) continue;
       for (const [alunoId, dados] of Object.entries(falta.alunos)) {
         if (!alunoMap.has(alunoId)) {
-          alunoMap.set(alunoId, { nome: dados.alunoNome, turma: falta.turma, faltas: 0 });
+          alunoMap.set(alunoId, { nome: dados.alunoNome, turma: falta.turma, faltas: 0, registros: [] });
         }
-        if (!dados.presente) {
-          alunoMap.get(alunoId)!.faltas++;
-        }
+        const entry = alunoMap.get(alunoId)!;
+        entry.registros.push({ data: falta.data, presente: dados.presente });
+        if (!dados.presente) entry.faltas++;
       }
     }
 
-    // Filtrar apenas alunos em atenção ou risco
     const result: AlunoEmRisco[] = [];
     for (const [alunoId, dados] of alunoMap) {
-      if (dados.faltas < this.LIMITE_ATENCAO) continue;
+      // Calcular streak de faltas consecutivas no final do histórico
+      dados.registros.sort((a, b) => a.data.localeCompare(b.data));
+      let streak = 0;
+      for (let i = dados.registros.length - 1; i >= 0; i--) {
+        if (!dados.registros[i].presente) streak++;
+        else break;
+      }
+
+      const temConsecutivas = streak >= this.LIMITE_CONSECUTIVAS;
+      const temAltoIndice = dados.faltas >= this.LIMITE_ATENCAO;
+
+      // Só incluir se algum gatilho for acionado
+      if (!temConsecutivas && !temAltoIndice) continue;
+
+      const gatilho: 'urgente' | 'alto_indice' | 'ambos' =
+        temConsecutivas && temAltoIndice ? 'ambos' :
+        temConsecutivas ? 'urgente' : 'alto_indice';
 
       const nivel: 'atencao' | 'risco' = dados.faltas > this.LIMITE_FALTAS ? 'risco' : 'atencao';
+
       result.push({
         alunoId,
         alunoNome: dados.nome,
         turma: dados.turma,
         totalFaltas: dados.faltas,
+        faltasConsecutivas: streak,
+        gatilho,
         nivel,
         status: statusMap.get(alunoId) ?? null,
         mostrarForm: false,
@@ -166,9 +194,11 @@ export class PainelBuscaAtiva implements OnInit {
       });
     }
 
-    // Ordenar: risco primeiro, depois por faltas desc
+    // Ordenar: ambos → urgente → alto_indice; dentro de cada grupo por faltas desc
+    const ordemGatilho = { ambos: 0, urgente: 1, alto_indice: 2 };
     result.sort((a, b) => {
-      if (a.nivel !== b.nivel) return a.nivel === 'risco' ? -1 : 1;
+      if (ordemGatilho[a.gatilho] !== ordemGatilho[b.gatilho])
+        return ordemGatilho[a.gatilho] - ordemGatilho[b.gatilho];
       return b.totalFaltas - a.totalFaltas;
     });
 
@@ -180,8 +210,10 @@ export class PainelBuscaAtiva implements OnInit {
   }
 
   private recalcularResumos() {
+    this.totalUrgente    = this.todosAlunos.filter(a => a.gatilho === 'urgente' || a.gatilho === 'ambos').length;
+    this.totalAltoIndice = this.todosAlunos.filter(a => a.gatilho === 'alto_indice' || a.gatilho === 'ambos').length;
     this.totalSemContato = this.todosAlunos.filter(a => !a.status).length;
-    this.totalPendentes = this.todosAlunos.filter(a =>
+    this.totalPendentes  = this.todosAlunos.filter(a =>
       a.status?.resultado === 'nao_conseguiu' || a.status?.resultado === 'ligar_novamente'
     ).length;
     this.totalContatados = this.todosAlunos.filter(a =>
@@ -194,6 +226,15 @@ export class PainelBuscaAtiva implements OnInit {
 
     if (this.filtroTurma) {
       lista = lista.filter(a => a.turma === this.filtroTurma);
+    }
+
+    switch (this.filtroGatilho) {
+      case 'urgente':
+        lista = lista.filter(a => a.gatilho === 'urgente' || a.gatilho === 'ambos');
+        break;
+      case 'alto_indice':
+        lista = lista.filter(a => a.gatilho === 'alto_indice' || a.gatilho === 'ambos');
+        break;
     }
 
     switch (this.filtroStatus) {
@@ -214,6 +255,16 @@ export class PainelBuscaAtiva implements OnInit {
 
     this.alunosFiltrados = lista;
     this.cdr.markForCheck();
+  }
+
+  mudarFiltroGatilho(filtro: FiltroGatilho) {
+    this.filtroGatilho = filtro;
+    this.aplicarFiltros();
+  }
+
+  mudarFiltroStatus(filtro: FiltroStatus) {
+    this.filtroStatus = filtro;
+    this.aplicarFiltros();
   }
 
   toggleForm(aluno: AlunoEmRisco) {
@@ -253,12 +304,17 @@ export class PainelBuscaAtiva implements OnInit {
       });
 
       // Atualizar status de busca ativa (upsert)
+      const motivoContato: StatusBuscaAtiva['motivo'] =
+        aluno.gatilho === 'ambos'      ? 'ambos' :
+        aluno.gatilho === 'urgente'    ? 'consecutivas' : 'alto_indice';
+
       await this.firestoreService.registrarStatusBuscaAtiva(this.escolaId, {
         escolaId: this.escolaId,
         alunoId: aluno.alunoId,
         alunoNome: aluno.alunoNome,
         ultimoContato: now,
         resultado: aluno.form.resultadoContato,
+        motivo: motivoContato,
         registradoPor: user?.uid ?? '',
         registradoPorNome: this.usuarioLogado?.nome ?? ''
       });
@@ -270,6 +326,7 @@ export class PainelBuscaAtiva implements OnInit {
         alunoNome: aluno.alunoNome,
         ultimoContato: now,
         resultado: aluno.form.resultadoContato,
+        motivo: motivoContato,
         registradoPor: user?.uid ?? '',
         registradoPorNome: this.usuarioLogado?.nome ?? ''
       };

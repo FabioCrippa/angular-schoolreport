@@ -24,21 +24,35 @@
         <option *ngFor="let t of turmas" [value]="t">{{ t }}</option>
       </select>
     </div>
+    <div class="filtro-gatilho-tabs">
+      <button class="tab-btn" [class.tab-btn--ativo]="filtroGatilho === 'todos'"
+        (click)="mudarFiltroGatilho('todos')">Todos</button>
+      <button class="tab-btn tab-btn--urgente" [class.tab-btn--ativo]="filtroGatilho === 'urgente'"
+        (click)="mudarFiltroGatilho('urgente')">
+        🚨 Consecutivas
+        <span class="tab-badge tab-badge--urgente" *ngIf="totalUrgente > 0">{{ totalUrgente }}</span>
+      </button>
+      <button class="tab-btn tab-btn--indice" [class.tab-btn--ativo]="filtroGatilho === 'alto_indice'"
+        (click)="mudarFiltroGatilho('alto_indice')">
+        ⚠️ Alto Índice
+        <span class="tab-badge tab-badge--indice" *ngIf="totalAltoIndice > 0">{{ totalAltoIndice }}</span>
+      </button>
+    </div>
     <div class="filtro-status-tabs">
       <button class="tab-btn" [class.tab-btn--ativo]="filtroStatus === 'todos'"
-        (click)="filtroStatus = 'todos'; aplicarFiltros()">Todos</button>
+        (click)="mudarFiltroStatus('todos')">Todos</button>
       <button class="tab-btn tab-btn--sem" [class.tab-btn--ativo]="filtroStatus === 'sem_contato'"
-        (click)="filtroStatus = 'sem_contato'; aplicarFiltros()">
+        (click)="mudarFiltroStatus('sem_contato')">
         Sem contato
         <span class="tab-badge tab-badge--sem" *ngIf="totalSemContato > 0">{{ totalSemContato }}</span>
       </button>
       <button class="tab-btn tab-btn--pendente" [class.tab-btn--ativo]="filtroStatus === 'pendente'"
-        (click)="filtroStatus = 'pendente'; aplicarFiltros()">
+        (click)="mudarFiltroStatus('pendente')">
         Pendentes
         <span class="tab-badge tab-badge--pendente" *ngIf="totalPendentes > 0">{{ totalPendentes }}</span>
       </button>
       <button class="tab-btn tab-btn--ok" [class.tab-btn--ativo]="filtroStatus === 'contatado'"
-        (click)="filtroStatus = 'contatado'; aplicarFiltros()">
+        (click)="mudarFiltroStatus('contatado')">
         Contatados
         <span class="tab-badge tab-badge--ok" *ngIf="totalContatados > 0">{{ totalContatados }}</span>
       </button>
@@ -68,15 +82,23 @@
       <span class="resumo-numero">{{ todosAlunos.length }}</span>
       <span class="resumo-label">Total em acompanhamento</span>
     </div>
-    <div class="resumo-card resumo-card--sem" (click)="filtroStatus = 'sem_contato'; aplicarFiltros()">
+    <div class="resumo-card resumo-card--urgente" (click)="mudarFiltroGatilho('urgente')">
+      <span class="resumo-numero">{{ totalUrgente }}</span>
+      <span class="resumo-label">🚨 Faltas consecutivas</span>
+    </div>
+    <div class="resumo-card resumo-card--indice" (click)="mudarFiltroGatilho('alto_indice')">
+      <span class="resumo-numero">{{ totalAltoIndice }}</span>
+      <span class="resumo-label">⚠️ Alto índice</span>
+    </div>
+    <div class="resumo-card resumo-card--sem" (click)="mudarFiltroStatus('sem_contato')">
       <span class="resumo-numero">{{ totalSemContato }}</span>
       <span class="resumo-label">Sem contato</span>
     </div>
-    <div class="resumo-card resumo-card--pendente" (click)="filtroStatus = 'pendente'; aplicarFiltros()">
+    <div class="resumo-card resumo-card--pendente" (click)="mudarFiltroStatus('pendente')">
       <span class="resumo-numero">{{ totalPendentes }}</span>
       <span class="resumo-label">Pendentes</span>
     </div>
-    <div class="resumo-card resumo-card--ok" (click)="filtroStatus = 'contatado'; aplicarFiltros()">
+    <div class="resumo-card resumo-card--ok" (click)="mudarFiltroStatus('contatado')">
       <span class="resumo-numero">{{ totalContatados }}</span>
       <span class="resumo-label">Contatados</span>
     </div>
@@ -85,31 +107,42 @@
   <!-- Lista de alunos -->
   <div class="alunos-lista" *ngIf="!loading && alunosFiltrados.length > 0">
     <div class="aluno-card" *ngFor="let a of alunosFiltrados"
-      [class.aluno-card--risco]="a.nivel === 'risco'"
-      [class.aluno-card--atencao]="a.nivel === 'atencao'">
+      [class.aluno-card--urgente]="a.gatilho === 'urgente' || a.gatilho === 'ambos'"
+      [class.aluno-card--risco]="a.gatilho !== 'urgente' && a.gatilho !== 'ambos' && a.nivel === 'risco'"
+      [class.aluno-card--atencao]="a.gatilho !== 'urgente' && a.gatilho !== 'ambos' && a.nivel === 'atencao'">
 
       <!-- Linha principal -->
       <div class="aluno-row">
         <div class="aluno-info">
           <div class="aluno-nome-row">
-            <span class="badge-nivel"
-              [class.badge-nivel--risco]="a.nivel === 'risco'"
-              [class.badge-nivel--atencao]="a.nivel === 'atencao'"
-            >
-              {{ a.nivel === 'risco' ? '🔴 Reprovado' : '🟡 Atenção' }}
+            <!-- Gatilho principal -->
+            <span class="badge-gatilho badge-gatilho--urgente"
+              *ngIf="a.gatilho === 'urgente' || a.gatilho === 'ambos'">
+              🚨 {{ a.faltasConsecutivas }} dias seguidos
+            </span>
+            <span class="badge-gatilho badge-gatilho--indice"
+              *ngIf="a.gatilho === 'alto_indice' || a.gatilho === 'ambos'">
+              ⚠️ {{ a.totalFaltas }}/{{ LIMITE_FALTAS }} faltas
+            </span>
+            <!-- Nível de reprovação (apenas se alto índice) -->
+            <span class="badge-nivel badge-nivel--risco"
+              *ngIf="(a.gatilho === 'alto_indice' || a.gatilho === 'ambos') && a.nivel === 'risco'">
+              Risco reprovação
             </span>
             <span class="aluno-nome">{{ a.alunoNome }}</span>
           </div>
           <div class="aluno-meta">
             <span class="badge-turma">{{ a.turma }}</span>
-            <span class="faltas-count">{{ a.totalFaltas }}/{{ LIMITE_FALTAS }} faltas</span>
-            <div class="falta-bar-wrap">
-              <div class="falta-bar"
-                [style.width.%]="[[(a.totalFaltas / LIMITE_FALTAS) * 100 | number:'1.0-0']]"
-                [class.falta-bar--risco]="a.nivel === 'risco'"
-                [class.falta-bar--atencao]="a.nivel === 'atencao'"
-              ></div>
-            </div>
+            <span class="faltas-count" *ngIf="a.gatilho === 'urgente'">{{ a.totalFaltas }} faltas no total</span>
+            <ng-container *ngIf="a.gatilho !== 'urgente'">
+              <div class="falta-bar-wrap">
+                <div class="falta-bar"
+                  [style.width.%]="(a.totalFaltas / LIMITE_FALTAS) * 100"
+                  [class.falta-bar--risco]="a.nivel === 'risco'"
+                  [class.falta-bar--atencao]="a.nivel === 'atencao'"
+                ></div>
+              </div>
+            </ng-container>
           </div>
         </div>
 
