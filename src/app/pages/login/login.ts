@@ -48,7 +48,10 @@ export class Login {
     try {
       const { email, password } = this.loginForm.value;
       await this.authService.loginWithEmail(email, password);
-      // Se chegar aqui, login foi bem-sucedido e vai navegar
+      // Navigation is triggered inside loginWithEmail; reset loading as safety
+      // net in case navigation is cancelled (e.g. guard rejects)
+      this.loading = false;
+      this.cdr.markForCheck();
     } catch (error: any) {
       console.error('Erro no login:', error);
       this.loading = false;
