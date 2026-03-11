@@ -72,30 +72,42 @@
 
   </div>
 
-  <!-- ── Área de conteúdo ── -->
-  <div class="lousa-conteudo">
+  <!-- ── Quadro + moldura ── -->
+  <div class="lousa-frame-area">
 
-    <!-- Textarea — modo texto -->
-    <textarea
-      #lousaArea
-      class="lousa-area"
-      [class.fonte-normal]="tamanhoFonte === 'normal'"
-      [class.fonte-grande]="tamanhoFonte === 'grande'"
-      [class.fonte-enorme]="tamanhoFonte === 'enorme'"
-      [readonly]="modoProjetor || modoEdicao === 'desenho'"
-      [(ngModel)]="texto"
-      (ngModelChange)="!modoProjetor && onTextoChange()"
-      placeholder="Comece a escrever na lousa... 🖊️"
-      spellcheck="false"
-      autocomplete="off"
-    ></textarea>
+    <div class="lousa-frame">
+      <div class="lousa-conteudo">
 
-    <!-- Canvas — modo mão livre -->
-    <canvas
-      #lousaCanvas
-      class="lousa-canvas"
-      [class.canvas-ativo]="modoEdicao === 'desenho'"
-    ></canvas>
+        <textarea
+          #lousaArea
+          class="lousa-area"
+          [class.fonte-normal]="tamanhoFonte === 'normal'"
+          [class.fonte-grande]="tamanhoFonte === 'grande'"
+          [class.fonte-enorme]="tamanhoFonte === 'enorme'"
+          [readonly]="modoProjetor || modoEdicao === 'desenho'"
+          [(ngModel)]="texto"
+          (ngModelChange)="!modoProjetor && onTextoChange()"
+          placeholder="Comece a escrever na lousa... 🖊️"
+          spellcheck="false"
+          autocomplete="off"
+        ></textarea>
+
+        <canvas
+          #lousaCanvas
+          class="lousa-canvas"
+          [class.canvas-ativo]="modoEdicao === 'desenho'"
+        ></canvas>
+
+      </div>
+    </div>
+
+    <!-- Calha de giz (decorativa) -->
+    <div class="chalk-tray" *ngIf="!modoProjetor">
+      <span class="chalk chalk--branco"></span>
+      <span class="chalk chalk--amarelo"></span>
+      <span class="chalk chalk--azul"></span>
+      <span class="chalk-eraser"></span>
+    </div>
 
   </div>
 

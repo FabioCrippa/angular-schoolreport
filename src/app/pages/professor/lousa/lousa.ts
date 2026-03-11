@@ -44,6 +44,7 @@ export class Lousa implements OnInit, AfterViewInit, OnDestroy {
   private channel     = new BroadcastChannel('lousa-sync');
   private desenhando  = false;
   private ultimoPonto: { x: number; y: number } | null = null;
+  private lastMid:     { x: number; y: number } | null = null;
 
   readonly TEMAS: { valor: Tema; label: string }[] = [
     { valor: 'branca', label: '☀️ Branca' },
@@ -97,7 +98,8 @@ export class Lousa implements OnInit, AfterViewInit, OnDestroy {
 
   ngAfterViewInit() {
     if (!this.modoProjetor) this.lousaRef?.nativeElement?.focus();
-    setTimeout(() => this.resizeCanvas(), 0);
+    // Double rAF ensures browser has completed layout before measuring canvas dimensions
+    requestAnimationFrame(() => requestAnimationFrame(() => this.resizeCanvas()));
 
     const canvas = this.canvasRef?.nativeElement;
     if (!canvas) return;
@@ -120,9 +122,12 @@ export class Lousa implements OnInit, AfterViewInit, OnDestroy {
   private resizeCanvas() {
     const canvas = this.canvasRef?.nativeElement;
     if (!canvas) return;
+    const w = canvas.offsetWidth;
+    const h = canvas.offsetHeight;
+    if (!w || !h) return; // guard: skip if layout not ready
     const saved = canvas.width > 0 && canvas.height > 0 ? canvas.toDataURL() : null;
-    canvas.width  = canvas.offsetWidth;
-    canvas.height = canvas.offsetHeight;
+    canvas.width  = w;
+    canvas.height = h;
     if (saved) this.loadCanvasData(saved);
   }
 
@@ -179,6 +184,29 @@ export class Lousa implements OnInit, AfterViewInit, OnDestroy {
     ctx.stroke();
   }
 
+  // Smooth drawing using quadratic bezier (midpoint technique)
+  private drawSmooth(to: { x: number; y: number }) {
+    const ctx = this.ctx;
+    if (!ctx || !this.ultimoPonto) return;
+    const mid = {
+      x: (this.ultimoPonto.x + to.x) / 2,
+      y: (this.ultimoPonto.y + to.y) / 2,
+    };
+    ctx.beginPath();
+    ctx.moveTo(
+      this.lastMid?.x ?? this.ultimoPonto.x,
+      this.lastMid?.y ?? this.ultimoPonto.y
+    );
+    ctx.quadraticCurveTo(this.ultimoPonto.x, this.ultimoPonto.y, mid.x, mid.y);
+    ctx.strokeStyle = COR_CANETA[this.tema];
+    ctx.lineWidth   = 4;
+    ctx.lineCap     = 'round';
+    ctx.lineJoin    = 'round';
+    ctx.stroke();
+    this.lastMid     = mid;
+    this.ultimoPonto = to;
+  }
+
   private clearCanvas() {
     const ctx = this.ctx;
     const canvas = this.canvasRef?.nativeElement;
@@ -206,28 +234,39 @@ export class Lousa implements OnInit, AfterViewInit, OnDestroy {
 
   onCanvasMouseDown(e: MouseEvent) {
     if (this.modoEdicao !== 'desenho') return;
+    e.preventDefault();
     this.desenhando  = true;
-    this.ultimoPonto = this.getCanvasPos(e);
+    this.lastMid     = null;
+    const p = this.getCanvasPos(e);
+    this.ultimoPonto = p;
+    // Draw a dot for single clicks
+    const ctx = this.ctx;
+    if (ctx) {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
+      ctx.fillStyle = COR_CANETA[this.tema];
+      ctx.fill();
+    }
   }
 
   onCanvasMouseMove(e: MouseEvent) {
     if (!this.desenhando || !this.ultimoPonto) return;
-    const p = this.getCanvasPos(e);
-    this.drawLine(this.ultimoPonto, p);
-    this.ultimoPonto = p;
+    this.drawSmooth(this.getCanvasPos(e));
   }
 
   onCanvasMouseUp() {
     if (!this.desenhando) return;
-    this.desenhando = false;
+    this.desenhando  = false;
     this.ultimoPonto = null;
+    this.lastMid     = null;
     this.syncCanvas();
   }
 
   onCanvasMouseLeave() {
     if (this.desenhando) {
-      this.desenhando = false;
+      this.desenhando  = false;
       this.ultimoPonto = null;
+      this.lastMid     = null;
       this.syncCanvas();
     }
   }
@@ -236,21 +275,29 @@ export class Lousa implements OnInit, AfterViewInit, OnDestroy {
     e.preventDefault();
     if (!e.touches.length) return;
     this.desenhando  = true;
-    this.ultimoPonto = this.getCanvasPos(e.touches[0]);
+    this.lastMid     = null;
+    const p = this.getCanvasPos(e.touches[0]);
+    this.ultimoPonto = p;
+    const ctx = this.ctx;
+    if (ctx) {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
+      ctx.fillStyle = COR_CANETA[this.tema];
+      ctx.fill();
+    }
   }
 
   onCanvasTouchMove(e: TouchEvent) {
     e.preventDefault();
     if (!this.desenhando || !this.ultimoPonto || !e.touches.length) return;
-    const p = this.getCanvasPos(e.touches[0]);
-    this.drawLine(this.ultimoPonto, p);
-    this.ultimoPonto = p;
+    this.drawSmooth(this.getCanvasPos(e.touches[0]));
   }
 
   onCanvasTouchEnd(e: TouchEvent) {
     e.preventDefault();
-    this.desenhando = false;
+    this.desenhando  = false;
     this.ultimoPonto = null;
+    this.lastMid     = null;
     this.syncCanvas();
   }
 
