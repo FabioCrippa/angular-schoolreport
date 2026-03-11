@@ -95,8 +95,17 @@ export class PainelFrequencia implements OnInit {
     // Filtrar pelo ano selecionado
     const faltasDoAno = faltas.filter(f => f.data.startsWith(String(this.anoSelecionado)));
 
-    // Agrupar por turma → aluno
-    const mapa = new Map<string, Map<string, { nome: string; faltas: number; total: number }>>();
+    // Contar dias letivos registrados por turma (denominador correto para % frequência)
+    const diasPorTurma = new Map<string, Set<string>>();
+    faltasDoAno.forEach(falta => {
+      if (!diasPorTurma.has(falta.turma)) {
+        diasPorTurma.set(falta.turma, new Set());
+      }
+      diasPorTurma.get(falta.turma)!.add(falta.data);
+    });
+
+    // Agrupar por turma → aluno (contar apenas faltas)
+    const mapa = new Map<string, Map<string, { nome: string; faltas: number }>>();
 
     for (const falta of faltasDoAno) {
       if (!falta.alunos) continue;
@@ -108,11 +117,11 @@ export class PainelFrequencia implements OnInit {
 
       for (const [alunoId, dados] of Object.entries(falta.alunos)) {
         if (!turmaMap.has(alunoId)) {
-          turmaMap.set(alunoId, { nome: dados.alunoNome, faltas: 0, total: 0 });
+          turmaMap.set(alunoId, { nome: dados.alunoNome, faltas: 0 });
         }
-        const aluno = turmaMap.get(alunoId)!;
-        aluno.total++;
-        if (!dados.presente) aluno.faltas++;
+        if (!dados.presente) {
+          turmaMap.get(alunoId)!.faltas++;
+        }
       }
     }
 
@@ -121,10 +130,12 @@ export class PainelFrequencia implements OnInit {
     let maxFaltas = -1;
 
     for (const [turma, alunosMap] of mapa) {
+      const diasRegistrados = diasPorTurma.get(turma)?.size ?? 1;
       const alunos: AlunoFrequencia[] = [];
 
       for (const [alunoId, dados] of alunosMap) {
-        const freq = dados.total > 0 ? ((dados.total - dados.faltas) / dados.total) * 100 : 100;
+        // Frequência baseada nos dias letivos registrados da turma
+        const freq = ((diasRegistrados - dados.faltas) / diasRegistrados) * 100;
         const nivel = dados.faltas > this.LIMITE_FALTAS
           ? 'risco'
           : dados.faltas >= this.LIMITE_ATENCAO
@@ -133,9 +144,9 @@ export class PainelFrequencia implements OnInit {
         alunos.push({
           alunoId,
           alunoNome: dados.nome,
-          totalDias: dados.total,
+          totalDias: diasRegistrados,
           totalFaltas: dados.faltas,
-          frequencia: Math.round(freq * 10) / 10,
+          frequencia: Math.round(Math.max(freq, 0) * 10) / 10,
           nivel,
           emRisco: dados.faltas > this.LIMITE_FALTAS
         });
