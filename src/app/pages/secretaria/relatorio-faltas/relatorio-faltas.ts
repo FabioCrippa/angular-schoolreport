@@ -172,8 +172,8 @@ export class RelatorioFaltas implements OnInit {
           aluno.diasRegistrados = diasRegistrados;
           // Frequência baseada nos 200 dias letivos anuais (denominador fixo)
           aluno.percentualPresenca = Math.round(
-            Math.max(((this.DIAS_LETIVOS - aluno.totalFaltas) / this.DIAS_LETIVOS) * 100, 0)
-          );
+            Math.max(((this.DIAS_LETIVOS - aluno.totalFaltas) / this.DIAS_LETIVOS) * 1000, 0)
+          ) / 10;
 
           // Dias consecutivos recentes (contexto para busca ativa)
           aluno.datas.sort().reverse();
