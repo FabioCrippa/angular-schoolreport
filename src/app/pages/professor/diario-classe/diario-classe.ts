@@ -78,6 +78,7 @@ export class DiarioClasse implements OnInit {
 
   readonly RECURSOS_OPCOES = RECURSOS_OPCOES;
   readonly DISCIPLINAS_OPCOES = DISCIPLINAS_OPCOES;
+  readonly anoAtual = new Date().getFullYear();
 
   ngOnInit() {
     this.carregarDados();
