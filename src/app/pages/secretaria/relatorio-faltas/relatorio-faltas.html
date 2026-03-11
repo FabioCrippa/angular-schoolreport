@@ -24,38 +24,38 @@
   <!-- Cards de Resumo -->
   <div *ngIf="!loading && resumo" class="cards-resumo">
     
-    <!-- Críticos (3+) -->
+    <!-- Críticos (> 50 faltas) -->
     <div class="card critico" 
          [class.card-highlight]="resumo.criticos.length > 0">
       <div class="card-icon">🔴</div>
       <div class="card-content">
-        <h3>Crítico</h3>
+        <h3>Reprovou</h3>
         <p class="card-number">{{ resumo.criticos.length }}</p>
-        <span class="card-label">3+ dias consecutivos</span>
+        <span class="card-label">Mais de 50 faltas</span>
       </div>
       <div class="card-bg"></div>
     </div>
 
-    <!-- Atenção (2) -->
+    <!-- Atenção (38–50 faltas) -->
     <div class="card atencao"
          [class.card-highlight]="resumo.atencao.length > 0">
       <div class="card-icon">🟡</div>
       <div class="card-content">
-        <h3>Atenção</h3>
+        <h3>Em Risco</h3>
         <p class="card-number">{{ resumo.atencao.length }}</p>
-        <span class="card-label">2 dias consecutivos</span>
+        <span class="card-label">38 a 50 faltas</span>
       </div>
       <div class="card-bg"></div>
     </div>
 
-    <!-- Normais (1) -->
+    <!-- Normais (< 38 faltas) -->
     <div class="card normal"
          [class.card-highlight]="resumo.normais.length > 0">
       <div class="card-icon">🟢</div>
       <div class="card-content">
-        <h3>Normal</h3>
+        <h3>Monitorar</h3>
         <p class="card-number">{{ resumo.normais.length }}</p>
-        <span class="card-label">1 dia de falta</span>
+        <span class="card-label">Menos de 38 faltas</span>
       </div>
       <div class="card-bg"></div>
     </div>
@@ -77,12 +77,12 @@
   <div *ngIf="!loading && alunosFaltosos.length === 0" class="no-absences-message">
     <div class="message-icon">✨</div>
     <h2>Excelente!</h2>
-    <p>Não há alunos com faltas consecutivas no período selecionado. Continue acompanhando!</p>
+    <p>Não há registros de faltas no banco de dados. Continue acompanhando!</p>
   </div>
 
   <!-- Filtros -->
   <div *ngIf="!loading" class="filtros-section">
-    <h2>Filtros (Últimos 30 dias)</h2>
+    <h2>Filtros — Ano Letivo (200 dias)</h2>
     
     <div class="filtros-grid">
       
@@ -123,9 +123,9 @@
           class="filtro-select"
         >
           <option value="todos">Todos os status</option>
-          <option value="criticos">🔴 Crítico (3+ dias)</option>
-          <option value="atencao">🟡 Atenção (2 dias)</option>
-          <option value="normais">🟢 Normal (1 dia)</option>
+          <option value="criticos">🔴 Reprovou (mais de 50 faltas)</option>
+          <option value="atencao">🟡 Em Risco (38 a 50 faltas)</option>
+          <option value="normais">🟢 Monitorar (menos de 38 faltas)</option>
         </select>
       </div>
 
@@ -166,7 +166,8 @@
             <th class="col-status">Status</th>
             <th class="col-nome">Aluno</th>
             <th class="col-turma">Turma</th>
-            <th class="col-dias">Dias Consecutivos</th>
+            <th class="col-dias">Faltas / 50 máx</th>
+            <th class="col-presenca">Presença</th>
             <th class="col-ultima">Última Falta</th>
             <th class="col-telefone">Telefone Realizado</th>
           </tr>
@@ -174,21 +175,30 @@
         <tbody>
           <tr 
             *ngFor="let aluno of listaFiltrada" 
-            [class]="'row-' + obterStatusClass(aluno.diasConsecutivos)"
+            [class]="'row-' + obterStatusClass(aluno.totalFaltas)"
             (click)="abrirModalConversa(aluno)"
             class="aluno-row-clicavel"
           >
             <td class="col-status">
-              <span [class]="'badge ' + obterStatusClass(aluno.diasConsecutivos)">
-                {{ obterStatusLabel(aluno.diasConsecutivos) }}
+              <span [class]="'badge ' + obterStatusClass(aluno.totalFaltas)">
+                {{ obterStatusLabel(aluno.totalFaltas) }}
               </span>
             </td>
             <td class="col-nome">{{ aluno.alunoNome }}</td>
             <td class="col-turma">{{ aluno.turma }}</td>
             <td class="col-dias">
-              <strong class="dias-badge" [class]="obterStatusClass(aluno.diasConsecutivos)">
-                {{ aluno.diasConsecutivos }}
+              <strong class="dias-badge" [class]="obterStatusClass(aluno.totalFaltas)">
+                {{ aluno.totalFaltas }} / {{ LIMITE_FALTAS }}
               </strong>
+              <div class="presenca-bar-mini">
+                <div class="presenca-fill-mini" [class]="obterStatusClass(aluno.totalFaltas)"
+                     [style.width.%]="pctLimite(aluno.totalFaltas)"></div>
+              </div>
+            </td>
+            <td class="col-presenca">
+              <span [class]="'pct-badge ' + obterStatusClass(aluno.totalFaltas)">
+                {{ aluno.percentualPresenca }}%
+              </span>
             </td>
             <td class="col-ultima">{{ aluno.ultimaFalta }}</td>
             <td class="col-telefone">
@@ -237,10 +247,14 @@
             <span class="valor">{{ alunoSelecionado.turma }}</span>
           </div>
           <div class="info-item">
-            <span class="label">Dias Consecutivos:</span>
-            <span class="valor badge" [class]="'badge-' + obterStatusClass(alunoSelecionado.diasConsecutivos)">
-              {{ alunoSelecionado.diasConsecutivos }}
+            <span class="label">Total de Faltas:</span>
+            <span class="valor badge" [class]="'badge-' + obterStatusClass(alunoSelecionado.totalFaltas)">
+              {{ alunoSelecionado.totalFaltas }} / {{ LIMITE_FALTAS }}
             </span>
+          </div>
+          <div class="info-item">
+            <span class="label">Presença:</span>
+            <span class="valor">{{ alunoSelecionado.percentualPresenca }}%</span>
           </div>
         </div>
 

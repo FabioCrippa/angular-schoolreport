@@ -10,17 +10,20 @@ interface AlunoFalta {
   alunoNome: string;
   turma: string;
   serie: string;
-  diasConsecutivos: number;
+  totalFaltas: number;         // total faltas no ano letivo
+  percentualPresenca: number;  // % presença calculada
+  diasRegistrados: number;     // dias letivos registrados da turma
+  diasConsecutivos: number;    // dias consecutivos recentes (busca ativa)
   ultimaFalta: string; // YYYY-MM-DD
-  datas: string[]; // array de datas de faltas consecutivas
+  datas: string[];
   contatado: boolean;
   statusContato?: 'conversa' | 'nao_conseguiu' | 'recado' | 'ligar_novamente';
 }
 
 interface ResumoFaltas {
-  criticos: AlunoFalta[]; // 3+ dias
-  atencao: AlunoFalta[]; // 2 dias
-  normais: AlunoFalta[]; // 1 dia
+  criticos: AlunoFalta[]; // > 50 faltas (reprovou)
+  atencao: AlunoFalta[]; // 38–50 faltas (em risco)
+  normais: AlunoFalta[]; // < 38 faltas (monitorar)
 }
 
 interface Conversa {
@@ -48,6 +51,10 @@ export class RelatorioFaltas implements OnInit {
   private authService = inject(AuthService);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
+
+  readonly DIAS_LETIVOS = 200;
+  readonly LIMITE_FALTAS = 50;   // 25% de 200
+  readonly LIMITE_ATENCAO = 38;  // ~76% do limite
 
   escolaId = '';
   loading = false;
@@ -110,28 +117,23 @@ export class RelatorioFaltas implements OnInit {
   async procesarFaltas() {
     try {
       this.loading = true;
-      
-      // Buscar todas as faltas dos últimos 30 dias
-      const agora = new Date();
-      agora.setHours(0, 0, 0, 0);
-      const trinta_dias_atras = new Date(agora.getTime() - 30 * 24 * 60 * 60 * 1000);
-      
-      // Para simplificar, vamos buscar todas as faltas e filtrar aqui
-      // (em produção, você poderia fazer isto no Firestore)
+
+      // Buscar TODAS as faltas do ano letivo
       const faltas = await this.firestoreService.obterFaltasPorEscola(this.escolaId);
-      
-      // Filtrar faltas pelos últimos 30 dias
-      const faltasFiltradas = faltas.filter(falta => {
-        const dataFalta = new Date(falta.data);
-        dataFalta.setHours(0, 0, 0, 0);
-        return dataFalta >= trinta_dias_atras && dataFalta <= agora;
+
+      // Contar dias letivos registrados por turma
+      const diasPorTurma = new Map<string, Set<string>>();
+      faltas.forEach(falta => {
+        if (!diasPorTurma.has(falta.turma)) {
+          diasPorTurma.set(falta.turma, new Set());
+        }
+        diasPorTurma.get(falta.turma)!.add(falta.data);
       });
-      
-      // Processar faltas para encontrar padrões consecutivos
-      const mapa = new Map<string, AlunoFalta>();
-      
+
       // Agrupar por aluno
-      faltasFiltradas.forEach(falta => {
+      const mapa = new Map<string, AlunoFalta>();
+
+      faltas.forEach(falta => {
         Object.entries(falta.alunos).forEach(([alunoId, aluno]: [string, any]) => {
           const key = `${alunoId}-${aluno.alunoNome}`;
           if (!mapa.has(key)) {
@@ -139,44 +141,49 @@ export class RelatorioFaltas implements OnInit {
               alunoId,
               alunoNome: aluno.alunoNome,
               turma: falta.turma,
-              serie: '', // Será preenchido depois se tiver
+              serie: '',
+              totalFaltas: 0,
+              percentualPresenca: 100,
+              diasRegistrados: 0,
               diasConsecutivos: 0,
               ultimaFalta: '',
               datas: [],
               contatado: false
             });
           }
-          
-          // Se não estava presente, registrar a falta
+
           if (!aluno.presente) {
             const item = mapa.get(key)!;
+            item.totalFaltas++;
             item.datas.push(falta.data);
-            item.ultimaFalta = falta.data;
+            if (!item.ultimaFalta || falta.data > item.ultimaFalta) {
+              item.ultimaFalta = falta.data;
+            }
           }
         });
       });
-      
-      // Calcular dias consecutivos
+
+      // Calcular percentuais e dias consecutivos recentes
       const alunosProcessados: AlunoFalta[] = [];
-      
+
       mapa.forEach(aluno => {
-        // Ordenar datas
-        aluno.datas.sort().reverse(); // Mais recente primeiro
-        
-        // Calcular sequência consecutiva (apenas a sequência mais recente)
-        if (aluno.datas.length > 0) {
-          const diasConsecutivos = this.calcularDiasConsecutivos(aluno.datas);
-          aluno.diasConsecutivos = diasConsecutivos;
-          
-          // Só incluir se tem 1+ dias de falta consecutivos
-          if (diasConsecutivos >= 1) {
-            alunosProcessados.push(aluno);
-          }
+        if (aluno.totalFaltas > 0) {
+          const diasRegistrados = diasPorTurma.get(aluno.turma)?.size ?? 1;
+          aluno.diasRegistrados = diasRegistrados;
+          aluno.percentualPresenca = Math.round(
+            ((diasRegistrados - aluno.totalFaltas) / diasRegistrados) * 100
+          );
+
+          // Dias consecutivos recentes (contexto para busca ativa)
+          aluno.datas.sort().reverse();
+          aluno.diasConsecutivos = this.calcularDiasConsecutivos(aluno.datas);
+
+          alunosProcessados.push(aluno);
         }
       });
-      
-      // Ordenar por dias consecutivos (maior primeiro)
-      alunosProcessados.sort((a, b) => b.diasConsecutivos - a.diasConsecutivos);
+
+      // Ordenar por totalFaltas (maior primeiro)
+      alunosProcessados.sort((a, b) => b.totalFaltas - a.totalFaltas);
       
       this.alunosFaltosos = alunosProcessados;
       
@@ -235,35 +242,32 @@ export class RelatorioFaltas implements OnInit {
   
   gerarResumo() {
     this.resumo = {
-      criticos: this.alunosFaltosos.filter(a => a.diasConsecutivos >= 3),
-      atencao: this.alunosFaltosos.filter(a => a.diasConsecutivos === 2),
-      normais: this.alunosFaltosos.filter(a => a.diasConsecutivos === 1)
+      criticos: this.alunosFaltosos.filter(a => a.totalFaltas > this.LIMITE_FALTAS),
+      atencao: this.alunosFaltosos.filter(a => a.totalFaltas >= this.LIMITE_ATENCAO && a.totalFaltas <= this.LIMITE_FALTAS),
+      normais: this.alunosFaltosos.filter(a => a.totalFaltas > 0 && a.totalFaltas < this.LIMITE_ATENCAO)
     };
   }
   
   aplicarFiltros() {
     let resultado = [...this.alunosFaltosos];
-    
-    // Filtro por turma
+
     if (this.filtroTurma) {
       resultado = resultado.filter(a => a.turma === this.filtroTurma);
     }
-    
-    // Filtro por status
+
     if (this.filtroStatus === 'criticos') {
-      resultado = resultado.filter(a => a.diasConsecutivos >= 3);
+      resultado = resultado.filter(a => a.totalFaltas > this.LIMITE_FALTAS);
     } else if (this.filtroStatus === 'atencao') {
-      resultado = resultado.filter(a => a.diasConsecutivos === 2);
+      resultado = resultado.filter(a => a.totalFaltas >= this.LIMITE_ATENCAO && a.totalFaltas <= this.LIMITE_FALTAS);
     } else if (this.filtroStatus === 'normais') {
-      resultado = resultado.filter(a => a.diasConsecutivos === 1);
+      resultado = resultado.filter(a => a.totalFaltas > 0 && a.totalFaltas < this.LIMITE_ATENCAO);
     }
-    
-    // Filtro por nome
+
     if (this.filtroNome) {
       const termo = this.filtroNome.toLowerCase();
       resultado = resultado.filter(a => a.alunoNome.toLowerCase().includes(termo));
     }
-    
+
     this.listaFiltrada = resultado;
   }
   
@@ -272,16 +276,20 @@ export class RelatorioFaltas implements OnInit {
     this.cdr.markForCheck();
   }
   
-  obterStatusClass(diasConsecutivos: number): string {
-    if (diasConsecutivos >= 3) return 'critico';
-    if (diasConsecutivos === 2) return 'atencao';
+  obterStatusClass(totalFaltas: number): string {
+    if (totalFaltas > this.LIMITE_FALTAS) return 'critico';
+    if (totalFaltas >= this.LIMITE_ATENCAO) return 'atencao';
     return 'normal';
   }
-  
-  obterStatusLabel(diasConsecutivos: number): string {
-    if (diasConsecutivos >= 3) return '🔴 CRÍTICO';
-    if (diasConsecutivos === 2) return '🟡 ATENÇÃO';
+
+  obterStatusLabel(totalFaltas: number): string {
+    if (totalFaltas > this.LIMITE_FALTAS) return '🔴 REPROVOU';
+    if (totalFaltas >= this.LIMITE_ATENCAO) return '🟡 EM RISCO';
     return '🟢 Normal';
+  }
+
+  pctLimite(totalFaltas: number): number {
+    return Math.min(Math.round((totalFaltas / this.LIMITE_FALTAS) * 100), 100);
   }
   
   async marcarContatado(aluno: AlunoFalta) {
