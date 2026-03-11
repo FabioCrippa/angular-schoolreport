@@ -132,7 +132,10 @@
         </div>
         <div class="form-field">
           <label>Disciplina *</label>
-          <input type="text" [(ngModel)]="form.disciplina" placeholder="Ex: Matemática" />
+          <input type="text" [(ngModel)]="form.disciplina" placeholder="Ex: Matemática" list="disciplinas-list" />
+          <datalist id="disciplinas-list">
+            <option *ngFor="let d of DISCIPLINAS_OPCOES" [value]="d"></option>
+          </datalist>
         </div>
       </div>
 

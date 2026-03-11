@@ -22,6 +22,13 @@ const RECURSOS_OPCOES = [
   { valor: 'laboratorio',  icone: '🔬', label: 'Laboratório' },
 ];
 
+const DISCIPLINAS_OPCOES = [
+  'Arte', 'Biologia', 'Ciências', 'Educação Física',
+  'Ensino Religioso', 'Filosofia', 'Física', 'Geografia',
+  'História', 'Inglês', 'Informática', 'Língua Portuguesa',
+  'Literatura', 'Matemática', 'Química', 'Redação', 'Sociologia'
+];
+
 const MESES = [
   'Janeiro','Fevereiro','Março','Abril','Maio','Junho',
   'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'
@@ -70,6 +77,7 @@ export class DiarioClasse implements OnInit {
   };
 
   readonly RECURSOS_OPCOES = RECURSOS_OPCOES;
+  readonly DISCIPLINAS_OPCOES = DISCIPLINAS_OPCOES;
 
   ngOnInit() {
     this.carregarDados();
@@ -206,6 +214,7 @@ export class DiarioClasse implements OnInit {
     this.cdr.markForCheck();
 
     try {
+      const obs = this.form.observacao.trim();
       const dados: Omit<DiarioEntrada, 'id'> = {
         escolaId: this.escolaId,
         professorId: this.professorId,
@@ -213,9 +222,9 @@ export class DiarioClasse implements OnInit {
         turma: this.form.turma.trim(),
         disciplina: this.form.disciplina.trim(),
         data: this.form.data,
-        numeroAula: this.form.numeroAula ?? undefined,
+        ...(this.form.numeroAula != null ? { numeroAula: this.form.numeroAula } : {}),
         conteudo: this.form.conteudo.trim(),
-        observacao: this.form.observacao.trim() || undefined,
+        observacao: obs,
         recursos: this.form.recursos,
         registradoEm: new Date()
       };

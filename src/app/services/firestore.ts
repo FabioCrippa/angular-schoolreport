@@ -1847,7 +1847,11 @@ Equipe escu
   async atualizarDiarioEntrada(id: string, dados: Partial<DiarioEntrada>): Promise<void> {
     try {
       const docRef = doc(this.firestore, 'diario', id);
-      await updateDoc(docRef, dados as any);
+      // Firestore updateDoc não aceita undefined — remover campos undefined
+      const limpo = Object.fromEntries(
+        Object.entries(dados).filter(([, v]) => v !== undefined)
+      );
+      await updateDoc(docRef, limpo);
     } catch (error) {
       console.error('Erro ao atualizar diário:', error);
       throw error;
