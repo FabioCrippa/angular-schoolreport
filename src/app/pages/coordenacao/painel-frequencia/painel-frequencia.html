@@ -12,10 +12,17 @@
   <!-- Cards de Resumo -->
   <div class="summary-cards" *ngIf="!loading && todasAsTurmas.length > 0">
     <div class="summary-card summary-card--risco">
-      <div class="summary-icon">⚠️</div>
+      <div class="summary-icon">🔴</div>
       <div class="summary-info">
-        <span class="summary-number">{{ totalAlunosEmRisco }}</span>
-        <span class="summary-label">Alunos em Risco<br><small>(&lt;75%)</small></span>
+        <span class="summary-number">{{ totalReprovados }}</span>
+        <span class="summary-label">Reprovados<br><small>(&gt;50 faltas)</small></span>
+      </div>
+    </div>
+    <div class="summary-card summary-card--atencao">
+      <div class="summary-icon">🟡</div>
+      <div class="summary-info">
+        <span class="summary-number">{{ totalAtencao }}</span>
+        <span class="summary-label">Em Risco<br><small>(38 a 50 faltas)</small></span>
       </div>
     </div>
     <div class="summary-card">
@@ -66,16 +73,20 @@
 
       <!-- Cabeçalho da Turma (clicável para expandir) -->
       <div class="turma-header" (click)="toggleTurma(turma.turma)"
-           [class.turma-header--risco]="turma.alunosEmRisco > 0">
+           [class.turma-header--risco]="turma.alunosEmRisco > 0"
+           [class.turma-header--atencao]="turma.alunosEmRisco === 0 && turma.alunosAtencao > 0">
         <div class="turma-info">
           <span class="turma-nome">Turma {{ turma.turma }}</span>
           <span class="turma-alunos">{{ turma.alunos.length }} aluno(s)</span>
         </div>
         <div class="turma-stats">
           <span class="badge-risco" *ngIf="turma.alunosEmRisco > 0">
-            ⚠️ {{ turma.alunosEmRisco }} em risco
+            🔴 {{ turma.alunosEmRisco }} reprovou
           </span>
-          <span class="media-freq" [class]="'freq-' + getFrequenciaClass(turma.mediaFrequencia)">
+          <span class="badge-atencao" *ngIf="turma.alunosAtencao > 0">
+            🟡 {{ turma.alunosAtencao }} em risco
+          </span>
+          <span class="media-freq" [class]="'freq-' + getNivelTurma(turma)">
             Média: {{ turma.mediaFrequencia }}%
           </span>
           <span class="expand-icon">{{ turmaExpandida === turma.turma ? '▲' : '▼' }}</span>
@@ -88,26 +99,31 @@
           <thead>
             <tr>
               <th>Aluno</th>
-              <th class="col-num">Dias Registrados</th>
-              <th class="col-num">Faltas</th>
+              <th class="col-num">Faltas / 50 máx</th>
               <th class="col-num">Frequência</th>
               <th class="col-status">Status</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let aluno of turma.alunos"
-                [class.row-risco]="aluno.emRisco">
+                [class.row-risco]="aluno.nivel === 'risco'"
+                [class.row-atencao]="aluno.nivel === 'atencao'">
               <td class="aluno-nome">{{ aluno.alunoNome }}</td>
-              <td class="col-num">{{ aluno.totalDias }}</td>
-              <td class="col-num">{{ aluno.totalFaltas }}</td>
               <td class="col-num">
-                <span class="freq-badge" [class]="'freq-badge--' + getFrequenciaClass(aluno.frequencia)">
+                <strong [class]="'freq-badge freq-badge--' + aluno.nivel">{{ aluno.totalFaltas }} / {{ LIMITE_FALTAS }}</strong>
+                <div class="presenca-bar-mini">
+                  <div class="presenca-fill-mini" [class]="aluno.nivel"
+                       [style.width.%]="pctLimite(aluno.totalFaltas)"></div>
+                </div>
+              </td>
+              <td class="col-num">
+                <span class="freq-badge" [class]="'freq-badge--' + aluno.nivel">
                   {{ aluno.frequencia }}%
                 </span>
               </td>
               <td class="col-status">
-                <span class="status-badge" [class]="'status-badge--' + getFrequenciaClass(aluno.frequencia)">
-                  {{ aluno.emRisco ? 'Em risco' : aluno.frequencia < 85 ? 'Atenção' : 'Regular' }}
+                <span class="status-badge" [class]="'status-badge--' + aluno.nivel">
+                  {{ aluno.nivel === 'risco' ? 'Reprovou' : aluno.nivel === 'atencao' ? 'Em Risco' : 'Regular' }}
                 </span>
               </td>
             </tr>
@@ -120,9 +136,9 @@
 
   <!-- Legenda -->
   <div class="legenda" *ngIf="!loading && todasAsTurmas.length > 0">
-    <span class="legenda-item legenda-item--ok">● Regular (≥ 85%)</span>
-    <span class="legenda-item legenda-item--atencao">● Atenção (75–84%)</span>
-    <span class="legenda-item legenda-item--risco">● Em risco (&lt; 75%)</span>
+    <span class="legenda-item legenda-item--ok">● Regular (&lt;38 faltas)</span>
+    <span class="legenda-item legenda-item--atencao">● Em Risco (38–50 faltas)</span>
+    <span class="legenda-item legenda-item--risco">● Reprovou (&gt;50 faltas)</span>
   </div>
 
 </div>

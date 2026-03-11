@@ -10,15 +10,17 @@ interface AlunoFrequencia {
   alunoNome: string;
   totalDias: number;
   totalFaltas: number;
-  frequencia: number; // porcentagem
-  emRisco: boolean;
+  frequencia: number; // porcentagem baseada nos dias registrados
+  nivel: 'ok' | 'atencao' | 'risco'; // ok=<38f, atencao=38-50f, risco=>50f
+  emRisco: boolean; // > 50 faltas (reprovou)
 }
 
 interface TurmaFrequencia {
   turma: string;
   alunos: AlunoFrequencia[];
   mediaFrequencia: number;
-  alunosEmRisco: number;
+  alunosEmRisco: number;    // reprovou (>50)
+  alunosAtencao: number;   // em risco (38-50)
 }
 
 @Component({
@@ -50,8 +52,12 @@ export class PainelFrequencia implements OnInit {
   turmasFiltradas: TurmaFrequencia[] = [];
   turmaExpandida: string | null = null;
 
+  readonly LIMITE_FALTAS = 50;   // 25% de 200 dias letivos
+  readonly LIMITE_ATENCAO = 38;  // ~76% do limite
+
   // Resumo geral
-  totalAlunosEmRisco = 0;
+  totalReprovados = 0;
+  totalAtencao = 0;
   turmaMaisFaltas = '';
   totalTurmas = 0;
 
@@ -119,13 +125,19 @@ export class PainelFrequencia implements OnInit {
 
       for (const [alunoId, dados] of alunosMap) {
         const freq = dados.total > 0 ? ((dados.total - dados.faltas) / dados.total) * 100 : 100;
+        const nivel = dados.faltas > this.LIMITE_FALTAS
+          ? 'risco'
+          : dados.faltas >= this.LIMITE_ATENCAO
+          ? 'atencao'
+          : 'ok';
         alunos.push({
           alunoId,
           alunoNome: dados.nome,
           totalDias: dados.total,
           totalFaltas: dados.faltas,
           frequencia: Math.round(freq * 10) / 10,
-          emRisco: freq < 75
+          nivel,
+          emRisco: dados.faltas > this.LIMITE_FALTAS
         });
       }
 
@@ -135,6 +147,7 @@ export class PainelFrequencia implements OnInit {
         ? alunos.reduce((s, a) => s + a.frequencia, 0) / alunos.length
         : 100;
       const alunosEmRisco = alunos.filter(a => a.emRisco).length;
+      const alunosAtencao = alunos.filter(a => a.nivel === 'atencao').length;
       const totalFaltasNaTurma = alunos.reduce((s, a) => s + a.totalFaltas, 0);
 
       if (totalFaltasNaTurma > maxFaltas) {
@@ -146,12 +159,14 @@ export class PainelFrequencia implements OnInit {
         turma,
         alunos,
         mediaFrequencia: Math.round(mediaFreq * 10) / 10,
-        alunosEmRisco
+        alunosEmRisco,
+        alunosAtencao
       });
     }
 
     this.todasAsTurmas.sort((a, b) => a.turma.localeCompare(b.turma));
-    this.totalAlunosEmRisco = this.todasAsTurmas.reduce((s, t) => s + t.alunosEmRisco, 0);
+    this.totalReprovados = this.todasAsTurmas.reduce((s, t) => s + t.alunosEmRisco, 0);
+    this.totalAtencao = this.todasAsTurmas.reduce((s, t) => s + t.alunosAtencao, 0);
     this.totalTurmas = this.todasAsTurmas.length;
 
     this.aplicarFiltros();
@@ -177,10 +192,14 @@ export class PainelFrequencia implements OnInit {
     this.cdr.markForCheck();
   }
 
-  getFrequenciaClass(freq: number): string {
-    if (freq < 75) return 'risco';
-    if (freq < 85) return 'atencao';
+  getNivelTurma(turma: TurmaFrequencia): string {
+    if (turma.alunosEmRisco > 0) return 'risco';
+    if (turma.alunosAtencao > 0) return 'atencao';
     return 'ok';
+  }
+
+  pctLimite(totalFaltas: number): number {
+    return Math.min(Math.round((totalFaltas / this.LIMITE_FALTAS) * 100), 100);
   }
 
   voltar() {
