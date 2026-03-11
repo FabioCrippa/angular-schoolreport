@@ -1,0 +1,128 @@
+<div class="painel-frequencia">
+
+  <!-- Cabeçalho -->
+  <div class="page-header">
+    <button class="btn-back" (click)="voltar()">← Voltar</button>
+    <div class="header-content">
+      <h1>📊 Painel de Frequência</h1>
+      <p class="subtitle">Acompanhamento de presença por turma</p>
+    </div>
+  </div>
+
+  <!-- Cards de Resumo -->
+  <div class="summary-cards" *ngIf="!loading && todasAsTurmas.length > 0">
+    <div class="summary-card summary-card--risco">
+      <div class="summary-icon">⚠️</div>
+      <div class="summary-info">
+        <span class="summary-number">{{ totalAlunosEmRisco }}</span>
+        <span class="summary-label">Alunos em Risco<br><small>(&lt;75%)</small></span>
+      </div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-icon">🏫</div>
+      <div class="summary-info">
+        <span class="summary-number">{{ totalTurmas }}</span>
+        <span class="summary-label">Turmas<br>registradas</span>
+      </div>
+    </div>
+    <div class="summary-card" *ngIf="turmaMaisFaltas">
+      <div class="summary-icon">📉</div>
+      <div class="summary-info">
+        <span class="summary-number summary-number--sm">{{ turmaMaisFaltas }}</span>
+        <span class="summary-label">Turma com mais<br>faltas no ano</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <div class="filtros-container">
+    <div class="filtro-group">
+      <label for="ano">Ano</label>
+      <select id="ano" [(ngModel)]="anoSelecionado" (change)="onAnoChange()">
+        <option *ngFor="let ano of anos" [value]="ano">{{ ano }}</option>
+      </select>
+    </div>
+    <div class="filtro-group">
+      <label for="turma">Filtrar por turma</label>
+      <input id="turma" type="text" [(ngModel)]="filtroTurma" (input)="aplicarFiltros()"
+             placeholder="Ex: 9A, 1B..." />
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-state" *ngIf="loading">
+    <p>Carregando dados de frequência...</p>
+  </div>
+
+  <!-- Sem dados -->
+  <div class="empty-state" *ngIf="!loading && todasAsTurmas.length === 0">
+    <div class="empty-icon">📂</div>
+    <p>Nenhuma falta registrada para {{ anoSelecionado }}.</p>
+  </div>
+
+  <!-- Lista de Turmas -->
+  <div class="turmas-lista" *ngIf="!loading && turmasFiltradas.length > 0">
+    <div class="turma-card" *ngFor="let turma of turmasFiltradas">
+
+      <!-- Cabeçalho da Turma (clicável para expandir) -->
+      <div class="turma-header" (click)="toggleTurma(turma.turma)"
+           [class.turma-header--risco]="turma.alunosEmRisco > 0">
+        <div class="turma-info">
+          <span class="turma-nome">Turma {{ turma.turma }}</span>
+          <span class="turma-alunos">{{ turma.alunos.length }} aluno(s)</span>
+        </div>
+        <div class="turma-stats">
+          <span class="badge-risco" *ngIf="turma.alunosEmRisco > 0">
+            ⚠️ {{ turma.alunosEmRisco }} em risco
+          </span>
+          <span class="media-freq" [class]="'freq-' + getFrequenciaClass(turma.mediaFrequencia)">
+            Média: {{ turma.mediaFrequencia }}%
+          </span>
+          <span class="expand-icon">{{ turmaExpandida === turma.turma ? '▲' : '▼' }}</span>
+        </div>
+      </div>
+
+      <!-- Tabela de Alunos (expansível) -->
+      <div class="turma-body" *ngIf="turmaExpandida === turma.turma">
+        <table class="tabela-frequencia">
+          <thead>
+            <tr>
+              <th>Aluno</th>
+              <th class="col-num">Dias Registrados</th>
+              <th class="col-num">Faltas</th>
+              <th class="col-num">Frequência</th>
+              <th class="col-status">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let aluno of turma.alunos"
+                [class.row-risco]="aluno.emRisco">
+              <td class="aluno-nome">{{ aluno.alunoNome }}</td>
+              <td class="col-num">{{ aluno.totalDias }}</td>
+              <td class="col-num">{{ aluno.totalFaltas }}</td>
+              <td class="col-num">
+                <span class="freq-badge" [class]="'freq-badge--' + getFrequenciaClass(aluno.frequencia)">
+                  {{ aluno.frequencia }}%
+                </span>
+              </td>
+              <td class="col-status">
+                <span class="status-badge" [class]="'status-badge--' + getFrequenciaClass(aluno.frequencia)">
+                  {{ aluno.emRisco ? 'Em risco' : aluno.frequencia < 85 ? 'Atenção' : 'Regular' }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Legenda -->
+  <div class="legenda" *ngIf="!loading && todasAsTurmas.length > 0">
+    <span class="legenda-item legenda-item--ok">● Regular (≥ 85%)</span>
+    <span class="legenda-item legenda-item--atencao">● Atenção (75–84%)</span>
+    <span class="legenda-item legenda-item--risco">● Em risco (&lt; 75%)</span>
+  </div>
+
+</div>

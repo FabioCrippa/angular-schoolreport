@@ -116,6 +116,12 @@ export const routes: Routes = [
         data: { roles: ['professor', 'coordenacao', 'direcao'] }
     },
     {
+        path: 'coordenacao/painel-frequencia',
+        loadComponent: () => import('./pages/coordenacao/painel-frequencia/painel-frequencia').then(m => m.PainelFrequencia),
+        canActivate: [authGuard, roleGuard],
+        data: { roles: ['coordenacao', 'direcao'] }
+    },
+    {
         path: '**',
         redirectTo: 'login'
     }

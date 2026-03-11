@@ -1,0 +1,348 @@
+.painel-frequencia {
+  padding: 1.5rem;
+  max-width: 1100px;
+  margin: 0 auto;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* ── Cabeçalho ── */
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.btn-back {
+  flex-shrink: 0;
+  padding: 0.5rem 1rem;
+  background: transparent;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #64748b;
+  transition: all 0.2s;
+
+  &:hover {
+    background: #f1f5f9;
+    color: #1e293b;
+  }
+}
+
+.header-content h1 {
+  margin: 0;
+  font-size: 1.6rem;
+  color: #1e293b;
+}
+
+.subtitle {
+  margin: 0.25rem 0 0;
+  color: #64748b;
+  font-size: 0.95rem;
+}
+
+/* ── Cards de Resumo ── */
+.summary-cards {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.summary-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  flex: 1;
+  min-width: 180px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+
+  &--risco {
+    border-left: 4px solid #ef4444;
+    background: #fff5f5;
+  }
+}
+
+.summary-icon {
+  font-size: 1.8rem;
+}
+
+.summary-number {
+  display: block;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1;
+
+  &--sm {
+    font-size: 1.3rem;
+  }
+}
+
+.summary-label {
+  font-size: 0.8rem;
+  color: #64748b;
+  line-height: 1.4;
+
+  small {
+    font-size: 0.75rem;
+    color: #94a3b8;
+  }
+}
+
+/* ── Filtros ── */
+.filtros-container {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.filtro-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+
+  label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  select,
+  input {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    background: #fff;
+    color: #1e293b;
+    outline: none;
+    min-width: 140px;
+    transition: border-color 0.2s;
+
+    &:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+  }
+}
+
+/* ── Estados ── */
+.loading-state,
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #64748b;
+}
+
+.empty-icon {
+  font-size: 3rem;
+  margin-bottom: 0.5rem;
+}
+
+/* ── Turmas ── */
+.turmas-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.turma-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.turma-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.9rem 1.25rem;
+  cursor: pointer;
+  user-select: none;
+  background: #f8fafc;
+  transition: background 0.2s;
+
+  &:hover {
+    background: #f1f5f9;
+  }
+
+  &--risco {
+    border-left: 4px solid #ef4444;
+  }
+}
+
+.turma-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.turma-nome {
+  font-weight: 700;
+  font-size: 1rem;
+  color: #1e293b;
+}
+
+.turma-alunos {
+  font-size: 0.82rem;
+  color: #64748b;
+}
+
+.turma-stats {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.badge-risco {
+  background: #fef2f2;
+  color: #ef4444;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.media-freq {
+  font-size: 0.9rem;
+  font-weight: 600;
+
+  &.freq-ok { color: #16a34a; }
+  &.freq-atencao { color: #d97706; }
+  &.freq-risco { color: #ef4444; }
+}
+
+.expand-icon {
+  color: #64748b;
+  font-size: 0.8rem;
+}
+
+/* ── Tabela ── */
+.turma-body {
+  padding: 0 1.25rem 1.25rem;
+  overflow-x: auto;
+}
+
+.tabela-frequencia {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  margin-top: 0.75rem;
+
+  th {
+    text-align: left;
+    padding: 0.6rem 0.75rem;
+    background: #f1f5f9;
+    color: #475569;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border-bottom: 2px solid #e2e8f0;
+  }
+
+  td {
+    padding: 0.6rem 0.75rem;
+    border-bottom: 1px solid #f1f5f9;
+    color: #1e293b;
+    vertical-align: middle;
+  }
+
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  tbody tr.row-risco {
+    background: #fff5f5;
+  }
+}
+
+.col-num {
+  text-align: center;
+  width: 130px;
+}
+
+.col-status {
+  text-align: center;
+  width: 120px;
+}
+
+.aluno-nome {
+  font-weight: 500;
+}
+
+.freq-badge {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 0.88rem;
+
+  &--ok { background: #dcfce7; color: #16a34a; }
+  &--atencao { background: #fef9c3; color: #a16207; }
+  &--risco { background: #fef2f2; color: #ef4444; }
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 600;
+
+  &--ok { background: #dcfce7; color: #15803d; }
+  &--atencao { background: #fef9c3; color: #a16207; }
+  &--risco { background: #fee2e2; color: #b91c1c; }
+}
+
+/* ── Legenda ── */
+.legenda {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e2e8f0;
+  flex-wrap: wrap;
+}
+
+.legenda-item {
+  font-size: 0.82rem;
+  color: #475569;
+
+  &--ok { color: #16a34a; }
+  &--atencao { color: #d97706; }
+  &--risco { color: #ef4444; }
+}
+
+/* ── Responsivo ── */
+@media (max-width: 600px) {
+  .painel-frequencia {
+    padding: 1rem;
+  }
+
+  .summary-cards {
+    flex-direction: column;
+  }
+
+  .turma-stats {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.3rem;
+  }
+
+  .col-num,
+  .col-status {
+    width: auto;
+  }
+}
