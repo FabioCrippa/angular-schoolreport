@@ -148,13 +148,13 @@ service cloud.firestore {
       // Usuários autenticados podem ler status
       allow read: if request.auth != null;
       
-      // Secretaria pode criar e atualizar status
+      // Coordenação e direção podem criar e atualizar status
       allow create, update: if request.auth != null && 
-                             get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.role == 'secretaria';
+                             get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.role in ['coordenacao', 'direcao', 'secretaria'];
       
-      // Secretaria pode deletar status
+      // Coordenação e direção podem deletar status
       allow delete: if request.auth != null && 
-                    get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.role == 'secretaria';
+                    get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.role in ['coordenacao', 'direcao', 'secretaria'];
     }
 
     // Regras para coleção 'faltasProfessores'
