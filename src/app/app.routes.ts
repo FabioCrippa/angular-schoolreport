@@ -128,6 +128,12 @@ export const routes: Routes = [
         data: { roles: ['coordenacao', 'direcao'] }
     },
     {
+        path: 'coordenacao/ficha-aluno',
+        loadComponent: () => import('./pages/coordenacao/ficha-aluno/ficha-aluno').then(m => m.FichaAluno),
+        canActivate: [authGuard, roleGuard],
+        data: { roles: ['coordenacao', 'direcao'] }
+    },
+    {
         path: '**',
         redirectTo: 'login'
     }

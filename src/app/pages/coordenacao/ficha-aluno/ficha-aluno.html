@@ -1,0 +1,176 @@
+<div class="ficha-container">
+
+  <!-- Cabeçalho -->
+  <div class="page-header">
+    <button class="btn-back" (click)="voltar()">← Voltar</button>
+    <div class="header-content">
+      <h1>🧑‍🎓 Ficha do Aluno</h1>
+      <p class="subtitle">Frequência e ocorrências consolidadas</p>
+    </div>
+  </div>
+
+  <!-- Linha: Busca + Ano -->
+  <div class="search-bar-row">
+    <div class="search-wrapper">
+      <div class="search-input-wrap">
+        <span class="search-icon">🔍</span>
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Digite o nome do aluno..."
+          [(ngModel)]="termoBusca"
+          (input)="onBuscaInput()"
+          (blur)="fecharSugestoes()"
+          autocomplete="off"
+        />
+        <button class="btn-clear" *ngIf="termoBusca" (click)="limparBusca()">✕</button>
+      </div>
+      <!-- Autocomplete -->
+      <div class="sugestoes" *ngIf="mostrarSugestoes">
+        <div
+          class="sugestao-item"
+          *ngFor="let a of alunosFiltrados"
+          (mousedown)="selecionarAluno(a)"
+        >
+          <span class="sugestao-nome">{{ a.nome }}</span>
+          <span class="sugestao-turma">{{ a.turma }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="filtro-ano">
+      <label>Ano:</label>
+      <select [(ngModel)]="anoSelecionado" (change)="onAnoChange()">
+        <option *ngFor="let ano of anos" [value]="ano">{{ ano }}</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Loading geral -->
+  <div class="loading-state" *ngIf="loading">
+    <p>Carregando dados...</p>
+  </div>
+
+  <!-- Loading da ficha -->
+  <div class="loading-state" *ngIf="loadingFicha">
+    <p>Buscando ficha...</p>
+  </div>
+
+  <!-- Estado vazio inicial -->
+  <div class="empty-state" *ngIf="!loading && !loadingFicha && !ficha">
+    <div class="empty-icon">🧑‍🎓</div>
+    <p>Pesquise um aluno pelo nome para visualizar a ficha completa.</p>
+  </div>
+
+  <!-- ===== FICHA ===== -->
+  <div class="ficha" *ngIf="!loading && !loadingFicha && ficha">
+
+    <!-- Identidade -->
+    <div class="ficha-header">
+      <div class="ficha-avatar">{{ ficha.aluno.nome.charAt(0) }}</div>
+      <div class="ficha-info">
+        <h2 class="ficha-nome">{{ ficha.aluno.nome }}</h2>
+        <div class="ficha-meta">
+          <span class="badge-turma">Turma: {{ ficha.aluno.turma }}</span>
+          <span class="badge-serie" *ngIf="ficha.aluno.serie">{{ ficha.aluno.serie }}</span>
+        </div>
+      </div>
+      <div class="ficha-nivel"
+        [class.nivel--ok]="ficha.nivel === 'ok'"
+        [class.nivel--atencao]="ficha.nivel === 'atencao'"
+        [class.nivel--risco]="ficha.nivel === 'risco'"
+      >
+        {{ ficha.nivel === 'risco' ? '🔴' : ficha.nivel === 'atencao' ? '🟡' : '🟢' }}
+        {{ getNivelLabel(ficha.nivel) }}
+      </div>
+    </div>
+
+    <!-- Cards de Resumo -->
+    <div class="resumo-cards">
+      <!-- Frequência -->
+      <div class="resumo-card"
+        [class.resumo-card--ok]="ficha.nivel === 'ok'"
+        [class.resumo-card--atencao]="ficha.nivel === 'atencao'"
+        [class.resumo-card--risco]="ficha.nivel === 'risco'"
+      >
+        <div class="resumo-icon">📅</div>
+        <div class="resumo-body">
+          <span class="resumo-valor">{{ ficha.percentualPresenca }}%</span>
+          <span class="resumo-label">Presença</span>
+          <div class="bar-track">
+            <div class="bar-fill" [style.width.%]="getPresencaBarWidth()"
+              [class.bar-fill--ok]="ficha.nivel === 'ok'"
+              [class.bar-fill--atencao]="ficha.nivel === 'atencao'"
+              [class.bar-fill--risco]="ficha.nivel === 'risco'"
+            ></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Faltas -->
+      <div class="resumo-card"
+        [class.resumo-card--risco]="ficha.nivel === 'risco'"
+        [class.resumo-card--atencao]="ficha.nivel === 'atencao'"
+      >
+        <div class="resumo-icon">❌</div>
+        <div class="resumo-body">
+          <span class="resumo-valor">{{ ficha.totalFaltas }}<span class="resumo-limite">/{{ LIMITE_FALTAS }}</span></span>
+          <span class="resumo-label">Faltas (máx. {{ LIMITE_FALTAS }})</span>
+          <div class="bar-track">
+            <div class="bar-fill" [style.width.%]="getLimiteFaltasWidth()"
+              [class.bar-fill--ok]="ficha.nivel === 'ok'"
+              [class.bar-fill--atencao]="ficha.nivel === 'atencao'"
+              [class.bar-fill--risco]="ficha.nivel === 'risco'"
+            ></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ocorrências -->
+      <div class="resumo-card" [class.resumo-card--atencao]="ficha.totalOcorrencias >= 3">
+        <div class="resumo-icon">📋</div>
+        <div class="resumo-body">
+          <span class="resumo-valor">{{ ficha.totalOcorrencias }}</span>
+          <span class="resumo-label">Ocorrências em {{ anoSelecionado }}</span>
+          <div class="tipos-badges" *ngIf="ficha.tiposMaisFrequentes.length > 0">
+            <span class="tipo-badge" *ngFor="let t of ficha.tiposMaisFrequentes">
+              {{ t.tipo }} ({{ t.total }})
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Histórico de Ocorrências -->
+    <div class="section-ocorrencias">
+      <h3 class="section-title">📋 Histórico de Ocorrências — {{ anoSelecionado }}</h3>
+
+      <div class="sem-ocorrencias" *ngIf="ficha.ocorrencias.length === 0">
+        <span>✅ Nenhuma ocorrência registrada neste ano.</span>
+      </div>
+
+      <div class="ocorrencias-lista" *ngIf="ficha.ocorrencias.length > 0">
+        <div
+          class="ocorrencia-item"
+          *ngFor="let o of ficha.ocorrencias"
+          (click)="toggleOcorrencia(o.id!)"
+          [class.ocorrencia-item--expandida]="ocorrenciaExpandida === o.id"
+        >
+          <div class="ocorrencia-row">
+            <span class="ocorrencia-data">{{ o.data | date:'dd/MM/yyyy' }}</span>
+            <span class="ocorrencia-tipo">{{ o.tipoOcorrencia }}</span>
+            <span class="ocorrencia-disciplina">{{ o.disciplina }}</span>
+            <span class="ocorrencia-professor">{{ o.professorNome }}</span>
+            <span class="ocorrencia-chevron">{{ ocorrenciaExpandida === o.id ? '▲' : '▼' }}</span>
+          </div>
+          <div class="ocorrencia-detalhe" *ngIf="ocorrenciaExpandida === o.id">
+            <p class="detalhe-desc">{{ o.descricao }}</p>
+            <p class="detalhe-turma">Turma: {{ o.turma }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>

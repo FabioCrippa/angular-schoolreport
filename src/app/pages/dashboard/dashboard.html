@@ -56,6 +56,9 @@
         <a class="nav-item" routerLink="/coordenacao/painel-frequencia">
           <span class="nav-icon">📈</span> Frequência
         </a>
+        <a class="nav-item" routerLink="/coordenacao/ficha-aluno">
+          <span class="nav-icon">🧑‍🎓</span> Ficha do Aluno
+        </a>
         <a class="nav-item" routerLink="/agendamento-equipamentos">
           <span class="nav-icon">📅</span> Agendamentos
         </a>
@@ -163,9 +166,16 @@
         </div>
 
         <div class="card" (click)="navigateTo('/coordenacao/painel-frequencia')">
-          <div class="card-icon">📊</div>
+          <div class="card-icon">�</div>
           <h3>Painel de Frequência</h3>
           <p>Acompanhe a frequência por turma e identifique alunos em risco</p>
+          <div class="card-arrow">→</div>
+        </div>
+
+        <div class="card" (click)="navigateTo('/coordenacao/ficha-aluno')">
+          <div class="card-icon">🧑‍🎓</div>
+          <h3>Ficha do Aluno</h3>
+          <p>Consulte frequência e histórico de ocorrências de qualquer aluno</p>
           <div class="card-arrow">→</div>
         </div>
 
