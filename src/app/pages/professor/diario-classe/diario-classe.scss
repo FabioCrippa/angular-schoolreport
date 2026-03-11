@@ -1,6 +1,4 @@
-﻿@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&display=swap');
-
-/* =====================================================
+﻿/* =====================================================
    Diário de Classe — Notebook / Diary Theme
    ===================================================== */
 
@@ -748,3 +746,254 @@
   .form-row-2 { grid-template-columns: 1fr; }
   .total-registros { display: none; }
 }
+
+/* ══════════════════════════════════════════════════
+   ABAS DA PÁGINA (Registros / Meu Horário)
+   ══════════════════════════════════════════════════ */
+
+.paginas-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 24px;
+  border-bottom: 2px solid #d0c4b0;
+  padding-bottom: 0;
+}
+
+.pagina-tab {
+  padding: 7px 18px;
+  border: 1.5px solid #d0c4b0;
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+  background: rgba(255,255,255,.45);
+  color: #8a7460;
+  font-size: .82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .15s;
+  position: relative;
+  bottom: -2px;
+
+  &:hover { background: rgba(255,255,255,.75); color: #5a4a38; }
+
+  &.pagina-tab--ativa {
+    background: #fffef6;
+    color: #1c3460;
+    border-color: #d0c4b0;
+    border-bottom-color: #fffef6;
+    font-weight: 700;
+  }
+}
+
+/* ══════════════════════════════════════════════════
+   HORÁRIO SEMANAL
+   ══════════════════════════════════════════════════ */
+
+.horario-section {
+  padding-top: 4px;
+}
+
+.horario-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.horario-titulo {
+  font-family: 'Caveat', cursive;
+  font-size: 1.45rem;
+  color: #1c3460;
+  margin: 0;
+  font-weight: 700;
+}
+
+.horario-acoes {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.btn-editar-horario {
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1.5px solid #c9973a;
+  background: rgba(201,151,58,.08);
+  color: #86610a;
+  font-size: .82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .13s;
+  &:hover { background: rgba(201,151,58,.18); }
+}
+
+.btn-add-linha {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1.5px solid #16a085;
+  background: rgba(22,160,133,.08);
+  color: #0e6651;
+  font-size: .82rem;
+  font-weight: 600;
+  cursor: pointer;
+  &:hover { background: rgba(22,160,133,.16); }
+}
+
+.btn-cancelar-horario {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1.5px solid #d0c4b0;
+  background: transparent;
+  color: #7a6a55;
+  font-size: .82rem;
+  cursor: pointer;
+  &:hover { background: #f0e8da; }
+}
+
+.btn-salvar-horario {
+  padding: 7px 18px;
+  border-radius: 8px;
+  border: none;
+  background: #1c3460;
+  color: #fff;
+  font-size: .82rem;
+  font-weight: 700;
+  cursor: pointer;
+  &:hover:not(:disabled) { background: #243d78; }
+  &:disabled { opacity: .5; cursor: not-allowed; }
+}
+
+.horario-vazio {
+  text-align: center;
+  padding: 56px 24px;
+  color: #9a8c7a;
+  font-size: .95rem;
+  .empty-hint { font-size: .86rem; color: #b5a898; font-style: italic;
+    strong { color: #6b5a4a; font-style: normal; } }
+}
+
+/* ── Wrapper com scroll horizontal em telas pequenas ── */
+.horario-table-wrap {
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid #d8cebb;
+  box-shadow: 0 2px 8px rgba(0,0,0,.06);
+}
+
+/* ── Tabela ── */
+.horario-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .82rem;
+  background: rgba(255,255,255,.78);
+
+  thead tr {
+    background: linear-gradient(to bottom, #1c3460, #243d78);
+
+    th {
+      padding: 9px 10px;
+      color: rgba(255,255,255,.90);
+      font-weight: 700;
+      font-size: .74rem;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      white-space: nowrap;
+      border-right: 1px solid rgba(255,255,255,.12);
+      &:last-child { border-right: none; }
+    }
+
+    th.col-horario { width: 108px; min-width: 90px; }
+    th.col-remover { width: 36px; }
+  }
+
+  tbody tr {
+    border-bottom: 1px solid rgba(208,198,182,.45);
+    transition: background .12s;
+    &:last-child { border-bottom: none; }
+    &:hover { background: rgba(255,255,240,.85); }
+
+    /* Faixa alternada leve */
+    &:nth-child(even) { background: rgba(240,234,224,.30); }
+    &:nth-child(even):hover { background: rgba(255,255,240,.85); }
+  }
+
+  td {
+    padding: 8px 10px;
+    vertical-align: top;
+    border-right: 1px solid rgba(208,198,182,.35);
+    min-width: 120px;
+    &:last-child { border-right: none; }
+  }
+
+  td.col-horario {
+    font-weight: 700;
+    color: #1c3460;
+    font-size: .78rem;
+    white-space: nowrap;
+    background: rgba(28,52,96,.05);
+    border-right: 2px solid rgba(28,52,96,.15);
+    text-align: center;
+  }
+
+  td.celula-vazia { background: repeating-linear-gradient(
+    45deg, transparent, transparent 6px,
+    rgba(0,0,0,.02) 6px, rgba(0,0,0,.02) 7px
+  ); }
+
+  .celula-conteudo {
+    display: block;
+    line-height: 1.4;
+    color: #2c3550;
+    font-size: .81rem;
+  }
+}
+
+/* ── Modo edição ── */
+.horario-table--edit {
+  td { padding: 5px 6px; min-width: 140px; }
+
+  .input-horario {
+    width: 86px;
+    padding: 4px 7px;
+    border: 1.5px solid #c9b894;
+    border-radius: 6px;
+    font-size: .78rem;
+    font-weight: 700;
+    color: #1c3460;
+    background: #fffef0;
+    text-align: center;
+    &:focus { outline: none; border-color: #8a6a3a; }
+  }
+
+  .input-celula {
+    width: 100%;
+    padding: 4px 7px;
+    border: 1.5px solid #d0c4b0;
+    border-radius: 6px;
+    font-size: .8rem;
+    color: #2c3550;
+    background: rgba(255,255,255,.9);
+    box-sizing: border-box;
+    &:focus { outline: none; border-color: #8a6a3a; background: #fff; }
+  }
+
+  .btn-remover-linha {
+    background: none;
+    border: none;
+    color: #e74c3c;
+    cursor: pointer;
+    font-size: .88rem;
+    padding: 3px 6px;
+    border-radius: 5px;
+    &:hover { background: rgba(231,76,60,.10); }
+  }
+}
+
+@media (max-width: 640px) {
+  .horario-table { font-size: .76rem; }
+  .horario-table td, .horario-table th { padding: 6px 7px; min-width: 90px; }
+  .horario-table td.col-horario { min-width: 70px; font-size: .72rem; }
+  .horario-titulo { font-size: 1.2rem; }
+}
+

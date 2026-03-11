@@ -2,7 +2,7 @@ import { Component, inject, OnInit, ChangeDetectionStrategy, ChangeDetectorRef }
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { FirestoreService, DiarioEntrada, Usuario } from '../../../services/firestore';
+import { FirestoreService, DiarioEntrada, HorarioLinha, HorarioSemana, Usuario } from '../../../services/firestore';
 import { AuthService } from '../../../services/auth';
 
 interface GrupoMes {
@@ -79,6 +79,23 @@ export class DiarioClasse implements OnInit {
   readonly RECURSOS_OPCOES = RECURSOS_OPCOES;
   readonly DISCIPLINAS_OPCOES = DISCIPLINAS_OPCOES;
   readonly anoAtual = new Date().getFullYear();
+
+  // ── Horário semanal ──
+  paginaAtiva: 'registros' | 'horario' = 'registros';
+  horarioEditando = false;
+  horarioSalvando = false;
+  horarioId: string | null = null;
+  horarioLinhas: HorarioLinha[] = [];
+  horarioCarregado = false;
+
+  readonly DIAS_SEMANA = ['seg', 'ter', 'qua', 'qui', 'sex'] as const;
+  readonly DIAS_LABELS: Record<string, string> = {
+    seg: 'Segunda', ter: 'Terça', qua: 'Quarta', qui: 'Quinta', sex: 'Sexta'
+  };
+  readonly HORARIOS_PADRAO = [
+    '07:00', '07:50', '08:40', '09:30 / 09:50', '10:40', '11:30',
+    '13:00', '13:50', '14:40', '15:30 / 15:50', '16:40', '17:30'
+  ];
 
   ngOnInit() {
     this.carregarDados();
@@ -278,5 +295,73 @@ export class DiarioClasse implements OnInit {
 
   voltar() {
     this.router.navigate(['/dashboard']);
+  }
+
+  // ── Horário semanal ──────────────────────────────────────────────────────
+
+  async abrirHorario() {
+    this.paginaAtiva = 'horario';
+    if (!this.horarioCarregado) await this.carregarHorario();
+  }
+
+  async carregarHorario() {
+    const h = await this.firestoreService.obterHorarioSemana(this.escolaId, this.professorId);
+    if (h) {
+      this.horarioId    = h.id ?? null;
+      this.horarioLinhas = h.linhas;
+    } else {
+      this.horarioLinhas = this.HORARIOS_PADRAO.slice(0, 6).map(horario => ({
+        horario, seg: '', ter: '', qua: '', qui: '', sex: ''
+      }));
+    }
+    this.horarioCarregado = true;
+    this.cdr.markForCheck();
+  }
+
+  iniciarEdicaoHorario() {
+    this.horarioEditando = true;
+    this.cdr.markForCheck();
+  }
+
+  cancelarEdicaoHorario() {
+    if (this.horarioCarregado) this.carregarHorario();
+    this.horarioEditando = false;
+    this.cdr.markForCheck();
+  }
+
+  async salvarHorario() {
+    this.horarioSalvando = true;
+    this.cdr.markForCheck();
+    try {
+      const dados: Omit<HorarioSemana, 'id'> = {
+        escolaId:    this.escolaId,
+        professorId: this.professorId,
+        linhas:      this.horarioLinhas
+      };
+      this.horarioId = await this.firestoreService.salvarHorarioSemana(dados, this.horarioId ?? undefined);
+      this.horarioEditando = false;
+    } catch {
+      alert('Erro ao salvar horário. Tente novamente.');
+    } finally {
+      this.horarioSalvando = false;
+      this.cdr.markForCheck();
+    }
+  }
+
+  adicionarLinhaHorario() {
+    const ultimo = this.horarioLinhas[this.horarioLinhas.length - 1];
+    const nextIdx = this.HORARIOS_PADRAO.indexOf(ultimo?.horario ?? '') + 1;
+    const horario = this.HORARIOS_PADRAO[nextIdx] ?? '';
+    this.horarioLinhas = [...this.horarioLinhas, { horario, seg: '', ter: '', qua: '', qui: '', sex: '' }];
+    this.cdr.markForCheck();
+  }
+
+  removerLinhaHorario(i: number) {
+    this.horarioLinhas = this.horarioLinhas.filter((_, idx) => idx !== i);
+    this.cdr.markForCheck();
+  }
+
+  horarioCelulaVazia(): boolean {
+    return this.horarioLinhas.every(l => !l.seg && !l.ter && !l.qua && !l.qui && !l.sex);
   }
 }

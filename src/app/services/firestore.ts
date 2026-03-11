@@ -128,6 +128,23 @@ export interface DiarioEntrada {
   registradoEm?: Date;
 }
 
+export interface HorarioLinha {
+  horario: string;  // ex: "07:00"
+  seg: string;
+  ter: string;
+  qua: string;
+  qui: string;
+  sex: string;
+}
+
+export interface HorarioSemana {
+  id?: string;
+  escolaId: string;
+  professorId: string;
+  linhas: HorarioLinha[];
+  atualizadoEm?: Date;
+}
+
 export interface StatusBuscaAtiva {
   id?: string;
   escolaId: string;
@@ -1864,6 +1881,37 @@ Equipe escu
       await deleteDoc(docRef);
     } catch (error) {
       console.error('Erro ao excluir entrada do diário:', error);
+      throw error;
+    }
+  }
+
+  async obterHorarioSemana(escolaId: string, professorId: string): Promise<HorarioSemana | null> {
+    try {
+      const col = collection(this.firestore, 'horarios');
+      const q = query(col, where('escolaId', '==', escolaId), where('professorId', '==', professorId));
+      const snap = await getDocs(q);
+      if (snap.empty) return null;
+      const d = snap.docs[0];
+      return { id: d.id, ...(d.data() as Omit<HorarioSemana, 'id'>) };
+    } catch (error) {
+      console.error('Erro ao obter horário:', error);
+      return null;
+    }
+  }
+
+  async salvarHorarioSemana(horario: Omit<HorarioSemana, 'id'>, id?: string): Promise<string> {
+    try {
+      const dados = { ...horario, atualizadoEm: Timestamp.now() };
+      if (id) {
+        const docRef = doc(this.firestore, 'horarios', id);
+        await setDoc(docRef, dados);
+        return id;
+      }
+      const col = collection(this.firestore, 'horarios');
+      const docRef = await addDoc(col, dados);
+      return docRef.id;
+    } catch (error) {
+      console.error('Erro ao salvar horário:', error);
       throw error;
     }
   }

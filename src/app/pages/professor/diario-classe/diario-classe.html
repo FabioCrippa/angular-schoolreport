@@ -35,6 +35,19 @@
 
     <div class="notebook-page">
 
+      <!-- ── Abas da página ── -->
+      <div class="paginas-tabs">
+        <button class="pagina-tab" [class.pagina-tab--ativa]="paginaAtiva === 'registros'"
+          (click)="paginaAtiva = 'registros'">📝 Registros</button>
+        <button class="pagina-tab" [class.pagina-tab--ativa]="paginaAtiva === 'horario'"
+          (click)="abrirHorario()">📅 Meu Horário</button>
+      </div>
+
+      <!-- ════════════════════════════════════
+           PÁGINA: REGISTROS
+           ════════════════════════════════════ -->
+      <div *ngIf="paginaAtiva === 'registros'">
+
       <!-- Filtros -->
       <div class="filtros-row" *ngIf="todasEntradas.length > 0">
         <div class="filtro-item">
@@ -115,6 +128,89 @@
 
         </div>
       </div>
+
+      </div> <!-- /paginaAtiva === 'registros' -->
+
+      <!-- ════════════════════════════════════
+           PÁGINA: HORÁRIO SEMANAL
+           ════════════════════════════════════ -->
+      <div *ngIf="paginaAtiva === 'horario'" class="horario-section">
+
+        <!-- Cabeçalho do horário -->
+        <div class="horario-header">
+          <h2 class="horario-titulo">📅 Horário da Semana</h2>
+          <div class="horario-acoes" *ngIf="!horarioEditando">
+            <button class="btn-editar-horario" (click)="iniciarEdicaoHorario()">✏️ Editar</button>
+          </div>
+          <div class="horario-acoes" *ngIf="horarioEditando">
+            <button class="btn-add-linha" (click)="adicionarLinhaHorario()" type="button">＋ Aula</button>
+            <button class="btn-cancelar-horario" (click)="cancelarEdicaoHorario()" type="button">Cancelar</button>
+            <button class="btn-salvar-horario" (click)="salvarHorario()" [disabled]="horarioSalvando">
+              {{ horarioSalvando ? 'Salvando...' : '💾 Salvar' }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Loading horário -->
+        <div class="loading-state" *ngIf="!horarioCarregado">
+          <p>📅 Carregando horário...</p>
+        </div>
+
+        <!-- Tabela horário — modo visualização -->
+        <div class="horario-table-wrap" *ngIf="horarioCarregado && !horarioEditando">
+
+          <div class="horario-vazio" *ngIf="horarioCelulaVazia()">
+            <p>Nenhum horário cadastrado ainda.</p>
+            <p class="empty-hint">Clique em <strong>✏️ Editar</strong> para montar sua grade.</p>
+          </div>
+
+          <table class="horario-table" *ngIf="!horarioCelulaVazia()">
+            <thead>
+              <tr>
+                <th class="col-horario">Horário</th>
+                <th *ngFor="let d of DIAS_SEMANA">{{ DIAS_LABELS[d] }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let linha of horarioLinhas; let i = index">
+                <td class="col-horario">{{ linha.horario }}</td>
+                <td *ngFor="let d of DIAS_SEMANA" [class.celula-vazia]="!linha[d]">
+                  <span *ngIf="linha[d]" class="celula-conteudo">{{ linha[d] }}</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Tabela horário — modo edição -->
+        <div class="horario-table-wrap horario-table-wrap--edit" *ngIf="horarioCarregado && horarioEditando">
+          <table class="horario-table horario-table--edit">
+            <thead>
+              <tr>
+                <th class="col-horario">Horário</th>
+                <th *ngFor="let d of DIAS_SEMANA">{{ DIAS_LABELS[d] }}</th>
+                <th class="col-remover"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let linha of horarioLinhas; let i = index">
+                <td class="col-horario">
+                  <input class="input-horario" [(ngModel)]="linha.horario" placeholder="07:00" />
+                </td>
+                <td *ngFor="let d of DIAS_SEMANA">
+                  <input class="input-celula" [(ngModel)]="linha[d]"
+                    placeholder="Disciplina – Turma" list="disciplinas-list" />
+                </td>
+                <td class="col-remover">
+                  <button class="btn-remover-linha" (click)="removerLinhaHorario(i)"
+                    title="Remover linha" *ngIf="horarioLinhas.length > 1">✕</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div> <!-- /paginaAtiva === 'horario' -->
 
     </div>
   </div>
