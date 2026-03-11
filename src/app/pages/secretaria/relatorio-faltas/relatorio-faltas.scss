@@ -534,6 +534,17 @@
   text-align: center;
 }
 
+.badge-novo-episodio {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #ede9fe;
+  color: #7c3aed;
+  white-space: nowrap;
+}
+
 /* Resumo da tabela */
 .tabela-resumo {
   padding: 15px;

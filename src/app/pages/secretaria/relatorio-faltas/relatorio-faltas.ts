@@ -14,9 +14,11 @@ interface AlunoFalta {
   percentualPresenca: number;  // % presença calculada
   diasRegistrados: number;     // dias letivos registrados da turma
   diasConsecutivos: number;    // dias consecutivos recentes (busca ativa)
+  dataInicioStreak: string;    // YYYY-MM-DD da 1ª falta do episódio atual
   ultimaFalta: string; // YYYY-MM-DD
   datas: string[];
   contatado: boolean;
+  novoEpisodio: boolean;       // contato existe mas foi antes do episódio atual
   statusContato?: 'conversa' | 'nao_conseguiu' | 'recado' | 'ligar_novamente';
 }
 
@@ -149,9 +151,11 @@ export class RelatorioFaltas implements OnInit {
               percentualPresenca: 100,
               diasRegistrados: 0,
               diasConsecutivos: 0,
+              dataInicioStreak: '',
               ultimaFalta: '',
               datas: [],
-              contatado: false
+              contatado: false,
+              novoEpisodio: false
             });
           }
 
@@ -181,6 +185,10 @@ export class RelatorioFaltas implements OnInit {
           // Dias consecutivos recentes (contexto para busca ativa)
           aluno.datas.sort().reverse();
           aluno.diasConsecutivos = this.calcularDiasConsecutivos(aluno.datas);
+          // Datas estão em ordem desc; [streak-1] é a data mais antiga do episódio atual
+          aluno.dataInicioStreak = aluno.diasConsecutivos > 0
+            ? aluno.datas[aluno.diasConsecutivos - 1]
+            : '';
 
           alunosProcessados.push(aluno);
         }
@@ -342,12 +350,23 @@ export class RelatorioFaltas implements OnInit {
 
   async carregarStatusesContato() {
     try {
-      // Para cada aluno, buscar status de contato e marcar como contatado se existir
       for (const aluno of this.alunosFaltosos) {
         const status = await this.firestoreService.obterStatusBuscaAtiva(this.escolaId, aluno.alunoId);
         if (status) {
-          aluno.contatado = true;
-          aluno.statusContato = status.resultado;
+          // Normalizar Timestamp do Firestore ou Date
+          const ultimoContato: Date = typeof (status.ultimoContato as any)?.toDate === 'function'
+            ? (status.ultimoContato as any).toDate()
+            : new Date(status.ultimoContato as any);
+
+          // Novo episódio: contato foi ANTES do início do streak atual
+          const novoEpisodio = !!(aluno.dataInicioStreak &&
+            ultimoContato < new Date(aluno.dataInicioStreak + 'T00:00:00'));
+
+          aluno.novoEpisodio = novoEpisodio;
+          if (!novoEpisodio) {
+            aluno.contatado = true;
+            aluno.statusContato = status.resultado;
+          }
         }
       }
       this.cdr.markForCheck();

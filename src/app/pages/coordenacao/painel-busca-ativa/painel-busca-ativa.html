@@ -148,10 +148,11 @@
 
         <!-- Status de contato -->
         <div class="status-contato">
-          <ng-container *ngIf="!a.status">
+          <ng-container *ngIf="!a.status || !episodioAtendido(a)">
             <span class="badge-sem-contato">📵 Sem contato</span>
+            <span class="badge-novo-episodio" *ngIf="a.status && !episodioAtendido(a)">🔄 Novo episódio</span>
           </ng-container>
-          <ng-container *ngIf="a.status">
+          <ng-container *ngIf="a.status && episodioAtendido(a)">
             <span class="badge-resultado"
               [class.resultado--conversa]="a.status.resultado === 'conversa'"
               [class.resultado--recado]="a.status.resultado === 'recado'"

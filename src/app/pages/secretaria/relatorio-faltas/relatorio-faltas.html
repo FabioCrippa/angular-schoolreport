@@ -232,7 +232,10 @@
                    [style.backgroundColor]="obterCorStatus(aluno.statusContato)">
                 {{ obterTextoBadge(aluno.statusContato) }}
               </div>
-              <div *ngIf="!aluno.contatado" class="badge-status-cinza">
+              <div *ngIf="aluno.novoEpisodio" class="badge-novo-episodio">
+                🔄 Novo episódio
+              </div>
+              <div *ngIf="!aluno.contatado && !aluno.novoEpisodio" class="badge-status-cinza">
                 Não contatado
               </div>
             </td>

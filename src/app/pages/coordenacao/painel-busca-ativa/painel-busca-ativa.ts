@@ -14,6 +14,7 @@ interface AlunoEmRisco {
   turma: string;
   totalFaltas: number;
   faltasConsecutivas: number;   // streak atual de faltas consecutivas
+  dataInicioStreak: string;     // YYYY-MM-DD da 1ª falta do episódio atual
   gatilho: 'urgente' | 'alto_indice' | 'ambos';
   nivel: 'atencao' | 'risco';  // baseado nos 38/50 totais
   // Status de busca ativa
@@ -161,9 +162,12 @@ export class PainelBuscaAtiva implements OnInit {
       // Calcular streak de faltas consecutivas no final do histórico
       dados.registros.sort((a, b) => a.data.localeCompare(b.data));
       let streak = 0;
+      let dataInicioStreak = '';
       for (let i = dados.registros.length - 1; i >= 0; i--) {
-        if (!dados.registros[i].presente) streak++;
-        else break;
+        if (!dados.registros[i].presente) {
+          streak++;
+          dataInicioStreak = dados.registros[i].data; // andando para trás → data mais antiga do streak
+        } else break;
       }
 
       const temConsecutivas = streak >= this.LIMITE_CONSECUTIVAS;
@@ -184,6 +188,7 @@ export class PainelBuscaAtiva implements OnInit {
         turma: dados.turma,
         totalFaltas: dados.faltas,
         faltasConsecutivas: streak,
+        dataInicioStreak,
         gatilho,
         nivel,
         status: statusMap.get(alunoId) ?? null,
@@ -209,15 +214,27 @@ export class PainelBuscaAtiva implements OnInit {
     this.aplicarFiltros();
   }
 
+  // Retorna true se o último contato registrado é POSTERIOR ao início do streak atual
+  // (ou seja, o episódio atual já foi atendido)
+  episodioAtendido(aluno: AlunoEmRisco): boolean {
+    if (!aluno.status || !aluno.dataInicioStreak) return false;
+    const ultimoContato = typeof (aluno.status.ultimoContato as any)?.toDate === 'function'
+      ? (aluno.status.ultimoContato as any).toDate()
+      : new Date(aluno.status.ultimoContato as any);
+    return ultimoContato >= new Date(aluno.dataInicioStreak + 'T00:00:00');
+  }
+
   private recalcularResumos() {
     this.totalUrgente    = this.todosAlunos.filter(a => a.gatilho === 'urgente' || a.gatilho === 'ambos').length;
     this.totalAltoIndice = this.todosAlunos.filter(a => a.gatilho === 'alto_indice' || a.gatilho === 'ambos').length;
-    this.totalSemContato = this.todosAlunos.filter(a => !a.status).length;
+    this.totalSemContato = this.todosAlunos.filter(a => !a.status || !this.episodioAtendido(a)).length;
     this.totalPendentes  = this.todosAlunos.filter(a =>
-      a.status?.resultado === 'nao_conseguiu' || a.status?.resultado === 'ligar_novamente'
+      this.episodioAtendido(a) &&
+      (a.status?.resultado === 'nao_conseguiu' || a.status?.resultado === 'ligar_novamente')
     ).length;
     this.totalContatados = this.todosAlunos.filter(a =>
-      a.status?.resultado === 'conversa' || a.status?.resultado === 'recado'
+      this.episodioAtendido(a) &&
+      (a.status?.resultado === 'conversa' || a.status?.resultado === 'recado')
     ).length;
   }
 
@@ -239,16 +256,18 @@ export class PainelBuscaAtiva implements OnInit {
 
     switch (this.filtroStatus) {
       case 'sem_contato':
-        lista = lista.filter(a => !a.status);
+        lista = lista.filter(a => !a.status || !this.episodioAtendido(a));
         break;
       case 'pendente':
         lista = lista.filter(a =>
-          a.status?.resultado === 'nao_conseguiu' || a.status?.resultado === 'ligar_novamente'
+          this.episodioAtendido(a) &&
+          (a.status?.resultado === 'nao_conseguiu' || a.status?.resultado === 'ligar_novamente')
         );
         break;
       case 'contatado':
         lista = lista.filter(a =>
-          a.status?.resultado === 'conversa' || a.status?.resultado === 'recado'
+          this.episodioAtendido(a) &&
+          (a.status?.resultado === 'conversa' || a.status?.resultado === 'recado')
         );
         break;
     }
