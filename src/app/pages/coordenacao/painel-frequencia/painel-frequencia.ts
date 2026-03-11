@@ -52,6 +52,7 @@ export class PainelFrequencia implements OnInit {
   turmasFiltradas: TurmaFrequencia[] = [];
   turmaExpandida: string | null = null;
 
+  readonly DIAS_LETIVOS = 200;
   readonly LIMITE_FALTAS = 50;   // 25% de 200 dias letivos
   readonly LIMITE_ATENCAO = 38;  // ~76% do limite
 
@@ -134,8 +135,9 @@ export class PainelFrequencia implements OnInit {
       const alunos: AlunoFrequencia[] = [];
 
       for (const [alunoId, dados] of alunosMap) {
-        // Frequência baseada nos dias letivos registrados da turma
-        const freq = ((diasRegistrados - dados.faltas) / diasRegistrados) * 100;
+        // Frequência baseada nos 200 dias letivos anuais (denominador fixo)
+        // Evita distorções quando poucos dias foram registrados
+        const freq = ((this.DIAS_LETIVOS - dados.faltas) / this.DIAS_LETIVOS) * 100;
         const nivel = dados.faltas > this.LIMITE_FALTAS
           ? 'risco'
           : dados.faltas >= this.LIMITE_ATENCAO
