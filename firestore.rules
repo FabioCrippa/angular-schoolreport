@@ -194,5 +194,17 @@ service cloud.firestore {
                       request.resource.data.escolaId &&
                       get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.role in ['secretaria', 'direcao'];
     }
+
+    // Regras para coleção 'diario' (Diário de Classe do Professor)
+    match /diario/{entradaId} {
+      // Professor pode ler e escrever apenas suas próprias entradas
+      allow read: if request.auth != null &&
+                     belongsToSchool(resource.data.escolaId);
+      allow create: if request.auth != null &&
+                       belongsToSchool(request.resource.data.escolaId) &&
+                       request.resource.data.professorId == request.auth.uid;
+      allow update, delete: if request.auth != null &&
+                               resource.data.professorId == request.auth.uid;
+    }
   }
 }

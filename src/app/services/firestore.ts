@@ -113,6 +113,21 @@ export interface Conversa {
   registradoPorNome: string;
 }
 
+export interface DiarioEntrada {
+  id?: string;
+  escolaId: string;
+  professorId: string;
+  professorNome: string;
+  turma: string;
+  disciplina: string;
+  data: string; // YYYY-MM-DD
+  numeroAula?: number;
+  conteudo: string;
+  observacao?: string;
+  recursos: string[];
+  registradoEm?: Date;
+}
+
 export interface StatusBuscaAtiva {
   id?: string;
   escolaId: string;
@@ -1793,6 +1808,58 @@ Equipe escu
       await updateDoc(docRef, { ativo: false });
     } catch (error) {
       console.error('Erro ao deletar professor:', error);
+      throw error;
+    }
+  }
+
+  // ─── Diário de Classe ───────────────────────────────────────────────
+
+  async salvarDiarioEntrada(entrada: Omit<DiarioEntrada, 'id'>): Promise<string> {
+    try {
+      const col = collection(this.firestore, 'diario');
+      const docRef = await addDoc(col, { ...entrada, registradoEm: Timestamp.now() });
+      return docRef.id;
+    } catch (error) {
+      console.error('Erro ao salvar entrada do diário:', error);
+      throw error;
+    }
+  }
+
+  async obterDiarioEntradas(escolaId: string, professorId: string): Promise<DiarioEntrada[]> {
+    try {
+      const col = collection(this.firestore, 'diario');
+      const q = query(col,
+        where('escolaId', '==', escolaId),
+        where('professorId', '==', professorId)
+      );
+      const snap = await getDocs(q);
+      return snap.docs.map(d => ({
+        id: d.id,
+        ...(d.data() as Omit<DiarioEntrada, 'id'>),
+        registradoEm: d.data()['registradoEm']?.toDate()
+      }));
+    } catch (error) {
+      console.error('Erro ao obter diário:', error);
+      return [];
+    }
+  }
+
+  async atualizarDiarioEntrada(id: string, dados: Partial<DiarioEntrada>): Promise<void> {
+    try {
+      const docRef = doc(this.firestore, 'diario', id);
+      await updateDoc(docRef, dados as any);
+    } catch (error) {
+      console.error('Erro ao atualizar diário:', error);
+      throw error;
+    }
+  }
+
+  async excluirDiarioEntrada(id: string): Promise<void> {
+    try {
+      const docRef = doc(this.firestore, 'diario', id);
+      await deleteDoc(docRef);
+    } catch (error) {
+      console.error('Erro ao excluir entrada do diário:', error);
       throw error;
     }
   }

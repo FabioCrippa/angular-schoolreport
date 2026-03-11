@@ -1,0 +1,71 @@
+<div class="lousa-wrapper"
+  [class.tema-branca]="tema === 'branca'"
+  [class.tema-verde]="tema === 'verde'"
+  [class.tema-preta]="tema === 'preta'">
+
+  <!-- ── Toolbar ── -->
+  <div class="lousa-toolbar">
+
+    <button class="tb-btn tb-btn--back" (click)="irParaDiario()" title="Voltar ao Diário">
+      ← Diário
+    </button>
+
+    <div class="tb-sep"></div>
+
+    <!-- Temas -->
+    <div class="tb-group">
+      <span class="tb-label">Fundo:</span>
+      <button class="tema-btn"
+        *ngFor="let t of TEMAS"
+        [class.tema-btn--ativo]="tema === t.valor"
+        (click)="tema = t.valor"
+        [title]="t.label">
+        {{ t.label }}
+      </button>
+    </div>
+
+    <div class="tb-sep"></div>
+
+    <!-- Tamanho da fonte -->
+    <div class="tb-group">
+      <span class="tb-label">Texto:</span>
+      <button class="tamanho-btn"
+        *ngFor="let t of TAMANHOS"
+        [class.tamanho-btn--ativo]="tamanhoFonte === t.valor"
+        (click)="tamanhoFonte = t.valor">
+        {{ t.label }}
+      </button>
+    </div>
+
+    <div class="tb-sep"></div>
+
+    <!-- Ações -->
+    <button class="tb-btn tb-btn--danger" (click)="limpar()" title="Limpar lousa">
+      🗑️ Limpar
+    </button>
+
+    <button class="tb-btn" (click)="projetarNovaJanela()" title="Abrir em nova janela para projetar">
+      ↗️ Projetar
+    </button>
+
+    <button class="tb-btn tb-btn--fullscreen" (click)="toggleTelaCheia()" title="Tela cheia">
+      {{ emTelaCheia ? '⤡ Sair' : '⛶ Tela Cheia' }}
+    </button>
+
+  </div>
+
+  <!-- ── Área de escrita ── -->
+  <textarea
+    #lousaArea
+    class="lousa-area"
+    [class.fonte-normal]="tamanhoFonte === 'normal'"
+    [class.fonte-grande]="tamanhoFonte === 'grande'"
+    [class.fonte-enorme]="tamanhoFonte === 'enorme'"
+    [(ngModel)]="texto"
+    (ngModelChange)="onTextoChange()"
+    placeholder="Comece a escrever na lousa... 🖊️"
+    spellcheck="false"
+    autocomplete="off"
+  ></textarea>
+
+</div>

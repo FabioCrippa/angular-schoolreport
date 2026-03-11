@@ -32,6 +32,12 @@
         <a class="nav-item" routerLink="/dashboard" routerLinkActive="nav-item--active" [routerLinkActiveOptions]="{exact: true}">
           <span class="nav-icon">🏠</span> Painel
         </a>
+        <a class="nav-item" routerLink="/professor/diario">
+          <span class="nav-icon">📖</span> Diário de Classe
+        </a>
+        <a class="nav-item" routerLink="/professor/lousa">
+          <span class="nav-icon">🖊️</span> Lousa Digital
+        </a>
         <a class="nav-item" routerLink="/registro">
           <span class="nav-icon">📝</span> Nova Ocorrência
         </a>
@@ -112,6 +118,20 @@
     
     <!-- Cards para Professor -->
     <div class="action-cards" *ngIf="!loading && userRole === 'professor'">
+      <div class="card" (click)="navigateTo('/professor/diario')">
+        <div class="card-icon">📖</div>
+        <h3>Diário de Classe</h3>
+        <p>Registre o conteúdo das suas aulas em uma timeline</p>
+        <div class="card-arrow">→</div>
+      </div>
+
+      <div class="card" (click)="navigateTo('/professor/lousa')">
+        <div class="card-icon">🖊️</div>
+        <h3>Lousa Digital</h3>
+        <p>Escreva e projete anotações em tela cheia</p>
+        <div class="card-arrow">→</div>
+      </div>
+
       <div class="card" (click)="goToRegistro()">
         <div class="card-icon">📝</div>
         <h3>Registrar Ocorrência</h3>

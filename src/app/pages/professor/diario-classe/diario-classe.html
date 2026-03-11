@@ -1,0 +1,173 @@
+<div class="diario-container">
+
+  <!-- Cabeçalho -->
+  <div class="page-header">
+    <button class="btn-back" (click)="voltar()">← Voltar</button>
+    <div class="header-content">
+      <h1>📖 Diário de Classe</h1>
+      <p class="subtitle">Registro das aulas ministradas</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn-lousa" (click)="abrirLousa()">🖊️ Lousa Digital</button>
+      <button class="btn-nova" (click)="abrirModalNovo()">+ Nova Aula</button>
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <div class="filtros-row" *ngIf="todasEntradas.length > 0">
+    <div class="filtro-item">
+      <label>Turma:</label>
+      <select [(ngModel)]="filtroTurma" (change)="agrupar()">
+        <option value="">Todas</option>
+        <option *ngFor="let t of turmasUsadas" [value]="t">{{ t }}</option>
+      </select>
+    </div>
+    <div class="filtro-item">
+      <label>Mês:</label>
+      <select [(ngModel)]="filtroMes" (change)="agrupar()">
+        <option value="">Todos</option>
+        <option *ngFor="let m of getMesesLista()" [value]="m">{{ formatarMes(m) }}</option>
+      </select>
+    </div>
+    <span class="total-registros">{{ todasEntradas.length }} registro(s) no total</span>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-state" *ngIf="loading">
+    <p>Carregando diário...</p>
+  </div>
+
+  <!-- Empty state -->
+  <div class="empty-state" *ngIf="!loading && todasEntradas.length === 0">
+    <div class="empty-icon">📖</div>
+    <p>Nenhum registro ainda.</p>
+    <p class="empty-hint">Clique em <strong>+ Nova Aula</strong> para começar a registrar suas aulas.</p>
+  </div>
+
+  <!-- Empty filtered -->
+  <div class="empty-state empty-state--small" *ngIf="!loading && todasEntradas.length > 0 && gruposMes.length === 0">
+    <p>Nenhum registro com os filtros selecionados.</p>
+  </div>
+
+  <!-- ── Timeline ── -->
+  <div class="timeline" *ngIf="!loading && gruposMes.length > 0">
+    <div class="mes-grupo" *ngFor="let grupo of gruposMes">
+
+      <div class="mes-header">
+        <h2 class="mes-label">{{ grupo.label }}</h2>
+        <span class="mes-count">{{ grupo.entradas.length }} aula(s)</span>
+      </div>
+
+      <div class="entradas-lista">
+        <div class="entrada-card" *ngFor="let e of grupo.entradas">
+
+          <!-- Data coluna esquerda -->
+          <div class="entrada-data-col">
+            <span class="entrada-dia">{{ formatarData(e.data).split('/')[0] }}</span>
+            <span class="entrada-diasem">{{ formatarDiaSemana(e.data) }}</span>
+          </div>
+
+          <!-- Conector da timeline -->
+          <div class="timeline-dot"></div>
+
+          <!-- Corpo do card -->
+          <div class="entrada-body">
+            <div class="entrada-meta">
+              <span class="badge-turma">{{ e.turma }}</span>
+              <span class="badge-disciplina">{{ e.disciplina }}</span>
+              <span class="badge-aula" *ngIf="e.numeroAula">{{ e.numeroAula }}ª aula</span>
+            </div>
+            <p class="entrada-conteudo">{{ e.conteudo }}</p>
+            <p class="entrada-obs" *ngIf="e.observacao">📌 {{ e.observacao }}</p>
+            <div class="entrada-recursos" *ngIf="e.recursos?.length">
+              <span class="tag-recurso" *ngFor="let r of e.recursos">
+                {{ getRecursoIcone(r) }} {{ getRecursoLabel(r) }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Ações -->
+          <div class="entrada-actions">
+            <button class="btn-editar" (click)="abrirModalEditar(e)" title="Editar">✏️</button>
+            <button class="btn-excluir" (click)="excluir(e)" title="Excluir">🗑️</button>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- ── Modal Adicionar / Editar ── -->
+<div class="modal-overlay" *ngIf="modalAberto" (click)="fecharModal()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+      <h2>{{ editandoId ? '✏️ Editar Registro' : '+ Nova Aula' }}</h2>
+      <button class="modal-close" (click)="fecharModal()">✕</button>
+    </div>
+
+    <div class="modal-body">
+
+      <div class="form-row-2">
+        <div class="form-field">
+          <label>Data *</label>
+          <input type="date" [(ngModel)]="form.data" />
+        </div>
+        <div class="form-field">
+          <label>Nº da Aula</label>
+          <input type="number" [(ngModel)]="form.numeroAula" min="1" max="9" placeholder="Ex: 2" />
+        </div>
+      </div>
+
+      <div class="form-row-2">
+        <div class="form-field">
+          <label>Turma *</label>
+          <input type="text" [(ngModel)]="form.turma" placeholder="Ex: 3ºA" list="turmas-list" />
+          <datalist id="turmas-list">
+            <option *ngFor="let t of turmasUsadas" [value]="t"></option>
+          </datalist>
+        </div>
+        <div class="form-field">
+          <label>Disciplina *</label>
+          <input type="text" [(ngModel)]="form.disciplina" placeholder="Ex: Matemática" />
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label>Conteúdo ministrado *</label>
+        <textarea [(ngModel)]="form.conteudo" rows="3"
+          placeholder="Ex: Funções quadráticas — exercícios 1 a 10 do livro didático"></textarea>
+      </div>
+
+      <div class="form-field">
+        <label>Observação <span class="label-opt">(opcional)</span></label>
+        <textarea [(ngModel)]="form.observacao" rows="2"
+          placeholder="Ex: Turma participativa, prova na próxima aula"></textarea>
+      </div>
+
+      <div class="form-field">
+        <label>Recursos utilizados</label>
+        <div class="recursos-grid">
+          <button class="recurso-btn" *ngFor="let r of RECURSOS_OPCOES"
+            [class.recurso-btn--ativo]="recursoSelecionado(r.valor)"
+            (click)="toggleRecurso(r.valor)" type="button">
+            {{ r.icone }} {{ r.label }}
+          </button>
+        </div>
+      </div>
+
+      <div class="form-erro" *ngIf="erroForm">{{ erroForm }}</div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-cancelar" (click)="fecharModal()">Cancelar</button>
+      <button class="btn-salvar" (click)="salvar()" [disabled]="salvando">
+        {{ salvando ? 'Salvando...' : '💾 Salvar' }}
+      </button>
+    </div>
+
+  </div>
+</div>

@@ -1,0 +1,162 @@
+/* ── Wrapper — ocupa o viewport inteiro ── */
+:host {
+  display: block;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.lousa-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  transition: background 0.25s;
+
+  /* Temas */
+  &.tema-branca {
+    background: #f8fafc;
+    --lousa-text: #1e293b;
+    --lousa-placeholder: #94a3b8;
+    --toolbar-bg: #ffffff;
+    --toolbar-border: #e2e8f0;
+  }
+  &.tema-verde {
+    background: #1a4731;
+    --lousa-text: #e2ffe8;
+    --lousa-placeholder: #6ab07a;
+    --toolbar-bg: #143d27;
+    --toolbar-border: #2d6b47;
+  }
+  &.tema-preta {
+    background: #0f172a;
+    --lousa-text: #e2e8f0;
+    --lousa-placeholder: #475569;
+    --toolbar-bg: #0a1020;
+    --toolbar-border: #1e293b;
+  }
+}
+
+/* ── Toolbar ── */
+.lousa-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--toolbar-bg);
+  border-bottom: 1px solid var(--toolbar-border);
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+.tb-sep {
+  width: 1px;
+  height: 24px;
+  background: var(--toolbar-border);
+  margin: 0 4px;
+}
+
+.tb-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.tb-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--lousa-placeholder);
+  white-space: nowrap;
+}
+
+.tb-btn {
+  padding: 6px 13px;
+  border-radius: 7px;
+  border: 1px solid var(--toolbar-border);
+  background: transparent;
+  color: var(--lousa-text);
+  font-size: 0.82rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.12s;
+  &:hover { filter: brightness(1.15); background: var(--toolbar-border); }
+
+  &.tb-btn--back { color: var(--lousa-placeholder); }
+  &.tb-btn--danger { color: #ef4444; border-color: #ef4444; }
+  &.tb-btn--fullscreen { margin-left: auto; }
+}
+
+.tema-btn {
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1.5px solid var(--toolbar-border);
+  background: transparent;
+  color: var(--lousa-text);
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: all 0.12s;
+  &:hover { background: var(--toolbar-border); }
+  &.tema-btn--ativo {
+    border-color: #3b82f6;
+    background: #3b82f6;
+    color: #fff;
+  }
+}
+
+.tamanho-btn {
+  width: 36px;
+  height: 30px;
+  border-radius: 6px;
+  border: 1.5px solid var(--toolbar-border);
+  background: transparent;
+  color: var(--lousa-text);
+  cursor: pointer;
+  font-weight: 700;
+  transition: all 0.12s;
+  &:hover { background: var(--toolbar-border); }
+  &.tamanho-btn--ativo {
+    border-color: #3b82f6;
+    background: #3b82f6;
+    color: #fff;
+  }
+  &:nth-child(1) { font-size: 0.75rem; }
+  &:nth-child(2) { font-size: 0.9rem; }
+  &:nth-child(3) { font-size: 1.05rem; }
+}
+
+/* ── Área de escrita ── */
+.lousa-area {
+  flex: 1;
+  width: 100%;
+  padding: 32px 48px;
+  border: none;
+  outline: none;
+  resize: none;
+  background: transparent;
+  color: var(--lousa-text);
+  font-family: 'Segoe UI', sans-serif;
+  line-height: 1.6;
+  box-sizing: border-box;
+
+  &.fonte-normal { font-size: 1.25rem; }
+  &.fonte-grande { font-size: 2rem; }
+  &.fonte-enorme { font-size: 3rem; }
+
+  &::placeholder {
+    color: var(--lousa-placeholder);
+    font-style: italic;
+  }
+
+  /* Scrollbar discreta no tema escuro */
+  scrollbar-width: thin;
+  scrollbar-color: var(--toolbar-border) transparent;
+}
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+  .lousa-toolbar { padding: 6px 10px; gap: 6px; }
+  .tb-btn { padding: 5px 9px; font-size: 0.78rem; }
+  .tb-sep { display: none; }
+  .lousa-area {
+    padding: 20px 20px;
+    &.fonte-enorme { font-size: 2rem; }
+  }
+}

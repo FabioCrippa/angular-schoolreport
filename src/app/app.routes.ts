@@ -140,6 +140,18 @@ export const routes: Routes = [
         data: { roles: ['coordenacao', 'direcao'] }
     },
     {
+        path: 'professor/diario',
+        loadComponent: () => import('./pages/professor/diario-classe/diario-classe').then(m => m.DiarioClasse),
+        canActivate: [authGuard, roleGuard],
+        data: { roles: ['professor', 'coordenacao', 'direcao'] }
+    },
+    {
+        path: 'professor/lousa',
+        loadComponent: () => import('./pages/professor/lousa/lousa').then(m => m.Lousa),
+        canActivate: [authGuard, roleGuard],
+        data: { roles: ['professor', 'coordenacao', 'direcao'] }
+    },
+    {
         path: '**',
         redirectTo: 'login'
     }
