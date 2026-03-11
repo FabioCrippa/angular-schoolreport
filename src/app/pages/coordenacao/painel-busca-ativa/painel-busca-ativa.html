@@ -171,6 +171,7 @@
             {{ a.mostrarForm ? '✕' : '📞 Registrar' }}
           </button>
           <button class="btn-ficha" (click)="verFicha(a)">🧑‍🎓 Ficha</button>
+          <button class="btn-oficio" (click)="abrirModalOficio(a)">📄 Ofício</button>
         </div>
       </div>
 
@@ -209,4 +210,121 @@
     </div>
   </div>
 
+</div>
+
+<!-- ── Modal Ofício ── -->
+<div class="modal-overlay" *ngIf="oficio.aberto" (click)="fecharModalOficio()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+      <h2>📄 Gerar Ofício de Busca Ativa</h2>
+      <button class="modal-close" (click)="fecharModalOficio()">✕</button>
+    </div>
+
+    <div class="modal-loading" *ngIf="oficio.carregando">Carregando dados...</div>
+
+    <div class="modal-body" *ngIf="!oficio.carregando && oficio.aluno">
+
+      <!-- Dados pré-preenchidos -->
+      <div class="modal-section">
+        <h3 class="modal-section-title">Dados do Aluno (automático)</h3>
+        <div class="modal-prefilled-grid">
+          <div class="prefilled-item">
+            <span class="prefilled-label">Nome</span>
+            <span class="prefilled-value">{{ oficio.aluno.alunoNome }}</span>
+          </div>
+          <div class="prefilled-item">
+            <span class="prefilled-label">Turma</span>
+            <span class="prefilled-value">{{ oficio.aluno.turma }}</span>
+          </div>
+          <div class="prefilled-item">
+            <span class="prefilled-label">Total de faltas</span>
+            <span class="prefilled-value">{{ oficio.aluno.totalFaltas }} dias</span>
+          </div>
+          <div class="prefilled-item">
+            <span class="prefilled-label">Faltas consecutivas</span>
+            <span class="prefilled-value">{{ oficio.aluno.faltasConsecutivas }} dias</span>
+          </div>
+          <div class="prefilled-item">
+            <span class="prefilled-label">Histórico de contatos</span>
+            <span class="prefilled-value">{{ oficio.conversas.length }} registro(s)</span>
+          </div>
+          <div class="prefilled-item">
+            <span class="prefilled-label">Escola</span>
+            <span class="prefilled-value">{{ oficio.nomeEscola }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dados do Ofício -->
+      <div class="modal-section">
+        <h3 class="modal-section-title">Dados do Ofício</h3>
+        <div class="modal-form-grid">
+          <div class="modal-field">
+            <label>Nº do Ofício</label>
+            <input type="text" [(ngModel)]="oficio.numeroOficio" placeholder="Ex: 001" />
+          </div>
+          <div class="modal-field">
+            <label>Ano</label>
+            <input type="number" [(ngModel)]="oficio.anoOficio" />
+          </div>
+          <div class="modal-field modal-field--full">
+            <label>Dirigente Regional</label>
+            <input type="text" [(ngModel)]="oficio.dirigente" placeholder="Nome do(a) Dirigente Regional" />
+          </div>
+          <div class="modal-field modal-field--full">
+            <label>Diretoria de Ensino</label>
+            <input type="text" [(ngModel)]="oficio.diretoria" placeholder="Ex: Diretoria de Ensino de São Paulo Leste" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Dados do Responsável -->
+      <div class="modal-section">
+        <h3 class="modal-section-title">Responsável e Contato</h3>
+        <div class="modal-form-grid">
+          <div class="modal-field modal-field--full">
+            <label>Nome do(s) Responsável(eis)</label>
+            <input type="text" [(ngModel)]="oficio.responsavel" placeholder="Nome completo" />
+          </div>
+          <div class="modal-field">
+            <label>Data de Nascimento do Aluno</label>
+            <input type="text" [(ngModel)]="oficio.dataNascimento" placeholder="DD/MM/AAAA" />
+          </div>
+          <div class="modal-field">
+            <label>Telefone(s)</label>
+            <input type="text" [(ngModel)]="oficio.telefone" placeholder="(11) 99999-9999" />
+          </div>
+          <div class="modal-field modal-field--full">
+            <label>Endereço</label>
+            <input type="text" [(ngModel)]="oficio.endereco" placeholder="Rua, número, bairro" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Assinatura -->
+      <div class="modal-section">
+        <h3 class="modal-section-title">Assinatura</h3>
+        <div class="modal-form-grid">
+          <div class="modal-field modal-field--full">
+            <label>Nome do(a) Diretor(a)</label>
+            <input type="text" [(ngModel)]="oficio.nomeDiretor" placeholder="Nome completo" />
+          </div>
+          <div class="modal-field">
+            <label>Cidade</label>
+            <input type="text" [(ngModel)]="oficio.cidade" placeholder="Ex: São Paulo" />
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="modal-footer" *ngIf="!oficio.carregando">
+      <button class="btn-cancelar-modal" (click)="fecharModalOficio()">Cancelar</button>
+      <button class="btn-gerar-pdf" (click)="gerarOficioPDF()" [disabled]="oficio.gerandoPDF">
+        {{ oficio.gerandoPDF ? 'Gerando...' : '📄 Baixar PDF' }}
+      </button>
+    </div>
+
+  </div>
 </div>

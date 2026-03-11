@@ -2,11 +2,31 @@ import { Component, inject, OnInit, ChangeDetectionStrategy, ChangeDetectorRef }
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { FirestoreService, Falta, StatusBuscaAtiva, Conversa, Usuario } from '../../../services/firestore';
+import { FirestoreService, Falta, StatusBuscaAtiva, Conversa, Usuario, Escola } from '../../../services/firestore';
 import { AuthService } from '../../../services/auth';
 
 type FiltroGatilho = 'todos' | 'urgente' | 'alto_indice';
 type FiltroStatus = 'todos' | 'sem_contato' | 'pendente' | 'contatado';
+
+interface OficioModalState {
+  aberto: boolean;
+  carregando: boolean;
+  gerandoPDF: boolean;
+  aluno: AlunoEmRisco | null;
+  conversas: Conversa[];
+  nomeEscola: string;
+  // Campos editáveis
+  numeroOficio: string;
+  anoOficio: number;
+  dirigente: string;
+  diretoria: string;
+  responsavel: string;
+  dataNascimento: string;
+  endereco: string;
+  telefone: string;
+  nomeDiretor: string;
+  cidade: string;
+}
 
 interface AlunoEmRisco {
   alunoId: string;
@@ -75,6 +95,26 @@ export class PainelBuscaAtiva implements OnInit {
 
   // Usuário logado
   private usuarioLogado: Usuario | null = null;
+
+  // Modal do Ofício
+  oficio: OficioModalState = {
+    aberto: false,
+    carregando: false,
+    gerandoPDF: false,
+    aluno: null,
+    conversas: [],
+    nomeEscola: '',
+    numeroOficio: '',
+    anoOficio: new Date().getFullYear(),
+    dirigente: '',
+    diretoria: '',
+    responsavel: '',
+    dataNascimento: '',
+    endereco: '',
+    telefone: '',
+    nomeDiretor: '',
+    cidade: ''
+  };
 
   readonly opcoesResultado: { valor: Conversa['resultadoContato']; label: string; icone: string }[] = [
     { valor: 'conversa',        label: 'Conversa realizada',    icone: '✅' },
@@ -388,5 +428,178 @@ export class PainelBuscaAtiva implements OnInit {
 
   voltar() {
     this.router.navigate(['/dashboard']);
+  }
+
+  async abrirModalOficio(aluno: AlunoEmRisco) {
+    this.oficio = {
+      ...this.oficio,
+      aberto: true,
+      carregando: true,
+      aluno,
+      conversas: [],
+      nomeEscola: '',
+      gerandoPDF: false,
+      numeroOficio: '',
+      anoOficio: new Date().getFullYear()
+    };
+    this.cdr.markForCheck();
+
+    try {
+      const [conversas, escola] = await Promise.all([
+        this.firestoreService.obterConversas(this.escolaId, aluno.alunoId),
+        this.firestoreService.buscarEscola(this.escolaId)
+      ]);
+      conversas.sort((a, b) => {
+        const da = a.registradoEm ? new Date(a.registradoEm).getTime() : 0;
+        const db = b.registradoEm ? new Date(b.registradoEm).getTime() : 0;
+        return da - db;
+      });
+      this.oficio.conversas = conversas;
+      this.oficio.nomeEscola = escola?.nome ?? '';
+    } catch (err) {
+      console.error('Erro ao carregar dados para ofício:', err);
+    } finally {
+      this.oficio.carregando = false;
+      this.cdr.markForCheck();
+    }
+  }
+
+  fecharModalOficio() {
+    this.oficio.aberto = false;
+    this.cdr.markForCheck();
+  }
+
+  async gerarOficioPDF() {
+    if (!this.oficio.aluno) return;
+    this.oficio.gerandoPDF = true;
+    this.cdr.markForCheck();
+
+    try {
+      const pdfMake = await import('pdfmake/build/pdfmake');
+      const pdfFonts = await import('pdfmake/build/vfs_fonts');
+      (pdfMake as any).default.vfs = (pdfFonts as any).default;
+
+      const aluno = this.oficio.aluno;
+      const hoje = new Date();
+      const dataFormatada = hoje.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+
+      const resultadoLabel: Record<string, string> = {
+        conversa: 'Conversa realizada',
+        recado: 'Deixou recado',
+        ligar_novamente: 'Ligar novamente',
+        nao_conseguiu: 'Não conseguiu contato'
+      };
+
+      const historicoRows: any[][] = this.oficio.conversas.map(c => {
+        const dt = c.registradoEm ? new Date(c.registradoEm).toLocaleDateString('pt-BR') : '—';
+        return [
+          { text: dt, fontSize: 9 },
+          { text: c.responsavel || '—', fontSize: 9 },
+          { text: resultadoLabel[c.resultadoContato] ?? c.resultadoContato, fontSize: 9 },
+          { text: c.notas || '—', fontSize: 9 }
+        ];
+      });
+
+      const docDefinition: any = {
+        pageSize: 'A4',
+        pageMargins: [50, 50, 50, 50],
+        styles: {
+          titulo: { fontSize: 13, bold: true, alignment: 'center' },
+          subtitulo: { fontSize: 10, alignment: 'center', color: '#4B5563' },
+          secao: { fontSize: 9.5, bold: true, margin: [0, 14, 0, 4], color: '#374151', decoration: 'underline' },
+          corpo: { fontSize: 9.5, lineHeight: 1.4 }
+        },
+        content: [
+          { text: this.oficio.nomeEscola || 'ESCOLA', style: 'titulo' },
+          { text: 'Ofício de Busca Ativa Escolar', style: 'subtitulo', margin: [0, 2, 0, 0] },
+          { canvas: [{ type: 'line', x1: 0, y1: 4, x2: 495, y2: 4, lineWidth: 0.8, lineColor: '#CBD5E1' }], margin: [0, 6, 0, 14] },
+          {
+            columns: [
+              { text: `OFÍCIO Nº ${this.oficio.numeroOficio || '____'}/${this.oficio.anoOficio}`, fontSize: 10, bold: true },
+              { text: `${this.oficio.cidade || '____________'}, ${dataFormatada}`, fontSize: 9, alignment: 'right', color: '#4B5563' }
+            ],
+            margin: [0, 0, 0, 16]
+          },
+          { text: 'À/Ao:', style: 'corpo', bold: true },
+          { text: this.oficio.dirigente || 'Dirigente Regional', style: 'corpo', margin: [12, 2, 0, 2] },
+          { text: `Diretoria de Ensino: ${this.oficio.diretoria || '____________________'}`, style: 'corpo', margin: [12, 0, 0, 16] },
+          {
+            text: [
+              { text: this.oficio.nomeEscola || 'Esta Unidade Escolar', bold: true },
+              { text: ', por meio deste ofício, comunica a situação de frequência escolar do(a) aluno(a) abaixo identificado(a), em atendimento às normas de Busca Ativa Escolar.' }
+            ],
+            style: 'corpo',
+            margin: [0, 0, 0, 4]
+          },
+          { text: 'I – IDENTIFICAÇÃO DO(A) ALUNO(A)', style: 'secao' },
+          {
+            table: {
+              widths: ['*', '*'],
+              body: [
+                [
+                  { stack: [{ text: 'Aluno(a)', fontSize: 7.5, color: '#64748B' }, { text: aluno.alunoNome, fontSize: 9.5 }], border: [false, false, false, true], borderColor: [null, null, null, '#CBD5E1'], margin: [2, 0, 2, 4] },
+                  { stack: [{ text: 'Turma / Série', fontSize: 7.5, color: '#64748B' }, { text: aluno.turma, fontSize: 9.5 }], border: [false, false, false, true], borderColor: [null, null, null, '#CBD5E1'], margin: [2, 0, 2, 4] }
+                ],
+                [
+                  { stack: [{ text: 'Data de Nascimento', fontSize: 7.5, color: '#64748B' }, { text: this.oficio.dataNascimento || '—', fontSize: 9.5 }], border: [false, false, false, true], borderColor: [null, null, null, '#CBD5E1'], margin: [2, 0, 2, 4] },
+                  { stack: [{ text: 'Responsável(eis)', fontSize: 7.5, color: '#64748B' }, { text: this.oficio.responsavel || '—', fontSize: 9.5 }], border: [false, false, false, true], borderColor: [null, null, null, '#CBD5E1'], margin: [2, 0, 2, 4] }
+                ],
+                [
+                  { stack: [{ text: 'Endereço', fontSize: 7.5, color: '#64748B' }, { text: this.oficio.endereco || '—', fontSize: 9.5 }], border: [false, false, false, true], borderColor: [null, null, null, '#CBD5E1'], margin: [2, 0, 2, 4] },
+                  { stack: [{ text: 'Telefone(s)', fontSize: 7.5, color: '#64748B' }, { text: this.oficio.telefone || '—', fontSize: 9.5 }], border: [false, false, false, true], borderColor: [null, null, null, '#CBD5E1'], margin: [2, 0, 2, 4] }
+                ]
+              ]
+            },
+            layout: 'noBorders',
+            margin: [0, 0, 0, 4]
+          },
+          { text: 'II – SITUAÇÃO DE FREQUÊNCIA', style: 'secao' },
+          {
+            ul: [
+              { text: [`Total de faltas no ano letivo de ${this.oficio.anoOficio}: `, { text: `${aluno.totalFaltas} dias`, bold: true }], style: 'corpo' },
+              { text: ['Faltas consecutivas (episódio atual): ', { text: `${aluno.faltasConsecutivas} dias`, bold: true }], style: 'corpo' },
+              { text: ['Percentual de absenteísmo: ', { text: `${((aluno.totalFaltas / 200) * 100).toFixed(1)}%`, bold: true }], style: 'corpo' }
+            ],
+            margin: [0, 0, 0, 4]
+          },
+          { text: 'III – HISTÓRICO DE AÇÕES DE BUSCA ATIVA', style: 'secao' },
+          ...(historicoRows.length > 0
+            ? [{
+                table: {
+                  headerRows: 1,
+                  widths: [55, 100, 120, '*'],
+                  body: [
+                    [
+                      { text: 'Data', bold: true, fillColor: '#F1F5F9', fontSize: 9 },
+                      { text: 'Contato com', bold: true, fillColor: '#F1F5F9', fontSize: 9 },
+                      { text: 'Resultado', bold: true, fillColor: '#F1F5F9', fontSize: 9 },
+                      { text: 'Observações', bold: true, fillColor: '#F1F5F9', fontSize: 9 }
+                    ],
+                    ...historicoRows
+                  ]
+                },
+                margin: [0, 0, 0, 4]
+              }]
+            : [{ text: 'Nenhum registro de contato anterior encontrado.', style: 'corpo', italics: true, color: '#6B7280', margin: [0, 0, 0, 4] }]
+          ),
+          {
+            text: 'Diante do exposto, solicitamos as devidas providências para garantir o retorno do(a) aluno(a) à escola e assegurar seu direito à educação.',
+            style: 'corpo',
+            margin: [0, 16, 0, 50]
+          },
+          { canvas: [{ type: 'line', x1: 140, y1: 0, x2: 355, y2: 0, lineWidth: 0.8, lineColor: '#374151' }] },
+          { text: this.oficio.nomeDiretor || 'Nome do(a) Diretor(a)', alignment: 'center', bold: true, fontSize: 10, margin: [0, 4, 0, 0] },
+          { text: 'Diretor(a) Escolar', alignment: 'center', fontSize: 9, color: '#6B7280' }
+        ]
+      };
+
+      const nomeArquivo = `Oficio-BuscaAtiva-${aluno.alunoNome.replace(/\s+/g, '-')}-${this.oficio.anoOficio}.pdf`;
+      (pdfMake as any).default.createPdf(docDefinition).download(nomeArquivo);
+    } catch (err) {
+      console.error('Erro ao gerar PDF do ofício:', err);
+    } finally {
+      this.oficio.gerandoPDF = false;
+      this.cdr.markForCheck();
+    }
   }
 }
