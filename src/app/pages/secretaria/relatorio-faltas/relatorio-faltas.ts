@@ -79,8 +79,11 @@ export class RelatorioFaltas implements OnInit {
   
   // Filtros
   filtroTurma = '';
-  filtroStatus: 'todos' | 'criticos' | 'atencao' | 'normais' = 'todos';
+  filtroStatus: 'todos' | 'criticos' | 'atencao' | 'normais' | 'busca_ativa' = 'todos';
   filtroNome = '';
+
+  // Busca ativa
+  totalBuscaAtiva = 0;
   
   // Dados filtered
   listaFiltrada: AlunoFalta[] = [];
@@ -247,6 +250,7 @@ export class RelatorioFaltas implements OnInit {
       atencao: this.alunosFaltosos.filter(a => a.totalFaltas >= this.LIMITE_ATENCAO && a.totalFaltas <= this.LIMITE_FALTAS),
       normais: this.alunosFaltosos.filter(a => a.totalFaltas > 0 && a.totalFaltas < this.LIMITE_ATENCAO)
     };
+    this.totalBuscaAtiva = this.alunosFaltosos.filter(a => a.diasConsecutivos >= 3).length;
   }
   
   aplicarFiltros() {
@@ -262,6 +266,8 @@ export class RelatorioFaltas implements OnInit {
       resultado = resultado.filter(a => a.totalFaltas >= this.LIMITE_ATENCAO && a.totalFaltas <= this.LIMITE_FALTAS);
     } else if (this.filtroStatus === 'normais') {
       resultado = resultado.filter(a => a.totalFaltas > 0 && a.totalFaltas < this.LIMITE_ATENCAO);
+    } else if (this.filtroStatus === 'busca_ativa') {
+      resultado = resultado.filter(a => a.diasConsecutivos >= 3);
     }
 
     if (this.filtroNome) {
@@ -270,6 +276,11 @@ export class RelatorioFaltas implements OnInit {
     }
 
     this.listaFiltrada = resultado;
+  }
+
+  ativarFiltroBuscaAtiva() {
+    this.filtroStatus = 'busca_ativa';
+    this.aoMudarFiltro();
   }
   
   aoMudarFiltro() {
