@@ -17,10 +17,10 @@
       ← Diário
     </button>
 
-    <div class="tb-sep"></div>
+    <div class="tb-sep tb-oculto-mobile"></div>
 
     <!-- Temas -->
-    <div class="tb-group">
+    <div class="tb-group tb-oculto-mobile">
       <span class="tb-label">Fundo:</span>
       <button class="tema-btn"
         *ngFor="let t of TEMAS"
@@ -31,10 +31,10 @@
       </button>
     </div>
 
-    <div class="tb-sep"></div>
+    <div class="tb-sep tb-oculto-mobile"></div>
 
     <!-- Tamanho da fonte -->
-    <div class="tb-group">
+    <div class="tb-group tb-oculto-mobile">
       <span class="tb-label">Texto:</span>
       <button class="tamanho-btn"
         *ngFor="let t of TAMANHOS"
@@ -62,26 +62,26 @@
       </button>
     </div>
 
-    <div class="tb-sep"></div>
+    <div class="tb-sep tb-oculto-mobile"></div>
 
     <!-- Ações -->
-    <button class="tb-btn tb-btn--danger" (click)="limpar()" title="Limpar lousa">
+    <button class="tb-btn tb-btn--danger tb-oculto-mobile" (click)="limpar()" title="Limpar lousa">
       🗑️ Limpar
     </button>
 
-    <div class="tb-sep"></div>
+    <div class="tb-sep tb-oculto-mobile"></div>
 
     <!-- Arquivo de fundo -->
-    <button class="tb-btn" (click)="onAbrirArquivo()" *ngIf="!bgTipo"
+    <button class="tb-btn tb-oculto-mobile" (click)="onAbrirArquivo()" *ngIf="!bgTipo"
       title="Carregar imagem ou PDF como fundo para anotar">
       📂 Arquivo
     </button>
     <ng-container *ngIf="bgTipo">
-      <span class="tb-fundo-badge">{{ bgTipo === 'imagem' ? '🖼️' : '📄' }} Fundo ativo</span>
-      <button class="tb-btn tb-btn--danger" (click)="removerFundo()" title="Remover arquivo de fundo">✕ Fundo</button>
+      <span class="tb-fundo-badge tb-oculto-mobile">{{ bgTipo === 'imagem' ? '🖼️' : '📄' }} Fundo ativo</span>
+      <button class="tb-btn tb-btn--danger tb-oculto-mobile" (click)="removerFundo()" title="Remover arquivo de fundo">✕ Fundo</button>
     </ng-container>
 
-    <button class="tb-btn" (click)="projetarNovaJanela()" title="Abrir em nova janela para projetar">
+    <button class="tb-btn tb-oculto-mobile" (click)="projetarNovaJanela()" title="Abrir em nova janela para projetar">
       ↗️ Projetar
     </button>
 
