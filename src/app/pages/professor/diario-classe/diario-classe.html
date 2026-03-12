@@ -40,6 +40,8 @@
           (click)="paginaAtiva = 'registros'">📝 Registros</button>
         <button class="pagina-tab" [class.pagina-tab--ativa]="paginaAtiva === 'horario'"
           (click)="abrirHorario()">📅 Meu Horário</button>
+        <button class="pagina-tab" [class.pagina-tab--ativa]="paginaAtiva === 'calendario'"
+          (click)="abrirCalendario()">📆 Calendário</button>
       </div>
 
       <!-- ════════════════════════════════════
@@ -240,6 +242,55 @@
         </div> <!-- /horarios-grid -->
 
       </div> <!-- /paginaAtiva === 'horario' -->
+
+      <!-- ════════════════════════════════════
+           PÁGINA: CALENDÁRIO
+           ════════════════════════════════════ -->
+      <div *ngIf="paginaAtiva === 'calendario'" class="calendario-section">
+
+        <div class="cal-ano-header">
+          <h2 class="cal-ano-titulo">📆 Calendário {{ anoAtual }}</h2>
+          <div class="cal-legenda">
+            <span class="cal-leg-item"><span class="cal-leg-dot cal-leg-dot--feriado"></span> Feriado nacional</span>
+            <span class="cal-leg-item"><span class="cal-leg-dot cal-leg-dot--hoje"></span> Hoje</span>
+            <span class="cal-leg-item"><span class="cal-leg-dot cal-leg-dot--dom"></span> Domingo</span>
+          </div>
+        </div>
+
+        <div class="cal-grid">
+          <div class="cal-mes" *ngFor="let mes of calendarData; let mi = index">
+
+            <div class="cal-mes-header">{{ mes.nome }}</div>
+
+            <div class="cal-dias-semana">
+              <span>D</span><span>S</span><span>T</span><span>Q</span><span>Q</span><span>S</span><span>S</span>
+            </div>
+
+            <div class="cal-corpo">
+              <div class="cal-semana" *ngFor="let semana of mes.semanas">
+                <div *ngFor="let dia of semana"
+                  class="cal-dia"
+                  [class.cal-dia--vazio]="!dia.dia"
+                  [class.cal-dia--dom]="dia.isDom"
+                  [class.cal-dia--sab]="dia.isSab"
+                  [class.cal-dia--feriado]="dia.data ? !!feriados[dia.data] : false"
+                  [class.cal-dia--hoje]="dia.data === hoje"
+                  [attr.title]="dia.data && feriados[dia.data] ? feriados[dia.data] : null"
+                ><span class="cal-dia-num">{{ dia.dia }}</span></div>
+              </div>
+            </div>
+
+            <div class="cal-mes-feriados" *ngIf="getFeriadosMes(mi + 1).length">
+              <div class="cal-feriado-item" *ngFor="let f of getFeriadosMes(mi + 1)">
+                <span class="cal-feriado-dia">{{ f.dia }}</span>
+                <span class="cal-feriado-nome">{{ f.nome }}</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div> <!-- /paginaAtiva === 'calendario' -->
 
     </div>
   </div>

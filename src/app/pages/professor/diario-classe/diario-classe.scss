@@ -1091,3 +1091,196 @@
   .horario-titulo { font-size: 1.2rem; }
 }
 
+/* ══════════════════════════════════════════
+   CALENDÁRIO ANUAL
+   ══════════════════════════════════════════ */
+
+.calendario-section {
+  padding-top: 6px;
+}
+
+.cal-ano-header {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+
+.cal-ano-titulo {
+  font-family: 'Caveat', cursive;
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: #1c3460;
+  margin: 0;
+}
+
+.cal-legenda {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.cal-leg-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: .72rem;
+  color: #7a6a55;
+}
+
+.cal-leg-dot {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  flex-shrink: 0;
+
+  &--feriado { background: rgba(192,57,43,.90); }
+  &--hoje    { background: #1c3460; }
+  &--dom     { background: none; border: 2px solid #c0392b; }
+}
+
+/* ── Grid de meses ── */
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+/* ── Card de mês ── */
+.cal-mes {
+  border: 1px solid #d8cebb;
+  border-radius: 10px;
+  overflow: hidden;
+  background: rgba(255,255,252,.78);
+  box-shadow: 0 2px 6px rgba(0,0,0,.05);
+}
+
+.cal-mes-header {
+  background: linear-gradient(to bottom, #1c3460, #243d78);
+  color: rgba(255,255,255,.94);
+  font-family: 'Caveat', cursive;
+  font-size: 1.05rem;
+  font-weight: 700;
+  text-align: center;
+  padding: 6px 4px;
+  letter-spacing: .04em;
+}
+
+/* ── Cabeçalho dias da semana ── */
+.cal-dias-semana {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background: rgba(28,52,96,.07);
+  border-bottom: 1px solid rgba(208,196,180,.4);
+
+  span {
+    text-align: center;
+    font-size: .58rem;
+    font-weight: 700;
+    color: #8a7a65;
+    padding: 3px 0;
+
+    &:first-child { color: #c0392b; }
+    &:last-child  { color: #2469ac; }
+  }
+}
+
+.cal-corpo {
+  padding: 2px 0;
+}
+
+/* ── Semana ── */
+.cal-semana {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+/* ── Dia ── */
+.cal-dia {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+}
+
+.cal-dia-num {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  font-size: .70rem;
+  color: #3d3020;
+  user-select: none;
+}
+
+/* Modificadores de estado */
+.cal-dia--vazio .cal-dia-num { visibility: hidden; }
+
+.cal-dia--dom .cal-dia-num   { color: #c0392b; font-weight: 600; }
+.cal-dia--sab .cal-dia-num   { color: #2469ac; }
+
+.cal-dia--feriado .cal-dia-num {
+  background: rgba(192,57,43,.90);
+  color: #fff;
+  font-weight: 700;
+}
+
+.cal-dia--hoje .cal-dia-num {
+  background: #1c3460;
+  color: #fff !important;
+  font-weight: 700;
+}
+
+/* Feriado que também é hoje: crimson com borda marinha */
+.cal-dia--feriado.cal-dia--hoje .cal-dia-num {
+  background: #922b21;
+  outline: 2px solid #1c3460;
+  outline-offset: 1px;
+}
+
+/* ── Lista de feriados do mês ── */
+.cal-mes-feriados {
+  border-top: 1px solid rgba(208,196,180,.5);
+  padding: 5px 8px;
+  background: rgba(255,253,248,.9);
+}
+
+.cal-feriado-item {
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+  padding: 2px 0;
+  font-size: .63rem;
+  line-height: 1.4;
+
+  & + & { border-top: 1px dotted rgba(208,196,180,.4); }
+}
+
+.cal-feriado-dia {
+  font-weight: 700;
+  color: #c0392b;
+  min-width: 16px;
+  flex-shrink: 0;
+  font-size: .65rem;
+}
+
+.cal-feriado-nome {
+  color: #5a4a3a;
+}
+
+/* ── Responsivo ── */
+@media (max-width: 980px) {
+  .cal-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 640px) {
+  .cal-grid { grid-template-columns: repeat(2, 1fr); }
+  .cal-dia  { height: 24px; }
+  .cal-dia-num { width: 20px; height: 20px; font-size: .66rem; }
+  .cal-mes-header { font-size: .9rem; }
+}
+

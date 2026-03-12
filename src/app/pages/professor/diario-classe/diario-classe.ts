@@ -21,6 +21,18 @@ interface HorarioEstado {
   _nomeBackup: string;
 }
 
+interface DiaCal {
+  dia: number | null;
+  data: string | null;
+  isDom: boolean;
+  isSab: boolean;
+}
+
+interface MesCal {
+  nome: string;
+  semanas: DiaCal[][];
+}
+
 const RECURSOS_OPCOES = [
   { valor: 'livro',        icone: '📚', label: 'Livro didático' },
   { valor: 'projetor',     icone: '🖥️', label: 'Projetor' },
@@ -91,9 +103,14 @@ export class DiarioClasse implements OnInit {
   readonly anoAtual = new Date().getFullYear();
 
   // ── Horário semanal ──
-  paginaAtiva: 'registros' | 'horario' = 'registros';
+  paginaAtiva: 'registros' | 'horario' | 'calendario' = 'registros';
   horarios: HorarioEstado[] = [];
   horarioCarregado = false;
+
+  // ── Calendário ──
+  calendarData: MesCal[] = [];
+  feriados: Record<string, string> = {};
+  readonly hoje = new Date().toISOString().substring(0, 10);
 
   readonly DIAS_SEMANA = ['seg', 'ter', 'qua', 'qui', 'sex'] as const;
   readonly DIAS_LABELS: Record<string, string> = {
@@ -407,5 +424,87 @@ export class DiarioClasse implements OnInit {
 
   horarioVazio(h: HorarioEstado): boolean {
     return h.linhas.every(l => !l.seg && !l.ter && !l.qua && !l.qui && !l.sex);
+  }
+
+  // ── Calendário ──────────────────────────────────────────────────────────────
+
+  abrirCalendario() {
+    this.paginaAtiva = 'calendario';
+    if (this.calendarData.length === 0) this.buildCalendar();
+    this.cdr.markForCheck();
+  }
+
+  getFeriadosMes(mes: number): { dia: string; nome: string }[] {
+    const mm = String(mes).padStart(2, '0');
+    return Object.entries(this.feriados)
+      .filter(([k]) => k.startsWith(`${this.anoAtual}-${mm}-`))
+      .map(([k, v]) => ({ dia: k.substring(8), nome: v }))
+      .sort((a, b) => a.dia.localeCompare(b.dia));
+  }
+
+  private calcularPascoa(ano: number): Date {
+    const a = ano % 19;
+    const b = Math.floor(ano / 100);
+    const c = ano % 100;
+    const d = Math.floor(b / 4);
+    const e = b % 4;
+    const f = Math.floor((b + 8) / 25);
+    const g = Math.floor((b - f + 1) / 3);
+    const h = (19 * a + b - d - g + 15) % 30;
+    const i = Math.floor(c / 4);
+    const k = c % 4;
+    const l = (32 + 2 * e + 2 * i - h - k) % 7;
+    const m2 = Math.floor((a + 11 * h + 22 * l) / 451);
+    const mes = Math.floor((h + l - 7 * m2 + 114) / 31) - 1;
+    const dia = ((h + l - 7 * m2 + 114) % 31) + 1;
+    return new Date(ano, mes, dia);
+  }
+
+  private buildCalendar() {
+    const ano = this.anoAtual;
+    const pascoa  = this.calcularPascoa(ano);
+    const addDias = (d: Date, n: number) => new Date(d.getTime() + n * 86400000);
+    const fmt     = (d: Date) =>
+      `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+    this.feriados = {
+      [fmt(new Date(ano, 0,  1))]:  'Confraternização Universal',
+      [fmt(addDias(pascoa, -2))]:   'Sexta-feira da Paixão',
+      [fmt(pascoa)]:                'Páscoa',
+      [fmt(new Date(ano, 3,  21))]: 'Tiradentes',
+      [fmt(new Date(ano, 4,  1))]:  'Dia do Trabalhador',
+      [fmt(addDias(pascoa, 60))]:   'Corpus Christi',
+      [fmt(new Date(ano, 8,  7))]:  'Independência do Brasil',
+      [fmt(new Date(ano, 9,  12))]: 'Nossa Sra. Aparecida',
+      [fmt(new Date(ano, 10, 2))]:  'Finados',
+      [fmt(new Date(ano, 10, 15))]: 'Proclamação da República',
+      [fmt(new Date(ano, 10, 20))]: 'Dia da Consciência Negra',
+      [fmt(new Date(ano, 11, 25))]: 'Natal',
+    };
+
+    this.calendarData = Array.from({ length: 12 }, (_, m) => {
+      const nome       = MESES[m];
+      const primeiroDia = new Date(ano, m, 1).getDay();
+      const ultimoDia   = new Date(ano, m + 1, 0).getDate();
+      const semanas: DiaCal[][] = [];
+      let semana: DiaCal[] = [];
+
+      for (let i = 0; i < primeiroDia; i++) {
+        semana.push({ dia: null, data: null, isDom: false, isSab: false });
+      }
+      for (let day = 1; day <= ultimoDia; day++) {
+        const mm   = String(m + 1).padStart(2, '0');
+        const dd   = String(day).padStart(2, '0');
+        const data = `${ano}-${mm}-${dd}`;
+        const dow  = new Date(ano, m, day).getDay();
+        semana.push({ dia: day, data, isDom: dow === 0, isSab: dow === 6 });
+        if (semana.length === 7) { semanas.push(semana); semana = []; }
+      }
+      if (semana.length > 0) {
+        while (semana.length < 7) semana.push({ dia: null, data: null, isDom: false, isSab: false });
+        semanas.push(semana);
+      }
+      return { nome, semanas };
+    });
   }
 }
