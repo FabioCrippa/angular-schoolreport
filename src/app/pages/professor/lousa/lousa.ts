@@ -5,6 +5,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
 type Tema = 'branca' | 'verde' | 'preta';
 type TamanhoFonte = 'normal' | 'grande' | 'enorme';
@@ -26,13 +27,15 @@ const COR_CANETA: Record<Tema, string> = {
 })
 export class Lousa implements OnInit, AfterViewInit, OnDestroy {
 
-  @ViewChild('lousaArea')   lousaRef!:  ElementRef<HTMLTextAreaElement>;
-  @ViewChild('lousaCanvas') canvasRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('lousaArea')    lousaRef!:  ElementRef<HTMLTextAreaElement>;
+  @ViewChild('lousaCanvas')  canvasRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('arquivoInput') arquivoInputRef!: ElementRef<HTMLInputElement>;
 
-  private router  = inject(Router);
-  private route   = inject(ActivatedRoute);
-  private cdr     = inject(ChangeDetectorRef);
-  private ngZone  = inject(NgZone);
+  private router    = inject(Router);
+  private route     = inject(ActivatedRoute);
+  private cdr       = inject(ChangeDetectorRef);
+  private ngZone    = inject(NgZone);
+  private sanitizer = inject(DomSanitizer);
 
   texto        = '';
   tema: Tema              = 'branca';
@@ -40,6 +43,12 @@ export class Lousa implements OnInit, AfterViewInit, OnDestroy {
   modoEdicao: ModoEdicao  = 'texto';
   emTelaCheia  = false;
   modoProjetor = false;
+
+  // ── Arquivo de fundo ──
+  bgTipo: 'imagem' | 'pdf' | null = null;
+  bgImagemUrl: string | null = null;
+  bgPdfUrl: SafeResourceUrl | null = null;
+  private bgObjectUrl: string | null = null;
 
   private channel     = new BroadcastChannel('lousa-sync');
   private desenhando  = false;
@@ -69,21 +78,29 @@ export class Lousa implements OnInit, AfterViewInit, OnDestroy {
         // Projector opened — main window responds with full state
         if (data.tipo === 'solicitarEstado' && !this.modoProjetor) {
           this.channel.postMessage({
-            texto:       this.texto,
-            tema:        this.tema,
+            texto:        this.texto,
+            tema:         this.tema,
             tamanhoFonte: this.tamanhoFonte,
-            canvasData:  this.canvasRef?.nativeElement?.toDataURL() ?? ''
+            canvasData:   this.canvasRef?.nativeElement?.toDataURL() ?? '',
+            bgImagem:     this.bgImagemUrl ?? ''
           });
           return;
         }
 
-        if (data.texto       !== undefined) this.texto       = data.texto;
-        if (data.tema)                       this.tema        = data.tema as Tema;
+        if (data.texto       !== undefined) this.texto        = data.texto;
+        if (data.tema)                       this.tema         = data.tema as Tema;
         if (data.tamanhoFonte)               this.tamanhoFonte = data.tamanhoFonte as TamanhoFonte;
         if (data.canvasData  !== undefined)  this.loadCanvasData(data.canvasData);
+        if (data.bgImagem    !== undefined) {
+          this.bgImagemUrl = data.bgImagem || null;
+          this.bgTipo      = this.bgImagemUrl ? 'imagem' : null;
+        }
         if (data.limpar) {
-          this.texto = '';
+          this.texto       = '';
           this.clearCanvas();
+          this.bgTipo      = null;
+          this.bgImagemUrl = null;
+          this.bgPdfUrl    = null;
         }
 
         this.cdr.markForCheck();
@@ -114,6 +131,7 @@ export class Lousa implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnDestroy() {
     this.channel.close();
+    if (this.bgObjectUrl) URL.revokeObjectURL(this.bgObjectUrl);
   }
 
   @HostListener('window:resize')
@@ -308,11 +326,12 @@ export class Lousa implements OnInit, AfterViewInit, OnDestroy {
   // ── Ações gerais ────────────────────────────────────────────────────────
 
   limpar() {
-    const temConteudo = this.texto.trim() || this.hasDrawing();
+    const temConteudo = this.texto.trim() || this.hasDrawing() || !!this.bgTipo;
     if (temConteudo && !confirm('Limpar a lousa?')) return;
     this.texto = '';
     localStorage.removeItem('lousa_texto');
     this.clearCanvas();
+    if (this.bgTipo) this.removerFundo();
     this.channel.postMessage({ limpar: true });
     if (this.modoEdicao === 'texto') setTimeout(() => this.lousaRef?.nativeElement?.focus(), 50);
     this.cdr.markForCheck();
@@ -344,6 +363,50 @@ export class Lousa implements OnInit, AfterViewInit, OnDestroy {
 
   projetarNovaJanela() {
     window.open('/projetar', '_blank');
+  }
+
+  // ── Arquivo de fundo ──────────────────────────────────────────────────────
+
+  onAbrirArquivo() {
+    this.arquivoInputRef?.nativeElement?.click();
+  }
+
+  onArquivoSelecionado(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file  = input.files?.[0];
+    if (!file) return;
+    input.value = ''; // permite recarregar o mesmo ficheiro
+
+    if (file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (this.bgObjectUrl) { URL.revokeObjectURL(this.bgObjectUrl); this.bgObjectUrl = null; }
+        this.bgTipo      = 'imagem';
+        this.bgImagemUrl = reader.result as string;
+        this.bgPdfUrl    = null;
+        if (this.modoEdicao === 'texto') this.toggleModoEdicao();
+        if (!this.modoProjetor) this.channel.postMessage({ bgImagem: this.bgImagemUrl });
+        this.cdr.markForCheck();
+      };
+      reader.readAsDataURL(file);
+    } else if (file.type === 'application/pdf') {
+      if (this.bgObjectUrl) URL.revokeObjectURL(this.bgObjectUrl);
+      this.bgObjectUrl = URL.createObjectURL(file);
+      this.bgTipo      = 'pdf';
+      this.bgImagemUrl = null;
+      this.bgPdfUrl    = this.sanitizer.bypassSecurityTrustResourceUrl(this.bgObjectUrl);
+      if (this.modoEdicao === 'texto') this.toggleModoEdicao();
+      this.cdr.markForCheck();
+    }
+  }
+
+  removerFundo() {
+    this.bgTipo      = null;
+    this.bgImagemUrl = null;
+    this.bgPdfUrl    = null;
+    if (this.bgObjectUrl) { URL.revokeObjectURL(this.bgObjectUrl); this.bgObjectUrl = null; }
+    if (!this.modoProjetor) this.channel.postMessage({ bgImagem: '' });
+    this.cdr.markForCheck();
   }
 
   irParaDiario() {

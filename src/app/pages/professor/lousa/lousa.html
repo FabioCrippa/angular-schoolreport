@@ -3,6 +3,12 @@
   [class.tema-verde]="tema === 'verde'"
   [class.tema-preta]="tema === 'preta'">
 
+  <!-- Input de arquivo (oculto) -->
+  <input type="file" #arquivoInput
+    accept="image/*,.pdf"
+    style="display:none"
+    (change)="onArquivoSelecionado($event)" />
+
   <!-- ── Toolbar (oculta no modo projetor) ── -->
   <div class="lousa-toolbar" *ngIf="!modoProjetor">
 
@@ -44,14 +50,14 @@
       <button class="modo-btn"
         [class.modo-btn--ativo]="modoEdicao === 'texto'"
         (click)="modoEdicao === 'desenho' && toggleModoEdicao()"
-        title="Digitar texto">
-        ✏️ Digitar
+        [title]="bgTipo ? 'Navegar arquivo' : 'Digitar texto'">
+        {{ bgTipo ? '👆 Navegar' : '✏️ Digitar' }}
       </button>
       <button class="modo-btn"
         [class.modo-btn--ativo]="modoEdicao === 'desenho'"
         (click)="modoEdicao === 'texto' && toggleModoEdicao()"
-        title="Desenho à mão livre">
-        🖌️ Mão livre
+        [title]="bgTipo ? 'Anotar sobre o arquivo' : 'Desenho à mão livre'">
+        🖌️ {{ bgTipo ? 'Anotar' : 'Mão livre' }}
       </button>
     </div>
 
@@ -61,6 +67,18 @@
     <button class="tb-btn tb-btn--danger" (click)="limpar()" title="Limpar lousa">
       🗑️ Limpar
     </button>
+
+    <div class="tb-sep"></div>
+
+    <!-- Arquivo de fundo -->
+    <button class="tb-btn" (click)="onAbrirArquivo()" *ngIf="!bgTipo"
+      title="Carregar imagem ou PDF como fundo para anotar">
+      📂 Arquivo
+    </button>
+    <ng-container *ngIf="bgTipo">
+      <span class="tb-fundo-badge">{{ bgTipo === 'imagem' ? '🖼️' : '📄' }} Fundo ativo</span>
+      <button class="tb-btn tb-btn--danger" (click)="removerFundo()" title="Remover arquivo de fundo">✕ Fundo</button>
+    </ng-container>
 
     <button class="tb-btn" (click)="projetarNovaJanela()" title="Abrir em nova janela para projetar">
       ↗️ Projetar
@@ -76,7 +94,20 @@
   <div class="lousa-frame-area">
 
     <div class="lousa-frame">
-      <div class="lousa-conteudo">
+      <div class="lousa-conteudo" [class.lousa-conteudo--tem-fundo]="bgTipo">
+
+        <!-- Fundo: imagem (sincronizado com o projetor) -->
+        <img *ngIf="bgTipo === 'imagem' && bgImagemUrl"
+          class="lousa-bg-imagem"
+          [src]="bgImagemUrl"
+          alt="Fundo da lousa" />
+
+        <!-- Fundo: PDF (somente janela local; use 👆 Navegar para trocar de página) -->
+        <iframe *ngIf="bgTipo === 'pdf' && bgPdfUrl"
+          class="lousa-bg-pdf"
+          [class.lousa-bg-pdf--navegando]="modoEdicao === 'texto'"
+          [src]="bgPdfUrl"
+          title="PDF de fundo"></iframe>
 
         <textarea
           #lousaArea
@@ -84,6 +115,7 @@
           [class.fonte-normal]="tamanhoFonte === 'normal'"
           [class.fonte-grande]="tamanhoFonte === 'grande'"
           [class.fonte-enorme]="tamanhoFonte === 'enorme'"
+          [class.lousa-area--oculta]="!!bgTipo"
           [readonly]="modoProjetor || modoEdicao === 'desenho'"
           [(ngModel)]="texto"
           (ngModelChange)="!modoProjetor && onTextoChange()"

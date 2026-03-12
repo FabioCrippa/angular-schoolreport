@@ -230,7 +230,7 @@
 .lousa-area {
   position: absolute;
   inset: 0;
-  z-index: 1;
+  z-index: 2;
   width: 100%;
   height: 100%;
   padding: 32px 52px;
@@ -262,7 +262,7 @@
   inset: 0;
   width: 100%;
   height: 100%;
-  z-index: 2;
+  z-index: 3;
   pointer-events: none;
   cursor: default;
 
@@ -270,6 +270,62 @@
     pointer-events: auto;
     cursor: crosshair;
   }
+}
+
+/* ══ FUNDO (imagem / PDF) ══ */
+
+/* Board perde linhas e fundo ao mostrar arquivo */
+.lousa-conteudo--tem-fundo {
+  background-image: none !important;
+  background-color: #0d0d0d !important;
+}
+
+/* Imagem: ocupa todo o quadro com letterbox */
+.lousa-bg-imagem {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  z-index: 1;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* PDF: renderizado pelo browser nativo */
+.lousa-bg-pdf {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  z-index: 1;
+  pointer-events: none; /* modo anotar: canvas intercepta */
+
+  /* modo navegar: iframe sobe e recebe eventos do mouse/touch */
+  &--navegando {
+    pointer-events: auto;
+    z-index: 4;
+  }
+}
+
+/* Textarea some quando há arquivo carregado */
+.lousa-area--oculta {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Badge "Fundo ativo" na toolbar */
+.tb-fundo-badge {
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: rgba(245,158,11,.18);
+  border: 1.5px solid rgba(245,158,11,.4);
+  color: #fcd34d;
+  font-size: .75rem;
+  font-weight: 700;
+  white-space: nowrap;
+  align-self: center;
 }
 
 /* ══ CALHA DE GIZ ══ */
