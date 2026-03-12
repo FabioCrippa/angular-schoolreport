@@ -121,7 +121,8 @@ export interface DiarioEntrada {
   turma: string;
   disciplina: string;
   data: string; // YYYY-MM-DD
-  numeroAula?: number;
+  numeroAula?: number;     // legado — mantido para compatibilidade
+  numerosAula?: number[];  // novo: múltiplas aulas
   conteudo: string;
   observacao?: string;
   recursos: string[];

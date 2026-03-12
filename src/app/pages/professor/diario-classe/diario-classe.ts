@@ -92,7 +92,7 @@ export class DiarioClasse implements OnInit {
     data: new Date().toISOString().substring(0, 10),
     turma: '',
     disciplina: '',
-    numeroAula: null as number | null,
+    numerosAula: [] as number[],
     conteudo: '',
     observacao: '',
     recursos: [] as string[]
@@ -100,6 +100,7 @@ export class DiarioClasse implements OnInit {
 
   readonly RECURSOS_OPCOES = RECURSOS_OPCOES;
   readonly DISCIPLINAS_OPCOES = DISCIPLINAS_OPCOES;
+  readonly AULAS_OPCOES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
   readonly anoAtual = new Date().getFullYear();
 
   // ── Horário semanal ──
@@ -203,7 +204,7 @@ export class DiarioClasse implements OnInit {
       data: new Date().toISOString().substring(0, 10),
       turma: this.filtroTurma || '',
       disciplina: '',
-      numeroAula: null,
+      numerosAula: [],
       conteudo: '',
       observacao: '',
       recursos: []
@@ -219,7 +220,9 @@ export class DiarioClasse implements OnInit {
       data: entrada.data,
       turma: entrada.turma,
       disciplina: entrada.disciplina,
-      numeroAula: entrada.numeroAula ?? null,
+      numerosAula: entrada.numerosAula?.length
+        ? [...entrada.numerosAula]
+        : (entrada.numeroAula ? [entrada.numeroAula] : []),
       conteudo: entrada.conteudo,
       observacao: entrada.observacao ?? '',
       recursos: [...(entrada.recursos ?? [])]
@@ -232,6 +235,23 @@ export class DiarioClasse implements OnInit {
   fecharModal() {
     this.modalAberto = false;
     this.cdr.markForCheck();
+  }
+
+  toggleAula(n: number) {
+    const idx = this.form.numerosAula.indexOf(n);
+    if (idx >= 0) this.form.numerosAula.splice(idx, 1);
+    else this.form.numerosAula.push(n);
+  }
+
+  aulaSelecionada(n: number): boolean {
+    return this.form.numerosAula.includes(n);
+  }
+
+  labelAulas(e: DiarioEntrada): string {
+    const nums = e.numerosAula?.length ? e.numerosAula : (e.numeroAula ? [e.numeroAula] : []);
+    if (!nums.length) return '';
+    const sorted = [...nums].sort((a, b) => a - b);
+    return sorted.map(n => `${n}ª`).join(', ') + (sorted.length > 1 ? ' aulas' : ' aula');
   }
 
   toggleRecurso(valor: string) {
@@ -264,7 +284,7 @@ export class DiarioClasse implements OnInit {
         turma: this.form.turma.trim(),
         disciplina: this.form.disciplina.trim(),
         data: this.form.data,
-        ...(this.form.numeroAula != null ? { numeroAula: this.form.numeroAula } : {}),
+        ...(this.form.numerosAula.length > 0 ? { numerosAula: [...this.form.numerosAula].sort((a, b) => a - b) } : {}),
         conteudo: this.form.conteudo.trim(),
         observacao: obs,
         recursos: this.form.recursos,

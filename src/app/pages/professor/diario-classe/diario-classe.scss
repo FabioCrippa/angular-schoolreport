@@ -688,6 +688,32 @@
   }
 }
 
+.aulas-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.aula-btn {
+  width: 40px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1.5px solid #d0c4b0;
+  background: rgba(255,255,255,.8);
+  font-size: .82rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: #5a4a38;
+  transition: all .13s;
+  &:hover { border-color: #1c3460; color: #1c3460; }
+  &.aula-btn--ativo {
+    border-color: #1c3460;
+    background: rgba(28,52,96,.13);
+    color: #1c3460;
+    font-weight: 700;
+  }
+}
+
 .form-erro {
   font-size: .82rem;
   color: #c0392b;

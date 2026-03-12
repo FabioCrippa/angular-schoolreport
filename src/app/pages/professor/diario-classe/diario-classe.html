@@ -108,7 +108,7 @@
                 <div class="entrada-meta">
                   <span class="badge-turma">{{ e.turma }}</span>
                   <span class="badge-disciplina">{{ e.disciplina }}</span>
-                  <span class="badge-aula" *ngIf="e.numeroAula">{{ e.numeroAula }}ª aula</span>
+                  <span class="badge-aula" *ngIf="e.numerosAula?.length || e.numeroAula">{{ labelAulas(e) }}</span>
                 </div>
                 <p class="entrada-conteudo">{{ e.conteudo }}</p>
                 <p class="entrada-obs" *ngIf="e.observacao">📌 {{ e.observacao }}</p>
@@ -314,8 +314,12 @@
           <input type="date" [(ngModel)]="form.data" />
         </div>
         <div class="form-field">
-          <label>Nº da Aula</label>
-          <input type="number" [(ngModel)]="form.numeroAula" min="1" max="9" placeholder="Ex: 2" />
+          <label>Nº da(s) Aula(s)</label>
+          <div class="aulas-grid">
+            <button class="aula-btn" *ngFor="let n of AULAS_OPCOES"
+              [class.aula-btn--ativo]="aulaSelecionada(n)"
+              (click)="toggleAula(n)" type="button">{{ n }}ª</button>
+          </div>
         </div>
       </div>
 
