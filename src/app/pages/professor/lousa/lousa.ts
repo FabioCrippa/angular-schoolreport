@@ -349,19 +349,36 @@ export class Lousa implements OnInit, AfterViewInit, OnDestroy {
     return false;
   }
 
+  private get supportsFullscreen(): boolean {
+    return !!(document.documentElement as any).requestFullscreen ||
+           !!(document.documentElement as any).webkitRequestFullscreen;
+  }
+
   async toggleTelaCheia() {
-    try {
-      if (!document.fullscreenElement) {
-        await (this.el.nativeElement as HTMLElement).requestFullscreen();
-      } else {
-        await document.exitFullscreen();
-      }
-    } catch { /* sem suporte */ }
+    const host = this.el.nativeElement as HTMLElement;
+    if (this.supportsFullscreen) {
+      try {
+        if (!document.fullscreenElement) {
+          await (host.requestFullscreen
+            ? host.requestFullscreen()
+            : (host as any).webkitRequestFullscreen());
+        } else {
+          await (document.exitFullscreen
+            ? document.exitFullscreen()
+            : (document as any).webkitExitFullscreen());
+        }
+        return;
+      } catch { /* cai no fallback CSS */ }
+    }
+    // Fallback CSS para iOS Safari e outros sem suporte nativo
+    this.emTelaCheia = !this.emTelaCheia;
+    this.cdr.markForCheck();
   }
 
   @HostListener('document:fullscreenchange')
+  @HostListener('document:webkitfullscreenchange')
   onFullscreenChange() {
-    this.emTelaCheia = !!document.fullscreenElement;
+    this.emTelaCheia = !!(document.fullscreenElement || (document as any).webkitFullscreenElement);
     this.cdr.markForCheck();
   }
 

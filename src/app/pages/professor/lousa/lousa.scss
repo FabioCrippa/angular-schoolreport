@@ -8,7 +8,7 @@
   overflow: hidden;
 }
 
-/* Garante que o componente ocupe 100% da tela no modo fullscreen */
+/* Garante que o componente ocupe 100% da tela no modo fullscreen (API nativa) */
 :host:fullscreen,
 :host:-webkit-full-screen,
 :host:-moz-full-screen {
@@ -19,6 +19,15 @@
     width: 100vw;
     height: 100vh;
   }
+}
+
+/* Fallback CSS para mobile sem suporte à Fullscreen API (ex: iOS Safari) */
+.lousa-wrapper--tela-cheia {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100dvh !important; /* dvh = dynamic viewport height, desconta barra do browser */
+  z-index: 9999 !important;
 }
 
 /* ── Wrapper: sala de aula ── */
