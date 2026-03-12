@@ -122,8 +122,9 @@ export class Lousa implements OnInit, AfterViewInit, OnDestroy {
   private resizeCanvas() {
     const canvas = this.canvasRef?.nativeElement;
     if (!canvas) return;
-    const w = canvas.offsetWidth;
-    const h = canvas.offsetHeight;
+    const rect = canvas.getBoundingClientRect();
+    const w = Math.round(rect.width);
+    const h = Math.round(rect.height);
     if (!w || !h) return; // guard: skip if layout not ready
     const saved = canvas.width > 0 && canvas.height > 0 ? canvas.toDataURL() : null;
     canvas.width  = w;
@@ -156,6 +157,9 @@ export class Lousa implements OnInit, AfterViewInit, OnDestroy {
     this.modoEdicao = this.modoEdicao === 'texto' ? 'desenho' : 'texto';
     if (this.modoEdicao === 'texto') {
       setTimeout(() => this.lousaRef?.nativeElement?.focus(), 50);
+    } else {
+      // Re-measure canvas when entering drawing mode to ensure correct dimensions
+      requestAnimationFrame(() => requestAnimationFrame(() => this.resizeCanvas()));
     }
     this.cdr.markForCheck();
   }

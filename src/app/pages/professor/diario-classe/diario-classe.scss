@@ -385,9 +385,9 @@
 
 /* ── Entry cards ── */
 .entradas-lista {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px 14px;
   padding-left: 6px;
 }
 
@@ -400,8 +400,6 @@
   border-left: 3px solid transparent;
   border-bottom: 1px solid rgba(208,198,182,.45);
   transition: all .15s ease;
-
-  &:last-child { border-bottom: none; }
 
   &:hover {
     background: rgba(255,255,255,.78);
