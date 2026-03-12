@@ -8,6 +8,19 @@
   overflow: hidden;
 }
 
+/* Garante que o componente ocupe 100% da tela no modo fullscreen */
+:host:fullscreen,
+:host:-webkit-full-screen,
+:host:-moz-full-screen {
+  width: 100vw;
+  height: 100vh;
+
+  .lousa-wrapper {
+    width: 100vw;
+    height: 100vh;
+  }
+}
+
 /* ── Wrapper: sala de aula ── */
 .lousa-wrapper {
   display: flex;

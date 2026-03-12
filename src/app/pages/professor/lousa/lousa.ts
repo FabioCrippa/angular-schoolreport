@@ -36,6 +36,7 @@ export class Lousa implements OnInit, AfterViewInit, OnDestroy {
   private cdr       = inject(ChangeDetectorRef);
   private ngZone    = inject(NgZone);
   private sanitizer = inject(DomSanitizer);
+  private el        = inject(ElementRef);
 
   texto        = '';
   tema: Tema              = 'branca';
@@ -350,8 +351,11 @@ export class Lousa implements OnInit, AfterViewInit, OnDestroy {
 
   async toggleTelaCheia() {
     try {
-      if (!document.fullscreenElement) await document.documentElement.requestFullscreen();
-      else await document.exitFullscreen();
+      if (!document.fullscreenElement) {
+        await (this.el.nativeElement as HTMLElement).requestFullscreen();
+      } else {
+        await document.exitFullscreen();
+      }
     } catch { /* sem suporte */ }
   }
 
