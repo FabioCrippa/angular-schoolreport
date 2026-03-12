@@ -743,6 +743,13 @@
   .notebook-page { margin-left: 48px; padding: 18px 16px 32px 16px; }
   .form-row-2 { grid-template-columns: 1fr; }
   .total-registros { display: none; }
+
+  /* Registros: 1 coluna em mobile */
+  .entradas-lista { grid-template-columns: 1fr; gap: 4px; }
+  .entrada-card { padding: 10px 8px 10px 10px; gap: 10px; }
+  .entrada-data-col { min-width: 46px; width: 46px; height: 56px; }
+  /* Botões sempre visíveis em touch (sem hover) */
+  .entrada-actions { opacity: 1; }
 }
 
 /* ══════════════════════════════════════════════════
