@@ -135,79 +135,109 @@
            ════════════════════════════════════ -->
       <div *ngIf="paginaAtiva === 'horario'" class="horario-section">
 
-        <!-- Cabeçalho do horário -->
+        <!-- Cabeçalho global -->
         <div class="horario-header">
           <h2 class="horario-titulo">📅 Horário da Semana</h2>
-          <div class="horario-acoes" *ngIf="!horarioEditando">
-            <button class="btn-editar-horario" (click)="iniciarEdicaoHorario()">✏️ Editar</button>
-          </div>
-          <div class="horario-acoes" *ngIf="horarioEditando">
-            <button class="btn-add-linha" (click)="adicionarLinhaHorario()" type="button">＋ Aula</button>
-            <button class="btn-cancelar-horario" (click)="cancelarEdicaoHorario()" type="button">Cancelar</button>
-            <button class="btn-salvar-horario" (click)="salvarHorario()" [disabled]="horarioSalvando">
-              {{ horarioSalvando ? 'Salvando...' : '💾 Salvar' }}
-            </button>
-          </div>
+          <button class="btn-add-horario" (click)="adicionarNovoHorario()" *ngIf="horarioCarregado" type="button">
+            ＋ Horário / Escola
+          </button>
         </div>
 
         <!-- Loading horário -->
         <div class="loading-state" *ngIf="!horarioCarregado">
-          <p>📅 Carregando horário...</p>
+          <p>📅 Carregando horários...</p>
         </div>
 
-        <!-- Tabela horário — modo visualização -->
-        <div class="horario-table-wrap" *ngIf="horarioCarregado && !horarioEditando">
-
-          <div class="horario-vazio" *ngIf="horarioCelulaVazia()">
-            <p>Nenhum horário cadastrado ainda.</p>
-            <p class="empty-hint">Clique em <strong>✏️ Editar</strong> para montar sua grade.</p>
-          </div>
-
-          <table class="horario-table" *ngIf="!horarioCelulaVazia()">
-            <thead>
-              <tr>
-                <th class="col-horario">Horário</th>
-                <th *ngFor="let d of DIAS_SEMANA">{{ DIAS_LABELS[d] }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let linha of horarioLinhas; let i = index">
-                <td class="col-horario">{{ linha.horario }}</td>
-                <td *ngFor="let d of DIAS_SEMANA" [class.celula-vazia]="!linha[d]">
-                  <span *ngIf="linha[d]" class="celula-conteudo">{{ linha[d] }}</span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+        <!-- Estado vazio total -->
+        <div class="horario-vazio" *ngIf="horarioCarregado && horarios.length === 0">
+          <p>Nenhum horário cadastrado ainda.</p>
+          <p class="empty-hint">Clique em <strong>＋ Horário / Escola</strong> para montar sua grade.</p>
         </div>
 
-        <!-- Tabela horário — modo edição -->
-        <div class="horario-table-wrap horario-table-wrap--edit" *ngIf="horarioCarregado && horarioEditando">
-          <table class="horario-table horario-table--edit">
-            <thead>
-              <tr>
-                <th class="col-horario">Horário</th>
-                <th *ngFor="let d of DIAS_SEMANA">{{ DIAS_LABELS[d] }}</th>
-                <th class="col-remover"></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let linha of horarioLinhas; let i = index">
-                <td class="col-horario">
-                  <input class="input-horario" [(ngModel)]="linha.horario" placeholder="07:00" />
-                </td>
-                <td *ngFor="let d of DIAS_SEMANA">
-                  <input class="input-celula" [(ngModel)]="linha[d]"
-                    placeholder="Disciplina – Turma" list="disciplinas-list" />
-                </td>
-                <td class="col-remover">
-                  <button class="btn-remover-linha" (click)="removerLinhaHorario(i)"
-                    title="Remover linha" *ngIf="horarioLinhas.length > 1">✕</button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <!-- Grid de cards de horário -->
+        <div class="horarios-grid" *ngIf="horarioCarregado && horarios.length > 0">
+
+          <div class="horario-card" *ngFor="let h of horarios">
+
+            <!-- Cabeçalho do card -->
+            <div class="horario-card-header">
+              <div class="horario-card-nome-wrap">
+                <span *ngIf="!h.editando" class="horario-card-nome">
+                  {{ h.nome || '📌 Escola / Turno' }}
+                </span>
+                <input *ngIf="h.editando" class="input-nome-horario"
+                  [(ngModel)]="h.nome"
+                  placeholder="Nome do horário (ex: E.M. São Paulo – Manhã)" />
+              </div>
+              <div class="horario-acoes">
+                <ng-container *ngIf="!h.editando">
+                  <button class="btn-editar-horario" (click)="iniciarEdicaoHorario(h)">✏️ Editar</button>
+                  <button class="btn-excluir-horario" (click)="excluirHorario(h)" title="Excluir horário">🗑️</button>
+                </ng-container>
+                <ng-container *ngIf="h.editando">
+                  <button class="btn-add-linha" (click)="adicionarLinhaHorario(h)" type="button">＋ Aula</button>
+                  <button class="btn-cancelar-horario" (click)="cancelarEdicaoHorario(h)" type="button">Cancelar</button>
+                  <button class="btn-salvar-horario" (click)="salvarHorario(h)" [disabled]="h.salvando">
+                    {{ h.salvando ? 'Salvando...' : '💾 Salvar' }}
+                  </button>
+                </ng-container>
+              </div>
+            </div>
+
+            <!-- Tabela — modo visualização -->
+            <div class="horario-table-wrap" *ngIf="!h.editando">
+              <div class="horario-vazio-celulas" *ngIf="horarioVazio(h)">
+                <p>Grade vazia — clique em <strong>✏️ Editar</strong> para preencher.</p>
+              </div>
+              <table class="horario-table" *ngIf="!horarioVazio(h)">
+                <thead>
+                  <tr>
+                    <th class="col-horario">Horário</th>
+                    <th *ngFor="let d of DIAS_SEMANA">{{ DIAS_LABELS[d] }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let linha of h.linhas">
+                    <td class="col-horario">{{ linha.horario }}</td>
+                    <td *ngFor="let d of DIAS_SEMANA" [class.celula-vazia]="!linha[d]">
+                      <span *ngIf="linha[d]" class="celula-conteudo">{{ linha[d] }}</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Tabela — modo edição -->
+            <div class="horario-table-wrap horario-table-wrap--edit" *ngIf="h.editando">
+              <table class="horario-table horario-table--edit">
+                <thead>
+                  <tr>
+                    <th class="col-horario">Horário</th>
+                    <th *ngFor="let d of DIAS_SEMANA">{{ DIAS_LABELS[d] }}</th>
+                    <th class="col-remover"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let linha of h.linhas; let i = index">
+                    <td class="col-horario">
+                      <input class="input-horario" [(ngModel)]="linha.horario" placeholder="07:00" />
+                    </td>
+                    <td *ngFor="let d of DIAS_SEMANA">
+                      <input class="input-celula" [(ngModel)]="linha[d]"
+                        placeholder="Disciplina – Turma" list="disciplinas-list" />
+                    </td>
+                    <td class="col-remover">
+                      <button class="btn-remover-linha" (click)="removerLinhaHorario(h, i)"
+                        title="Remover linha" *ngIf="h.linhas.length > 1">✕</button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+          </div> <!-- /horario-card -->
+
+        </div> <!-- /horarios-grid -->
 
       </div> <!-- /paginaAtiva === 'horario' -->
 

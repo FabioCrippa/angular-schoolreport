@@ -209,9 +209,10 @@ service cloud.firestore {
 
     // Regras para coleção 'horarios' (Horário semanal do professor)
     match /horarios/{horarioId} {
-      // Professor pode ler o próprio horário (pertencente à sua escola)
+      // Professor pode ler o próprio horário; coordenação/direção também acessa pelo escola
       allow read: if request.auth != null &&
-                     belongsToSchool(resource.data.escolaId);
+                     (resource.data.professorId == request.auth.uid ||
+                      belongsToSchool(resource.data.escolaId));
       // Professor pode criar horário para si mesmo na própria escola
       allow create: if request.auth != null &&
                        belongsToSchool(request.resource.data.escolaId) &&

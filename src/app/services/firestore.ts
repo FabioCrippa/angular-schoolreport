@@ -139,6 +139,7 @@ export interface HorarioLinha {
 
 export interface HorarioSemana {
   id?: string;
+  nome?: string;
   escolaId: string;
   professorId: string;
   linhas: HorarioLinha[];
@@ -1896,6 +1897,27 @@ Equipe escu
     } catch (error) {
       console.error('Erro ao obter horário:', error);
       return null;
+    }
+  }
+
+  async obterTodosHorariosDosProfessor(professorId: string): Promise<HorarioSemana[]> {
+    try {
+      const col = collection(this.firestore, 'horarios');
+      const q = query(col, where('professorId', '==', professorId));
+      const snap = await getDocs(q);
+      return snap.docs.map(d => ({ id: d.id, ...(d.data() as Omit<HorarioSemana, 'id'>) }));
+    } catch (error) {
+      console.error('Erro ao obter horários do professor:', error);
+      return [];
+    }
+  }
+
+  async deletarHorarioSemana(id: string): Promise<void> {
+    try {
+      await deleteDoc(doc(this.firestore, 'horarios', id));
+    } catch (error) {
+      console.error('Erro ao deletar horário:', error);
+      throw error;
     }
   }
 

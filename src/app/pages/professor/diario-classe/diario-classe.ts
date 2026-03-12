@@ -11,6 +11,16 @@ interface GrupoMes {
   entradas: DiarioEntrada[];
 }
 
+interface HorarioEstado {
+  id: string | null;
+  nome: string;
+  linhas: HorarioLinha[];
+  editando: boolean;
+  salvando: boolean;
+  _backup: HorarioLinha[] | null;
+  _nomeBackup: string;
+}
+
 const RECURSOS_OPCOES = [
   { valor: 'livro',        icone: '📚', label: 'Livro didático' },
   { valor: 'projetor',     icone: '🖥️', label: 'Projetor' },
@@ -82,10 +92,7 @@ export class DiarioClasse implements OnInit {
 
   // ── Horário semanal ──
   paginaAtiva: 'registros' | 'horario' = 'registros';
-  horarioEditando = false;
-  horarioSalvando = false;
-  horarioId: string | null = null;
-  horarioLinhas: HorarioLinha[] = [];
+  horarios: HorarioEstado[] = [];
   horarioCarregado = false;
 
   readonly DIAS_SEMANA = ['seg', 'ter', 'qua', 'qui', 'sex'] as const;
@@ -301,67 +308,104 @@ export class DiarioClasse implements OnInit {
 
   async abrirHorario() {
     this.paginaAtiva = 'horario';
-    if (!this.horarioCarregado) await this.carregarHorario();
+    if (!this.horarioCarregado) await this.carregarHorarios();
   }
 
-  async carregarHorario() {
-    const h = await this.firestoreService.obterHorarioSemana(this.escolaId, this.professorId);
-    if (h) {
-      this.horarioId    = h.id ?? null;
-      this.horarioLinhas = h.linhas;
-    } else {
-      this.horarioLinhas = this.HORARIOS_PADRAO.slice(0, 6).map(horario => ({
-        horario, seg: '', ter: '', qua: '', qui: '', sex: ''
-      }));
-    }
+  async carregarHorarios() {
+    const lista = await this.firestoreService.obterTodosHorariosDosProfessor(this.professorId);
+    this.horarios = lista.map(h => ({
+      id: h.id ?? null,
+      nome: h.nome ?? '',
+      linhas: h.linhas,
+      editando: false,
+      salvando: false,
+      _backup: null,
+      _nomeBackup: ''
+    }));
     this.horarioCarregado = true;
     this.cdr.markForCheck();
   }
 
-  iniciarEdicaoHorario() {
-    this.horarioEditando = true;
+  adicionarNovoHorario() {
+    const linhas = this.HORARIOS_PADRAO.slice(0, 6).map(horario => ({
+      horario, seg: '', ter: '', qua: '', qui: '', sex: ''
+    }));
+    this.horarios = [...this.horarios, {
+      id: null,
+      nome: '',
+      linhas,
+      editando: true,
+      salvando: false,
+      _backup: null,
+      _nomeBackup: ''
+    }];
     this.cdr.markForCheck();
   }
 
-  cancelarEdicaoHorario() {
-    if (this.horarioCarregado) this.carregarHorario();
-    this.horarioEditando = false;
+  iniciarEdicaoHorario(h: HorarioEstado) {
+    h._backup = h.linhas.map(l => ({ ...l }));
+    h._nomeBackup = h.nome;
+    h.editando = true;
     this.cdr.markForCheck();
   }
 
-  async salvarHorario() {
-    this.horarioSalvando = true;
+  cancelarEdicaoHorario(h: HorarioEstado) {
+    if (h.id === null) {
+      this.horarios = this.horarios.filter(x => x !== h);
+    } else {
+      if (h._backup) h.linhas = h._backup;
+      h.nome = h._nomeBackup;
+      h._backup = null;
+      h.editando = false;
+    }
+    this.cdr.markForCheck();
+  }
+
+  async salvarHorario(h: HorarioEstado) {
+    h.salvando = true;
     this.cdr.markForCheck();
     try {
       const dados: Omit<HorarioSemana, 'id'> = {
         escolaId:    this.escolaId,
         professorId: this.professorId,
-        linhas:      this.horarioLinhas
+        nome:        h.nome,
+        linhas:      h.linhas
       };
-      this.horarioId = await this.firestoreService.salvarHorarioSemana(dados, this.horarioId ?? undefined);
-      this.horarioEditando = false;
+      h.id = await this.firestoreService.salvarHorarioSemana(dados, h.id ?? undefined);
+      h.editando = false;
+      h._backup = null;
     } catch {
       alert('Erro ao salvar horário. Tente novamente.');
     } finally {
-      this.horarioSalvando = false;
+      h.salvando = false;
       this.cdr.markForCheck();
     }
   }
 
-  adicionarLinhaHorario() {
-    const ultimo = this.horarioLinhas[this.horarioLinhas.length - 1];
+  async excluirHorario(h: HorarioEstado) {
+    if (!confirm('Excluir este horário?')) return;
+    if (h.id) {
+      try { await this.firestoreService.deletarHorarioSemana(h.id); }
+      catch { alert('Erro ao excluir. Tente novamente.'); return; }
+    }
+    this.horarios = this.horarios.filter(x => x !== h);
+    this.cdr.markForCheck();
+  }
+
+  adicionarLinhaHorario(h: HorarioEstado) {
+    const ultimo = h.linhas[h.linhas.length - 1];
     const nextIdx = this.HORARIOS_PADRAO.indexOf(ultimo?.horario ?? '') + 1;
     const horario = this.HORARIOS_PADRAO[nextIdx] ?? '';
-    this.horarioLinhas = [...this.horarioLinhas, { horario, seg: '', ter: '', qua: '', qui: '', sex: '' }];
+    h.linhas = [...h.linhas, { horario, seg: '', ter: '', qua: '', qui: '', sex: '' }];
     this.cdr.markForCheck();
   }
 
-  removerLinhaHorario(i: number) {
-    this.horarioLinhas = this.horarioLinhas.filter((_, idx) => idx !== i);
+  removerLinhaHorario(h: HorarioEstado, i: number) {
+    h.linhas = h.linhas.filter((_, idx) => idx !== i);
     this.cdr.markForCheck();
   }
 
-  horarioCelulaVazia(): boolean {
-    return this.horarioLinhas.every(l => !l.seg && !l.ter && !l.qua && !l.qui && !l.sex);
+  horarioVazio(h: HorarioEstado): boolean {
+    return h.linhas.every(l => !l.seg && !l.ter && !l.qua && !l.qui && !l.sex);
   }
 }

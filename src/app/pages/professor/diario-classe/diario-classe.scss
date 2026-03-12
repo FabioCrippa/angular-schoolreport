@@ -790,11 +790,12 @@
   padding-top: 4px;
 }
 
+/* ── Cabeçalho global (título + btn Add Horário) ── */
 .horario-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 18px;
+  margin-bottom: 20px;
   gap: 12px;
   flex-wrap: wrap;
 }
@@ -807,10 +808,87 @@
   font-weight: 700;
 }
 
+/* ── Botão global "+ Horário / Escola" ── */
+.btn-add-horario {
+  padding: 7px 16px;
+  border-radius: 9px;
+  border: 2px dashed #1c3460;
+  background: rgba(28,52,96,.05);
+  color: #1c3460;
+  font-size: .84rem;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: .01em;
+  transition: all .13s;
+  &:hover { background: rgba(28,52,96,.12); border-style: solid; }
+}
+
+/* ── Grid de cards ── */
+.horarios-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 22px;
+  align-items: flex-start;
+}
+
+/* ── Cada card de horário ── */
+.horario-card {
+  flex: 1 1 500px;
+  min-width: 0;
+  border: 1px solid #d8cebb;
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(255,255,252,.7);
+  box-shadow: 0 2px 8px rgba(0,0,0,.06);
+}
+
+.horario-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  background: linear-gradient(to right, rgba(28,52,96,.06), rgba(28,52,96,.02));
+  border-bottom: 1px solid #e0d6c8;
+  flex-wrap: wrap;
+}
+
+.horario-card-nome-wrap {
+  flex: 1;
+  min-width: 0;
+}
+
+.horario-card-nome {
+  font-family: 'Caveat', cursive;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #1c3460;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+.input-nome-horario {
+  width: 100%;
+  padding: 5px 10px;
+  border: 1.5px solid #8a6a3a;
+  border-radius: 7px;
+  font-family: 'Caveat', cursive;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1c3460;
+  background: #fffef0;
+  box-sizing: border-box;
+  &:focus { outline: none; border-color: #1c3460; background: #fff; }
+  &::placeholder { color: #b5a48a; font-weight: 400; }
+}
+
 .horario-acoes {
   display: flex;
   gap: 8px;
   align-items: center;
+  flex-shrink: 0;
 }
 
 .btn-editar-horario {
@@ -824,6 +902,18 @@
   cursor: pointer;
   transition: all .13s;
   &:hover { background: rgba(201,151,58,.18); }
+}
+
+.btn-excluir-horario {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1.5px solid rgba(231,76,60,.35);
+  background: rgba(231,76,60,.06);
+  color: #c0392b;
+  font-size: .82rem;
+  cursor: pointer;
+  transition: all .13s;
+  &:hover { background: rgba(231,76,60,.14); }
 }
 
 .btn-add-linha {
@@ -871,12 +961,17 @@
     strong { color: #6b5a4a; font-style: normal; } }
 }
 
+.horario-vazio-celulas {
+  text-align: center;
+  padding: 28px 16px;
+  color: #9a8c7a;
+  font-size: .88rem;
+  strong { color: #6b5a4a; }
+}
+
 /* ── Wrapper com scroll horizontal em telas pequenas ── */
 .horario-table-wrap {
   overflow-x: auto;
-  border-radius: 8px;
-  border: 1px solid #d8cebb;
-  box-shadow: 0 2px 8px rgba(0,0,0,.06);
 }
 
 /* ── Tabela ── */
@@ -989,6 +1084,7 @@
 }
 
 @media (max-width: 640px) {
+  .horarios-grid { flex-direction: column; }
   .horario-table { font-size: .76rem; }
   .horario-table td, .horario-table th { padding: 6px 7px; min-width: 90px; }
   .horario-table td.col-horario { min-width: 70px; font-size: .72rem; }
