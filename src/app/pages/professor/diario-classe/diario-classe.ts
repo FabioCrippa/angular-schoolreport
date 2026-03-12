@@ -254,6 +254,13 @@ export class DiarioClasse implements OnInit {
     return sorted.map(n => `${n}ª`).join(', ') + (sorted.length > 1 ? ' aulas' : ' aula');
   }
 
+  contarAulas(entradas: DiarioEntrada[]): number {
+    return entradas.reduce((sum, e) => {
+      const n = e.numerosAula?.length || (e.numeroAula ? 1 : 1);
+      return sum + n;
+    }, 0);
+  }
+
   toggleRecurso(valor: string) {
     const idx = this.form.recursos.indexOf(valor);
     if (idx >= 0) this.form.recursos.splice(idx, 1);

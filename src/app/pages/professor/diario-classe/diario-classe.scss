@@ -870,7 +870,6 @@
   min-width: 0;
   border: 1px solid #d8cebb;
   border-radius: 12px;
-  overflow: hidden;
   background: rgba(255,255,252,.7);
   box-shadow: 0 2px 8px rgba(0,0,0,.06);
 }
@@ -884,6 +883,7 @@
   background: linear-gradient(to right, rgba(28,52,96,.06), rgba(28,52,96,.02));
   border-bottom: 1px solid #e0d6c8;
   flex-wrap: wrap;
+  border-radius: 12px 12px 0 0;
 }
 
 .horario-card-nome-wrap {
@@ -1005,6 +1005,7 @@
 /* ── Wrapper com scroll horizontal em telas pequenas ── */
 .horario-table-wrap {
   overflow-x: auto;
+  border-radius: 0 0 12px 12px;
 }
 
 /* ── Tabela ── */

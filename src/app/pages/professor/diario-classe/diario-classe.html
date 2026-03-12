@@ -93,7 +93,7 @@
             <div class="mes-tab" [ngClass]="'tab-cor-' + (i % 5)">
               <span class="mes-label">{{ grupo.label }}</span>
             </div>
-            <span class="mes-count">{{ grupo.entradas.length }} aula(s)</span>
+            <span class="mes-count">{{ contarAulas(grupo.entradas) }} aula(s)</span>
           </div>
 
           <div class="entradas-lista">
