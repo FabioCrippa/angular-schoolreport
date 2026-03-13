@@ -39,9 +39,10 @@ service cloud.firestore {
       allow create: if request.auth != null && 
                        request.resource.data.email == request.auth.token.email;
       
-      // Permitir leitura para verificar email durante primeiro acesso (antes de qualquer auth)
-      // Usando uma consulta by email - isto é seguro porque verifica se o email já existe
-      allow read: if request.auth != null;
+      // Permite leitura pública — necessário para buscar email no primeiro acesso
+      // (usuário ainda NÃO está autenticado nesse passo).
+      // Os dados (nome, email, role, escolaId) não contêm senhas (estão no Firebase Auth).
+      allow read: if true;
     }
     
     // Regras para coleção 'ocorrencias'

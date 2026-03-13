@@ -67,10 +67,16 @@ export class PrimeiroAcesso {
       console.error('❌ ERRO ao verificar email:', error);
       console.error('Código do erro:', error?.code);
       console.error('Mensagem do erro:', error?.message);
-      this.mensagemErro = `Erro: ${error?.message || 'Erro desconhecido'}`;
-    } finally {
-      console.log('🏁 Finally executado');
+      if (error?.code === 'permission-denied' || error?.code === 'PERMISSION_DENIED') {
+        this.mensagemErro = 'Erro de permissão ao buscar o email. Contate o administrador.';
+      } else {
+        this.mensagemErro = `Erro: ${error?.message || 'Erro desconhecido'}`;
+      }
       this.processando = false;
+      this.cdr.detectChanges();
+    } finally {
+      this.processando = false;
+      this.cdr.detectChanges();
     }
   }
 
@@ -186,6 +192,7 @@ export class PrimeiroAcesso {
     } finally {
       // Garantir que sempre reseta (caso não tenha sido resetado antes)
       this.processando = false;
+      this.cdr.detectChanges();
     }
   }
 
