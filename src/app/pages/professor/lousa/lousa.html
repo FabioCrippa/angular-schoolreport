@@ -13,7 +13,7 @@
   <!-- ── Toolbar (oculta no modo projetor) ── -->
   <div class="lousa-toolbar" *ngIf="!modoProjetor">
 
-    <button class="tb-btn tb-btn--back" (click)="irParaDiario()" title="Voltar ao Diário">
+    <button class="tb-btn tb-btn--back tb-oculto-fullscreen" (click)="irParaDiario()" title="Voltar ao Diário">
       ← Diário
     </button>
 
@@ -44,7 +44,7 @@
       </button>
     </div>
 
-    <div class="tb-sep"></div>
+    <div class="tb-sep tb-oculto-fullscreen"></div>
 
     <!-- Modo de edição -->
     <div class="tb-group">

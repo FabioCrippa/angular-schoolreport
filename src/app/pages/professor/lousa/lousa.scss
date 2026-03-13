@@ -18,6 +18,15 @@
   .lousa-wrapper {
     width: 100vw;
     height: 100vh;
+
+    /* Maximiza o quadro: esconde decorações e botões não essenciais */
+    .tb-oculto-mobile,
+    .tb-oculto-fullscreen  { display: none !important; }
+    .tb-sep                { display: none !important; }
+    .chalk-tray            { display: none !important; }
+    .lousa-toolbar         { padding: 6px 14px; gap: 8px; flex-wrap: nowrap; }
+    .lousa-frame-area      { padding: 4px 0 0; }
+    .lousa-frame           { padding: 6px; }
   }
 }
 
@@ -28,6 +37,15 @@
   width: 100vw !important;
   height: 100dvh !important; /* dvh = dynamic viewport height, desconta barra do browser */
   z-index: 9999 !important;
+
+  /* Maximiza o quadro: esconde decorações e botões não essenciais */
+  .tb-oculto-mobile,
+  .tb-oculto-fullscreen  { display: none !important; }
+  .tb-sep                { display: none !important; }
+  .chalk-tray            { display: none !important; }
+  .lousa-toolbar         { padding: 6px 14px; gap: 8px; flex-wrap: nowrap; }
+  .lousa-frame-area      { padding: 4px 0 0; }
+  .lousa-frame           { padding: 6px; }
 }
 
 /* ── Wrapper: sala de aula ── */
