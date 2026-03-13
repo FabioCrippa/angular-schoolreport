@@ -225,6 +225,7 @@ export class FirestoreService {
   private firestore = inject(Firestore);
   private auth = inject(Auth);
   private ocorrenciasCollection = collection(this.firestore, 'ocorrencias');
+  private mailCollection = collection(this.firestore, 'mail');
   
   async adicionarOcorrencia(ocorrencia: Omit<Ocorrencia, 'id' | 'criadoEm'>, escolaData?: { nome: string, emailCoordenacao: string, emailDirecao: string }): Promise<string> {
     try {
@@ -260,8 +261,8 @@ export class FirestoreService {
             }
           };
           
-          // Cria documento separado na coleção 'ocorrencias' só para email
-          await addDoc(this.ocorrenciasCollection, emailData);
+          // Cria documento na coleção 'mail' monitorada pela Firebase Extension Trigger Email
+          await addDoc(this.mailCollection, emailData);
           console.log('Email de ocorrência enviado para:', emailsDestino.join(', '));
         }
       }
@@ -414,7 +415,7 @@ Acesse o sistema para mais detalhes.
         }
       };
       
-      await addDoc(this.ocorrenciasCollection, emailData);
+      await addDoc(this.mailCollection, emailData);
       console.log('✅ Email de atraso enviado para:', emailsDestino.join(', '));
       
     } catch (error) {
@@ -449,7 +450,7 @@ Acesse o sistema para mais detalhes.
         }
       };
       
-      await addDoc(this.ocorrenciasCollection, emailData);
+      await addDoc(this.mailCollection, emailData);
       console.log('✅ Email de saída enviado para:', emailsDestino.join(', '));
       
     } catch (error) {
@@ -721,8 +722,8 @@ Acesse o sistema para mais detalhes.
       console.log('📧 Tentando enviar email para:', email);
       console.log('📦 Dados do email:', mailData);
       
-      // Adiciona documento na coleção 'ocorrencias' (monitorada pela Firebase Extension)
-      const docRef = await addDoc(this.ocorrenciasCollection, mailData);
+      // Adiciona documento na coleção 'mail' monitorada pela Firebase Extension Trigger Email
+      const docRef = await addDoc(this.mailCollection, mailData);
       
       console.log('✅ Email de primeiro acesso criado com ID:', docRef.id);
       console.log('✅ Email será enviado automaticamente pela Firebase Extension');
