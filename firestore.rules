@@ -39,18 +39,16 @@ service cloud.firestore {
       allow create: if request.auth != null && 
                        request.resource.data.email == request.auth.token.email;
       
-      // Permite leitura pública — necessário para buscar email no primeiro acesso
-      // (usuário ainda NÃO está autenticado nesse passo).
-      // Os dados (nome, email, role, escolaId) não contêm senhas (estão no Firebase Auth).
-      allow read: if true;
+      // Leitura permitida para usuários autenticados (incluindo sessão anônima do primeiro acesso).
+      // A autenticação anônima no primeiro acesso garante que apenas clientes legítimos consultem.
+      allow read: if request.auth != null;
     }
     
     // Regras para coleção 'ocorrencias'
     match /ocorrencias/{ocorrenciaId} {
-      // Usuários podem criar ocorrências para sua escola OU emails (documentos com 'to' e 'message')
+      // Usuários podem criar ocorrências apenas para sua própria escola
       allow create: if request.auth != null && 
-                      (belongsToSchool(request.resource.data.escolaId) || 
-                       (request.resource.data.keys().hasAny(['to', 'message'])));
+                      belongsToSchool(request.resource.data.escolaId);
       
       // Usuários podem ler e atualizar ocorrências da sua escola (não emails)
       allow read, update: if request.auth != null && 
@@ -72,8 +70,9 @@ service cloud.firestore {
     
     // Regras para coleção 'controleEntradaSaida'
     match /controleEntradaSaida/{controleId} {
-      // Qualquer usuário autenticado pode ler, criar e atualizar
-      allow read, write: if request.auth != null;
+      // Somente usuários da mesma escola podem ler/escrever
+      allow read, update, delete: if request.auth != null && belongsToSchool(resource.data.escolaId);
+      allow create: if request.auth != null && belongsToSchool(request.resource.data.escolaId);
     }
     
     // Regras para coleção 'mail' (Firebase Extension: Trigger Email)
@@ -90,11 +89,9 @@ service cloud.firestore {
 
     // Regras para coleção 'agendaEquipamentos'
     match /agendaEquipamentos/{agendaId} {
-      // Usuários autenticados podem ler todos os agendamentos
-      allow read: if request.auth != null;
-      
-      // Usuários autenticados podem criar/editar/deletar agendamentos
-      allow create, update, delete: if request.auth != null;
+      // Somente usuários da mesma escola podem ler/escrever
+      allow read, update, delete: if request.auth != null && belongsToSchool(resource.data.escolaId);
+      allow create: if request.auth != null && belongsToSchool(request.resource.data.escolaId);
     }
 
     // Regras para coleção 'turmas'
@@ -140,8 +137,9 @@ service cloud.firestore {
 
     // Regras para coleção 'conversas'
     match /conversas/{conversaId} {
-      // Usuários autenticados podem ler e escrever conversas
-      allow read, write: if request.auth != null;
+      // Somente usuários da mesma escola podem ler/escrever conversas
+      allow read, update, delete: if request.auth != null && belongsToSchool(resource.data.escolaId);
+      allow create: if request.auth != null && belongsToSchool(request.resource.data.escolaId);
     }
 
     // Regras para coleção 'buscaAtivaStatus'

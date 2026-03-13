@@ -32,41 +32,35 @@ export class PrimeiroAcesso {
       return;
     }
 
-    console.log('🔍 Verificando email:', this.email);
-
     try {
       this.processando = true;
       this.mensagemErro = '';
-      
-      console.log('📡 Buscando usuário no Firestore...');
-      // Busca usuário no Firestore
+
+      // Autentica anonimamente para permitir a query ao Firestore
+      // (o usuário ainda não tem conta — a sessão anônima é descartada ao criar a conta)
+      await this.authService.loginAnonimo();
+
       const usuario = await this.firestoreService.buscarUsuarioPorEmail(this.email);
-      console.log('✅ Resposta do Firestore:', usuario);
       
       if (!usuario) {
-        console.log('❌ Usuário não encontrado');
         this.mensagemErro = 'Email não encontrado. Entre em contato com o administrador da sua escola.';
         this.processando = false;
+        this.cdr.detectChanges();
         return;
       }
 
       if (!usuario.ativo) {
-        console.log('❌ Usuário inativo');
         this.mensagemErro = 'Este usuário está inativo. Entre em contato com o administrador.';
         this.processando = false;
+        this.cdr.detectChanges();
         return;
       }
 
-      // Email encontrado, permitir definir senha
-      console.log('✅ Email encontrado! Avançando para senha...');
       this.usuarioEncontrado = usuario;
       this.etapa = 'senha';
       this.cdr.detectChanges();
       
     } catch (error: any) {
-      console.error('❌ ERRO ao verificar email:', error);
-      console.error('Código do erro:', error?.code);
-      console.error('Mensagem do erro:', error?.message);
       if (error?.code === 'permission-denied' || error?.code === 'PERMISSION_DENIED') {
         this.mensagemErro = 'Erro de permissão ao buscar o email. Contate o administrador.';
       } else {

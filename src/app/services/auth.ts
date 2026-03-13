@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Auth, user } from '@angular/fire/auth';
 import { Router } from '@angular/router';
-import { GoogleAuthProvider, signInWithEmailAndPassword, signInWithPopup, signOut, createUserWithEmailAndPassword } from 'firebase/auth';
+import { GoogleAuthProvider, signInWithEmailAndPassword, signInWithPopup, signOut, createUserWithEmailAndPassword, signInAnonymously } from 'firebase/auth';
 import { FirestoreService } from './firestore';
 
 @Injectable({
@@ -90,6 +90,13 @@ export class AuthService {
 
   getCurrentUser() {
     return this.auth.currentUser;
+  }
+
+  /** Autentica anonimamente para permitir consulta ao Firestore no primeiro acesso. */
+  async loginAnonimo(): Promise<void> {
+    if (!this.auth.currentUser) {
+      await signInAnonymously(this.auth);
+    }
   }
 
   async getEscolaId(): Promise<string | null> {
