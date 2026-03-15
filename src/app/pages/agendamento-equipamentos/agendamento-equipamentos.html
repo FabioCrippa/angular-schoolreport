@@ -238,9 +238,48 @@
 
         <form>
           <div class="form-group">
-            <label for="data">Data da Reserva *</label>
-            <input type="date" id="data" [(ngModel)]="dataReserva" name="dataReserva"
-              [min]="obterDataHoje()" required>
+            <label for="equipamento">Equipamento *</label>
+            <select id="equipamento" [(ngModel)]="equipamento" name="equipamento" required>
+              <option value="tablet">Tablet</option>
+              <option value="notebook">Notebook</option>
+              <option value="sala-informatica">Sala de Informática</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Data da Reserva *</label>
+            <div class="cal-container cal-container--modal">
+              <div class="cal-header">
+                <button type="button" class="cal-nav" (click)="navegarMesModal(-1)">‹</button>
+                <span class="cal-mes-label">{{ nomeMesModal }}</span>
+                <button type="button" class="cal-nav" (click)="navegarMesModal(1)">›</button>
+                <div class="cal-legenda">
+                  <span class="cal-leg cal-leg--livre">Livre</span>
+                  <span class="cal-leg cal-leg--reservado">Parcial</span>
+                  <span class="cal-leg cal-leg--bloqueado">🔒</span>
+                </div>
+              </div>
+              <div class="cal-grid">
+                <div class="cal-dia-nome" *ngFor="let d of NOMES_DIAS_CAL">{{ d }}</div>
+                <div
+                  *ngFor="let dia of diasCalModal"
+                  class="cal-dia"
+                  [class.cal-dia--vazio]="dia.status === 'fora'"
+                  [class.cal-dia--fds]="dia.status === 'fds'"
+                  [class.cal-dia--passado]="dia.status === 'passado'"
+                  [class.cal-dia--livre]="dia.status === 'livre'"
+                  [class.cal-dia--reservado]="dia.status === 'reservado'"
+                  [class.cal-dia--bloqueado]="dia.status === 'bloqueado'"
+                  [class.cal-dia--selecionado]="dia.data === dataReserva"
+                  [class.cal-dia--hoje]="dia.data === hoje"
+                  (click)="selecionarDiaModal(dia.data, dia.status)">
+                  <span *ngIf="dia.dia > 0">{{ dia.dia }}</span>
+                  <span class="cal-lock" *ngIf="dia.status === 'bloqueado'">🔒</span>
+                </div>
+              </div>
+              <p class="cal-dica" *ngIf="dataReserva">Selecionado: {{ formatarData(dataReserva) }}</p>
+              <p class="cal-dica" *ngIf="!dataReserva">Clique em um dia para selecionar a data.</p>
+            </div>
           </div>
 
           <div class="form-row">
@@ -258,15 +297,6 @@
                 <option *ngFor="let hora of horarios" [value]="hora">{{ hora }}</option>
               </select>
             </div>
-          </div>
-
-          <div class="form-group">
-            <label for="equipamento">Equipamento *</label>
-            <select id="equipamento" [(ngModel)]="equipamento" name="equipamento" required>
-              <option value="tablet">Tablet</option>
-              <option value="notebook">Notebook</option>
-              <option value="sala-informatica">Sala de Informática</option>
-            </select>
           </div>
 
           <div class="form-group">

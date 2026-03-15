@@ -223,6 +223,7 @@ export class AgendamentoEquipamentosComponent implements OnInit {
   readonly hoje = new Date().toISOString().substring(0, 10);
 
   mesCalAtual = new Date().toISOString().substring(0, 7);
+  mesCalModal  = new Date().toISOString().substring(0, 7);
 
   get nomeMesAtual(): string {
     const [ano, mes] = this.mesCalAtual.split('-').map(Number);
@@ -284,6 +285,72 @@ export class AgendamentoEquipamentosComponent implements OnInit {
     if (!data || status === 'fora' || status === 'fds') return;
     this.filtroData = data;
     if (this.filtroEquipamento === 'todos') this.filtroEquipamento = 'tablet';
+    this.cdr.markForCheck();
+  }
+
+  navegarMesModal(delta: number) {
+    const [ano, mes] = this.mesCalModal.split('-').map(Number);
+    const d = new Date(ano, mes - 1 + delta, 1);
+    this.mesCalModal = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+    this.cdr.markForCheck();
+  }
+
+  get nomeMesModal(): string {
+    const [ano, mes] = this.mesCalModal.split('-').map(Number);
+    return `${this.NOMES_MESES[mes - 1]} ${ano}`;
+  }
+
+  get diasCalModal(): { data: string; dia: number; diaSemana: number; status: 'livre' | 'reservado' | 'bloqueado' | 'fora' | 'fds' | 'passado' }[] {
+    const [ano, mes] = this.mesCalModal.split('-').map(Number);
+    const primeiroDia = new Date(ano, mes - 1, 1).getDay();
+    const ultimoDia  = new Date(ano, mes, 0).getDate();
+    const equip = this.equipamento;
+    const dias: { data: string; dia: number; diaSemana: number; status: 'livre' | 'reservado' | 'bloqueado' | 'fora' | 'fds' | 'passado' }[] = [];
+
+    for (let i = 0; i < primeiroDia; i++) {
+      dias.push({ data: '', dia: 0, diaSemana: i, status: 'fora' });
+    }
+
+    for (let d = 1; d <= ultimoDia; d++) {
+      const mm   = String(mes).padStart(2, '0');
+      const dd   = String(d).padStart(2, '0');
+      const data = `${ano}-${mm}-${dd}`;
+      const dow  = new Date(ano, mes - 1, d).getDay();
+
+      if (dow === 0 || dow === 6) {
+        dias.push({ data, dia: d, diaSemana: dow, status: 'fds' });
+        continue;
+      }
+      if (data < this.hoje) {
+        dias.push({ data, dia: d, diaSemana: dow, status: 'passado' });
+        continue;
+      }
+
+      const hasBloqueio = this.bloqueios.some(b =>
+        b.equipamento === equip &&
+        b.dataInicio <= data &&
+        b.dataFim >= data &&
+        b.diasSemana.includes(dow)
+      );
+      if (hasBloqueio) {
+        dias.push({ data, dia: d, diaSemana: dow, status: 'bloqueado' });
+        continue;
+      }
+
+      const hasReserva = this.reservas.some(r =>
+        r.status === 'confirmada' &&
+        r.dataReserva === data &&
+        r.equipamento === equip
+      );
+      dias.push({ data, dia: d, diaSemana: dow, status: hasReserva ? 'reservado' : 'livre' });
+    }
+
+    return dias;
+  }
+
+  selecionarDiaModal(data: string, status: string) {
+    if (!data || status === 'fora' || status === 'fds' || status === 'passado') return;
+    this.dataReserva = data;
     this.cdr.markForCheck();
   }
 
@@ -359,6 +426,7 @@ export class AgendamentoEquipamentosComponent implements OnInit {
     this.reservaEmEdicao = null;
     this.limparFormulario();
     this.mensagemErro = '';
+    this.mesCalModal = new Date().toISOString().substring(0, 7);
     this.mostrarModal = true;
   }
 

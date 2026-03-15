@@ -540,6 +540,13 @@ form {
   margin-bottom: 1rem;
   box-shadow: 0 1px 4px rgba(0,0,0,0.06);
   max-width: 360px;
+
+  &--modal {
+    max-width: 100%;
+    box-shadow: none;
+    border-color: darken($border-color, 6%);
+    margin-bottom: 0;
+  }
 }
 
 .cal-header {
@@ -633,6 +640,14 @@ form {
     background: #F3F4F6;
     color: #D1D5DB;
     cursor: default;
+  }
+
+  &--passado {
+    background: #F3F4F6;
+    color: #C4C9D4;
+    cursor: default;
+    text-decoration: line-through;
+    opacity: 0.6;
   }
 
   &--livre {
