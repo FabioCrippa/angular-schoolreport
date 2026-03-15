@@ -724,4 +724,97 @@ export class AgendamentoEquipamentosComponent implements OnInit {
     };
     return mapa[equipamento] || equipamento;
   }
+
+  exportarPDF() {
+    const reservasAtivas = this.reservas
+      .filter(r => r.status === 'confirmada')
+      .sort((a, b) => a.dataReserva.localeCompare(b.dataReserva) || a.horaInicio.localeCompare(b.horaInicio));
+
+    const grupos = new Map<string, Reserva[]>();
+    for (const r of reservasAtivas) {
+      if (!grupos.has(r.dataReserva)) grupos.set(r.dataReserva, []);
+      grupos.get(r.dataReserva)!.push(r);
+    }
+
+    const equipamentoCor: Record<string, string> = {
+      'tablet': '#2563EB',
+      'notebook': '#7C3AED',
+      'sala-informatica': '#059669'
+    };
+
+    const linhas = [...grupos.entries()].map(([data, rs]) => {
+      const [ano, mes, dia] = data.split('-');
+      const dataObj = new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia));
+      const dataFormatada = dataObj.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
+      const rows = rs.map(r => {
+        const cor = equipamentoCor[r.equipamento] || '#374151';
+        return `
+          <tr>
+            <td style="font-weight:600;color:${cor}">${this.obterEquipamentoEmPortugues(r.equipamento)}</td>
+            <td>${r.horaInicio} – ${r.horaFim}</td>
+            <td>${r.professorNome}</td>
+            <td>${r.turmaDescricao}</td>
+            <td>${r.atividade}</td>
+          </tr>`;
+      }).join('');
+      return `
+        <tr class="data-header">
+          <td colspan="5">${dataFormatada}</td>
+        </tr>
+        ${rows}`;
+    }).join('');
+
+    const dataGeracao = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+    const html = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Agenda de Equipamentos</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; font-size: 13px; color: #111; padding: 24px; }
+    h1 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+    .subtitulo { font-size: 12px; color: #6B7280; margin-bottom: 20px; }
+    table { width: 100%; border-collapse: collapse; }
+    th { background: #1E3A5F; color: #fff; padding: 8px 10px; text-align: left; font-size: 12px; letter-spacing: 0.5px; text-transform: uppercase; }
+    td { padding: 7px 10px; border-bottom: 1px solid #E5E7EB; vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    tr.data-header td { background: #F3F4F6; font-weight: 700; font-size: 13px; color: #1E3A5F; padding: 10px; border-top: 2px solid #1E3A5F; letter-spacing: 0.3px; }
+    tr:not(.data-header):hover td { background: #F9FAFB; }
+    .rodape { margin-top: 24px; font-size: 11px; color: #9CA3AF; text-align: right; }
+    @media print {
+      body { padding: 12px; }
+      button { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <h1>📅 Agenda de Equipamentos</h1>
+  <p class="subtitulo">Gerado em ${dataGeracao} · Apenas agendamentos confirmados</p>
+  ${reservasAtivas.length === 0 ? '<p style="color:#6B7280;padding:24px 0">Nenhum agendamento confirmado.</p>' : `
+  <table>
+    <thead>
+      <tr>
+        <th>Equipamento</th>
+        <th>Horário</th>
+        <th>Professor(a)</th>
+        <th>Turma</th>
+        <th>Atividade</th>
+      </tr>
+    </thead>
+    <tbody>${linhas}</tbody>
+  </table>`}
+  <p class="rodape">ReportOnClass · Agenda de Equipamentos</p>
+</body>
+</html>`;
+
+    const w = window.open('', '_blank', 'width=900,height=700');
+    if (w) {
+      w.document.write(html);
+      w.document.close();
+      w.focus();
+      setTimeout(() => w.print(), 500);
+    }
+  }
 }

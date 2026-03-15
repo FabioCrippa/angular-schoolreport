@@ -12,6 +12,9 @@
       <button class="btn-novo" (click)="abrirModal()" *ngIf="abaAtiva === 'agendamentos'">
         + Novo Agendamento
       </button>
+      <button class="btn-pdf" (click)="exportarPDF()" *ngIf="abaAtiva === 'agendamentos' && isCoordenacao">
+        🖨️ Exportar PDF
+      </button>
       <button class="btn-bloqueio-novo" (click)="abrirModalBloqueio()" *ngIf="abaAtiva === 'bloqueios' && isCoordenacao">
         🔒 Novo Bloqueio
       </button>

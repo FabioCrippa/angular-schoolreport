@@ -864,6 +864,25 @@ form {
   }
 }
 
+.btn-pdf {
+  padding: 0.875rem 1.5rem;
+  background: #D97706;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+
+  &:hover {
+    background: #B45309;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(217, 119, 6, 0.3);
+  }
+}
+
 // ===== INFO BLOQUEIOS =====
 .bloqueios-info {
   display: flex;
