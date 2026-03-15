@@ -1168,7 +1168,7 @@ Equipe escu
   async obterAgendaEquipamentos(escolaId: string): Promise<any[]> {
     try {
       const agendaCollection = collection(this.firestore, 'agendaEquipamentos');
-      const q = query(agendaCollection, where('escolaId', '==', escolaId), orderBy('dataReserva', 'asc'));
+      const q = query(agendaCollection, where('escolaId', '==', escolaId));
       const querySnapshot = await getDocs(q);
       
       const reservas: any[] = [];
@@ -1180,7 +1180,8 @@ Equipe escu
           criadoEm: data['criadoEm']?.toDate()
         });
       });
-      
+
+      reservas.sort((a, b) => (a.dataReserva || '').localeCompare(b.dataReserva || ''));
       return reservas;
     } catch (error) {
       console.error('Erro ao obter agenda de equipamentos:', error);

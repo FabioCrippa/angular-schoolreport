@@ -725,7 +725,8 @@ export class AgendamentoEquipamentosComponent implements OnInit {
     return mapa[equipamento] || equipamento;
   }
 
-  exportarPDF() {
+  async exportarPDF() {
+    await this.carregarReservas();
     const reservasAtivas = this.reservas
       .filter(r => r.status !== 'cancelada')
       .sort((a, b) => a.dataReserva.localeCompare(b.dataReserva) || a.horaInicio.localeCompare(b.horaInicio));
