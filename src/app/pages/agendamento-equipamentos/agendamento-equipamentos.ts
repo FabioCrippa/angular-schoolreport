@@ -49,7 +49,7 @@ interface Bloqueio {
 })
 export class AgendamentoEquipamentosComponent implements OnInit {
   reservas: Reserva[] = [];
-  filtroEquipamento: 'todos' | 'tablet' | 'notebook' = 'todos';
+  filtroEquipamento: 'todos' | 'tablet' | 'notebook' | 'sala-informatica' = 'todos';
   filtroData: string = '';
   processando = false;
   mensagemErro = '';
@@ -160,8 +160,9 @@ export class AgendamentoEquipamentosComponent implements OnInit {
         this.usuarioRole = usuarioData?.role || 'professor';
       }
 
+      await this.carregarBloqueios();
+
       if (this.isCoordenacao) {
-        await this.carregarBloqueios();
         await this.carregarProfessores();
       }
 
@@ -209,6 +210,51 @@ export class AgendamentoEquipamentosComponent implements OnInit {
     } catch (erro) {
       console.error('Erro ao carregar turmas:', erro);
     }
+  }
+
+  get mostrarGrade(): boolean {
+    return this.filtroData !== '' && this.filtroEquipamento !== 'todos';
+  }
+
+  statusSlot(hora: string): { status: 'livre' | 'ocupado' | 'bloqueado'; info: string } {
+    const equip = this.filtroEquipamento as 'tablet' | 'notebook' | 'sala-informatica';
+    const data = this.filtroData;
+    const diaSemana = new Date(data + 'T12:00:00').getDay();
+
+    const blq = this.bloqueios.find(b =>
+      b.equipamento === equip &&
+      b.dataInicio <= data &&
+      b.dataFim >= data &&
+      b.diasSemana.includes(diaSemana) &&
+      b.horaInicio <= hora &&
+      b.horaFim > hora
+    );
+    if (blq) {
+      const prof = blq.professorNome ? ' – ' + blq.professorNome : '';
+      return { status: 'bloqueado', info: blq.motivo + prof };
+    }
+
+    const res = this.reservas.find(r =>
+      r.status === 'confirmada' &&
+      r.dataReserva === data &&
+      r.equipamento === equip &&
+      r.horaInicio <= hora &&
+      r.horaFim > hora
+    );
+    if (res) return { status: 'ocupado', info: res.professorNome + ' • ' + res.atividade };
+
+    return { status: 'livre', info: 'Clique para agendar' };
+  }
+
+  agendarSlot(hora: string) {
+    this.editando = false;
+    this.reservaEmEdicao = null;
+    this.limparFormulario();
+    this.dataReserva = this.filtroData;
+    this.equipamento = this.filtroEquipamento as 'tablet' | 'notebook' | 'sala-informatica';
+    this.horaInicio = hora;
+    this.mensagemErro = '';
+    this.mostrarModal = true;
   }
 
   get reservasFiltradas() {

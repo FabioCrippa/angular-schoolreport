@@ -531,6 +531,113 @@ form {
   }
 }
 
+// ===== GRADE DE DISPONIBILIDADE =====
+.grade-disponibilidade {
+  background: $bg-white;
+  border: 1px solid $border-color;
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+.grade-titulo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.grade-titulo-text {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: $text-dark;
+}
+
+.grade-legenda {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.legenda-item {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 20px;
+}
+
+.legenda--livre    { background: #D1FAE5; color: #065F46; }
+.legenda--ocupado  { background: #FEE2E2; color: #991B1B; }
+.legenda--bloqueado { background: #EDE9FE; color: #5B21B6; }
+
+.grade-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.slot-pill {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 68px;
+  padding: 0.45rem 0.25rem;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+  line-height: 1.2;
+
+  &--livre {
+    background: #D1FAE5;
+    border-color: #6EE7B7;
+    color: #065F46;
+    &:hover {
+      background: #A7F3D0;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(16, 185, 129, 0.25);
+    }
+  }
+
+  &--ocupado {
+    background: #FEE2E2;
+    border-color: #FECACA;
+    color: #991B1B;
+    cursor: default;
+    opacity: 0.85;
+  }
+
+  &--bloqueado {
+    background: #EDE9FE;
+    border-color: #DDD6FE;
+    color: #5B21B6;
+    cursor: default;
+    opacity: 0.9;
+  }
+}
+
+.slot-icone {
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.slot-hora {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.grade-dica {
+  margin: 0.75rem 0 0;
+  font-size: 0.75rem;
+  color: $text-gray;
+}
+
 // ===== ABAS =====
 .abas {
   display: flex;

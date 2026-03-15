@@ -59,6 +59,41 @@
       </button>
     </div>
 
+    <!-- GRADE DE DISPONIBILIDADE -->
+    <div class="grade-disponibilidade" *ngIf="mostrarGrade">
+      <div class="grade-titulo">
+        <span class="grade-titulo-text">
+          Disponibilidade — {{ formatarData(filtroData) }} — {{ obterEquipamentoEmPortugues(filtroEquipamento) }}
+        </span>
+        <div class="grade-legenda">
+          <span class="legenda-item legenda--livre">✓ Livre</span>
+          <span class="legenda-item legenda--ocupado">✕ Ocupado</span>
+          <span class="legenda-item legenda--bloqueado">🔒 Bloqueado</span>
+        </div>
+      </div>
+      <div class="grade-pills">
+        <button
+          *ngFor="let hora of horarios"
+          class="slot-pill"
+          [class.slot-pill--livre]="statusSlot(hora).status === 'livre'"
+          [class.slot-pill--ocupado]="statusSlot(hora).status === 'ocupado'"
+          [class.slot-pill--bloqueado]="statusSlot(hora).status === 'bloqueado'"
+          [title]="statusSlot(hora).info"
+          [disabled]="statusSlot(hora).status !== 'livre'"
+          (click)="statusSlot(hora).status === 'livre' && agendarSlot(hora)">
+          <span class="slot-icone">
+            <ng-container [ngSwitch]="statusSlot(hora).status">
+              <ng-container *ngSwitchCase="'livre'">✓</ng-container>
+              <ng-container *ngSwitchCase="'ocupado'">✕</ng-container>
+              <ng-container *ngSwitchCase="'bloqueado'">🔒</ng-container>
+            </ng-container>
+          </span>
+          <span class="slot-hora">{{ hora }}</span>
+        </button>
+      </div>
+      <p class="grade-dica">Clique em um horário livre para agendar diretamente.</p>
+    </div>
+
     <!-- LISTA DE RESERVAS -->
     <div class="tabela-container">
       <div class="sem-reservas" *ngIf="reservasFiltradas.length === 0">
