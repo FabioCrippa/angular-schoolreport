@@ -530,3 +530,211 @@ form {
     grid-template-columns: 1fr;
   }
 }
+
+// ===== ABAS =====
+.abas {
+  display: flex;
+  gap: 0;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid $border-color;
+}
+
+.aba-btn {
+  position: relative;
+  padding: 0.75rem 1.5rem;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: $text-gray;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  &:hover { color: $text-dark; }
+
+  &--ativa {
+    color: $primary-blue;
+    border-bottom-color: $primary-blue;
+  }
+}
+
+.aba-badge {
+  background: #EF4444;
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 999px;
+  min-width: 18px;
+  text-align: center;
+}
+
+// ===== BOTÃO BLOQUEIO NOVO =====
+.btn-bloqueio-novo {
+  padding: 0.875rem 1.5rem;
+  background: #7C3AED;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+
+  &:hover {
+    background: #6D28D9;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(124, 58, 237, 0.3);
+  }
+}
+
+// ===== INFO BLOQUEIOS =====
+.bloqueios-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  background: #EFF6FF;
+  border: 1px solid #BFDBFE;
+  border-radius: 8px;
+  color: #1E40AF;
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+
+  .info-icon { font-size: 1.1rem; flex-shrink: 0; }
+}
+
+// ===== LISTA BLOQUEIOS =====
+.bloqueios-lista {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+
+  @media (max-width: 768px) { grid-template-columns: 1fr; }
+}
+
+.bloqueio-card {
+  border: 2px solid #DDD6FE;
+  border-radius: 8px;
+  overflow: hidden;
+  background: white;
+  transition: box-shadow 0.2s;
+
+  &:hover { box-shadow: 0 4px 16px rgba(124, 58, 237, 0.12); }
+}
+
+.bloqueio-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.875rem 1.25rem;
+  background: #F5F3FF;
+  border-bottom: 1px solid #DDD6FE;
+}
+
+.bloqueio-body {
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.bloqueio-motivo {
+  font-weight: 700;
+  font-size: 1rem;
+  color: #4C1D95;
+  margin-bottom: 0.25rem;
+}
+
+.bloqueio-detalhe {
+  font-size: 0.875rem;
+  color: $text-gray;
+}
+
+.bi-label {
+  font-weight: 600;
+  color: $text-dark;
+}
+
+.btn-remover-bloqueio {
+  background: none;
+  border: none;
+  color: #EF4444;
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: background 0.15s;
+
+  &:hover { background: #FEE2E2; }
+}
+
+// ===== MODAL BLOQUEIO =====
+.modal--bloqueio { max-width: 560px; }
+
+.modal-header--bloqueio {
+  background: #F5F3FF;
+  border-bottom-color: #DDD6FE;
+
+  h2 { color: #5B21B6; }
+}
+
+.btn-bloqueio-salvar {
+  padding: 0.875rem 1.5rem;
+  background: #7C3AED;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover:not(:disabled) {
+    background: #6D28D9;
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+  }
+
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+
+// ===== DIAS DA SEMANA =====
+.dias-semana-grid {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.dia-btn {
+  width: 52px;
+  height: 38px;
+  border-radius: 6px;
+  border: 1.5px solid $border-color;
+  background: $bg-white;
+  color: $text-gray;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover { border-color: #7C3AED; color: #7C3AED; }
+
+  &--ativo {
+    background: #7C3AED;
+    border-color: #7C3AED;
+    color: white;
+  }
+}
+
+// ===== FORM HINT =====
+.form-hint {
+  color: $text-gray;
+  font-size: 0.78rem;
+  margin-top: 0.25rem;
+}

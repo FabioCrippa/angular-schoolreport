@@ -1226,6 +1226,58 @@ Equipe escu
     }
   }
 
+  async obterBloqueiosPeriodo(escolaId: string): Promise<any[]> {
+    try {
+      const col = collection(this.firestore, 'agendaEquipamentos');
+      const q = query(col,
+        where('escolaId', '==', escolaId),
+        where('tipo', '==', 'bloqueio'),
+        orderBy('dataInicio', 'asc')
+      );
+      const snap = await getDocs(q);
+      return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    } catch (error) {
+      console.error('Erro ao obter bloqueios:', error);
+      throw error;
+    }
+  }
+
+  async criarBloqueio(bloqueio: any): Promise<string> {
+    try {
+      const col = collection(this.firestore, 'agendaEquipamentos');
+      const docRef = await addDoc(col, { ...bloqueio, tipo: 'bloqueio', criadoEm: Timestamp.now() });
+      return docRef.id;
+    } catch (error) {
+      console.error('Erro ao criar bloqueio:', error);
+      throw error;
+    }
+  }
+
+  async deletarBloqueio(bloqueioId: string): Promise<void> {
+    try {
+      await deleteDoc(doc(this.firestore, 'agendaEquipamentos', bloqueioId));
+    } catch (error) {
+      console.error('Erro ao deletar bloqueio:', error);
+      throw error;
+    }
+  }
+
+  async obterProfessoresDaEscola(escolaId: string): Promise<any[]> {
+    try {
+      const col = collection(this.firestore, 'usuarios');
+      const q = query(col,
+        where('escolaId', '==', escolaId),
+        where('role', '==', 'professor'),
+        where('ativo', '==', true)
+      );
+      const snap = await getDocs(q);
+      return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    } catch (error) {
+      console.error('Erro ao obter professores:', error);
+      throw error;
+    }
+  }
+
   async obterTurmasProfessor(professorId: string): Promise<any[]> {
     try {
       const turmasCollection = collection(this.firestore, 'turmas');

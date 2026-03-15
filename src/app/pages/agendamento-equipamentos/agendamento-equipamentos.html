@@ -9,10 +9,24 @@
       <button class="btn-voltar" (click)="voltar()">
         ← Voltar
       </button>
-      <button class="btn-novo" (click)="abrirModal()" *ngIf="!mostrarModal">
+      <button class="btn-novo" (click)="abrirModal()" *ngIf="abaAtiva === 'agendamentos'">
         + Novo Agendamento
       </button>
+      <button class="btn-bloqueio-novo" (click)="abrirModalBloqueio()" *ngIf="abaAtiva === 'bloqueios' && isCoordenacao">
+        🔒 Novo Bloqueio
+      </button>
     </div>
+  </div>
+
+  <!-- ABAS (só para coordenação) -->
+  <div class="abas" *ngIf="isCoordenacao">
+    <button class="aba-btn" [class.aba-btn--ativa]="abaAtiva === 'agendamentos'" (click)="abaAtiva = 'agendamentos'">
+      📅 Agendamentos
+    </button>
+    <button class="aba-btn" [class.aba-btn--ativa]="abaAtiva === 'bloqueios'" (click)="abaAtiva = 'bloqueios'">
+      🔒 Bloqueios de Período
+      <span class="aba-badge" *ngIf="bloqueios.length > 0">{{ bloqueios.length }}</span>
+    </button>
   </div>
 
   <!-- MENSAGENS -->
@@ -20,74 +34,128 @@
     ✓ {{ mensagemSucesso }}
   </div>
 
-  <!-- FILTROS -->
-  <div class="filtros">
-    <div class="filtro-grupo">
-      <label>Equipamento:</label>
-      <select [(ngModel)]="filtroEquipamento">
-        <option value="todos">Todos</option>
-        <option value="tablet">Tablet</option>
-        <option value="notebook">Notebook</option>
-        <option value="sala-informatica">Sala de Informática</option>
-      </select>
-    </div>
-    <div class="filtro-grupo">
-      <label>Data:</label>
-      <input type="date" [(ngModel)]="filtroData">
-    </div>
-    <button class="btn-secundario" (click)="filtroData = ''; filtroEquipamento = 'todos'">
-      Limpar Filtros
-    </button>
-  </div>
+  <!-- ════════════════════════════════════
+       ABA: AGENDAMENTOS
+       ════════════════════════════════════ -->
+  <ng-container *ngIf="abaAtiva === 'agendamentos'">
 
-  <!-- TABELA DE RESERVAS -->
-  <div class="tabela-container">
-    <div class="sem-reservas" *ngIf="reservasFiltradas.length === 0">
-      <p>Nenhuma reserva encontrada</p>
-      <small>Clique em "Novo Agendamento" para criar uma</small>
+    <!-- FILTROS -->
+    <div class="filtros">
+      <div class="filtro-grupo">
+        <label>Equipamento:</label>
+        <select [(ngModel)]="filtroEquipamento">
+          <option value="todos">Todos</option>
+          <option value="tablet">Tablet</option>
+          <option value="notebook">Notebook</option>
+          <option value="sala-informatica">Sala de Informática</option>
+        </select>
+      </div>
+      <div class="filtro-grupo">
+        <label>Data:</label>
+        <input type="date" [(ngModel)]="filtroData">
+      </div>
+      <button class="btn-secundario" (click)="filtroData = ''; filtroEquipamento = 'todos'">
+        Limpar Filtros
+      </button>
     </div>
 
-    <div class="reservas-grid" *ngIf="reservasFiltradas.length > 0">
-      <div class="reserva-card" *ngFor="let reserva of reservasFiltradas">
-        <div class="card-header">
-          <div class="equipamento" [ngClass]="'eq-' + reserva.equipamento">
-            {{ obterEquipamentoEmPortugues(reserva.equipamento) }}
-          </div>
-          <div class="data">{{ formatarData(reserva.dataReserva) }}</div>
-        </div>
+    <!-- LISTA DE RESERVAS -->
+    <div class="tabela-container">
+      <div class="sem-reservas" *ngIf="reservasFiltradas.length === 0">
+        <p>Nenhuma reserva encontrada</p>
+        <small>Clique em "Novo Agendamento" para criar uma</small>
+      </div>
 
-        <div class="card-body">
-          <div class="info-row">
-            <span class="label">Horário:</span>
-            <span class="valor">{{ reserva.horaInicio }} - {{ reserva.horaFim }}</span>
+      <div class="reservas-grid" *ngIf="reservasFiltradas.length > 0">
+        <div class="reserva-card" *ngFor="let reserva of reservasFiltradas">
+          <div class="card-header">
+            <div class="equipamento" [ngClass]="'eq-' + reserva.equipamento">
+              {{ obterEquipamentoEmPortugues(reserva.equipamento) }}
+            </div>
+            <div class="data">{{ formatarData(reserva.dataReserva) }}</div>
           </div>
-          <div class="info-row">
-            <span class="label">Professor:</span>
-            <span class="valor">{{ reserva.professorNome }}</span>
-          </div>
-          <div class="info-row">
-            <span class="label">Turma:</span>
-            <span class="valor">{{ reserva.turmaDescricao }}</span>
-          </div>
-          <div class="info-row">
-            <span class="label">Atividade:</span>
-            <span class="valor">{{ reserva.atividade }}</span>
-          </div>
-        </div>
 
-        <div class="card-footer" *ngIf="reserva.professorId === usuarioId">
-          <button class="btn-editar" (click)="editarReserva(reserva)">
-            ✎ Editar
-          </button>
-          <button class="btn-cancelar" (click)="cancelarReserva(reserva)">
-            ✕ Cancelar
-          </button>
+          <div class="card-body">
+            <div class="info-row">
+              <span class="label">Horário:</span>
+              <span class="valor">{{ reserva.horaInicio }} - {{ reserva.horaFim }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Professor:</span>
+              <span class="valor">{{ reserva.professorNome }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Turma:</span>
+              <span class="valor">{{ reserva.turmaDescricao }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Atividade:</span>
+              <span class="valor">{{ reserva.atividade }}</span>
+            </div>
+          </div>
+
+          <div class="card-footer" *ngIf="reserva.professorId === usuarioId">
+            <button class="btn-editar" (click)="editarReserva(reserva)">
+              ✎ Editar
+            </button>
+            <button class="btn-cancelar" (click)="cancelarReserva(reserva)">
+              ✕ Cancelar
+            </button>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- MODAL AGENDAMENTO -->
+  </ng-container>
+
+  <!-- ════════════════════════════════════
+       ABA: BLOQUEIOS DE PERÍODO
+       ════════════════════════════════════ -->
+  <ng-container *ngIf="abaAtiva === 'bloqueios' && isCoordenacao">
+
+    <div class="bloqueios-info">
+      <span class="info-icon">ℹ️</span>
+      Bloqueios reservam um equipamento para um professor em dias e horários específicos durante
+      um período. Professores não conseguirão agendar aquele horário bloqueado.
+    </div>
+
+    <div class="tabela-container">
+      <div class="sem-reservas" *ngIf="bloqueios.length === 0">
+        <p>Nenhum bloqueio cadastrado</p>
+        <small>Clique em "🔒 Novo Bloqueio" para reservar um período prioritário</small>
+      </div>
+
+      <div class="bloqueios-lista" *ngIf="bloqueios.length > 0">
+        <div class="bloqueio-card" *ngFor="let b of bloqueios">
+          <div class="bloqueio-header">
+            <div class="equipamento" [ngClass]="'eq-' + b.equipamento">
+              🔒 {{ obterEquipamentoEmPortugues(b.equipamento) }}
+            </div>
+            <button class="btn-remover-bloqueio" (click)="removerBloqueio(b.id!)" title="Remover bloqueio">✕</button>
+          </div>
+          <div class="bloqueio-body">
+            <div class="bloqueio-motivo">{{ b.motivo }}</div>
+            <div class="bloqueio-detalhe">
+              <span class="bi-label">Professor:</span> {{ b.professorNome || 'Não especificado' }}
+            </div>
+            <div class="bloqueio-detalhe">
+              <span class="bi-label">Período:</span>
+              {{ formatarData(b.dataInicio) }} → {{ formatarData(b.dataFim) }}
+            </div>
+            <div class="bloqueio-detalhe">
+              <span class="bi-label">Dias:</span> {{ formatarDiasSemana(b.diasSemana) }}
+            </div>
+            <div class="bloqueio-detalhe">
+              <span class="bi-label">Horário:</span> {{ b.horaInicio }} – {{ b.horaFim }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </ng-container>
+
+  <!-- MODAL: NOVO AGENDAMENTO -->
   <div class="modal-overlay" *ngIf="mostrarModal" (click)="fecharModal()">
     <div class="modal" (click)="$event.stopPropagation()">
       <div class="modal-header">
@@ -96,128 +164,166 @@
       </div>
 
       <div class="modal-body">
-        <!-- MENSAGEM DE ERRO -->
         <div class="mensagem-erro" *ngIf="mensagemErro">
           {{ mensagemErro }}
         </div>
 
         <form>
-          <!-- DATA -->
           <div class="form-group">
             <label for="data">Data da Reserva *</label>
-            <input
-              type="date"
-              id="data"
-              [(ngModel)]="dataReserva"
-              name="dataReserva"
-              [min]="obterDataHoje()"
-              [max]="obterDataLimite()"
-              required>
+            <input type="date" id="data" [(ngModel)]="dataReserva" name="dataReserva"
+              [min]="obterDataHoje()" required>
           </div>
 
-          <!-- HORA INICIO E FIM -->
           <div class="form-row">
             <div class="form-group">
               <label for="horaInicio">Hora Início *</label>
-              <select
-                id="horaInicio"
-                [(ngModel)]="horaInicio"
-                name="horaInicio"
-                required>
+              <select id="horaInicio" [(ngModel)]="horaInicio" name="horaInicio" required>
                 <option value="">Selecione...</option>
-                <option *ngFor="let hora of horarios" [value]="hora">
-                  {{ hora }}
-                </option>
+                <option *ngFor="let hora of horarios" [value]="hora">{{ hora }}</option>
               </select>
             </div>
             <div class="form-group">
               <label for="horaFim">Hora Fim *</label>
-              <select
-                id="horaFim"
-                [(ngModel)]="horaFim"
-                name="horaFim"
-                required>
+              <select id="horaFim" [(ngModel)]="horaFim" name="horaFim" required>
                 <option value="">Selecione...</option>
-                <option *ngFor="let hora of horarios" [value]="hora">
-                  {{ hora }}
-                </option>
+                <option *ngFor="let hora of horarios" [value]="hora">{{ hora }}</option>
               </select>
             </div>
           </div>
 
-          <!-- EQUIPAMENTO -->
           <div class="form-group">
             <label for="equipamento">Equipamento *</label>
-            <select
-              id="equipamento"
-              [(ngModel)]="equipamento"
-              name="equipamento"
-              required>
+            <select id="equipamento" [(ngModel)]="equipamento" name="equipamento" required>
               <option value="tablet">Tablet</option>
               <option value="notebook">Notebook</option>
               <option value="sala-informatica">Sala de Informática</option>
             </select>
           </div>
 
-          <!-- TIPO DE ENSINO -->
           <div class="form-group">
             <label for="tipoEnsino">Tipo de Ensino *</label>
-            <select
-              id="tipoEnsino"
-              [(ngModel)]="tipoEnsinoSelecionado"
-              name="tipoEnsino"
-              (change)="onTipoEnsinoChange(tipoEnsinoSelecionado)"
-              required>
+            <select id="tipoEnsino" [(ngModel)]="tipoEnsinoSelecionado" name="tipoEnsino"
+              (change)="onTipoEnsinoChange(tipoEnsinoSelecionado)" required>
               <option value="">Selecione...</option>
-              <option *ngFor="let tipo of tiposEnsino" [value]="tipo">
-                {{ tipo }}
-              </option>
+              <option *ngFor="let tipo of tiposEnsino" [value]="tipo">{{ tipo }}</option>
             </select>
           </div>
 
-          <!-- TURMA -->
           <div class="form-group">
             <label for="turma">Turma *</label>
-            <select
-              id="turma"
-              [(ngModel)]="turmaId"
-              name="turmaId"
-              [disabled]="turmasFiltradas.length === 0"
-              required>
-              <option value="">
-                {{ turmasFiltradas.length === 0 ? 'Selecione...' : 'Selecione a turma' }}
-              </option>
-              <option *ngFor="let turma of turmasFiltradas" [value]="turma">
-                {{ turma }}
-              </option>
+            <select id="turma" [(ngModel)]="turmaId" name="turmaId"
+              [disabled]="turmasFiltradas.length === 0" required>
+              <option value="">{{ turmasFiltradas.length === 0 ? 'Selecione o tipo de ensino primeiro' : 'Selecione a turma' }}</option>
+              <option *ngFor="let turma of turmasFiltradas" [value]="turma">{{ turma }}</option>
             </select>
           </div>
 
-          <!-- ATIVIDADE -->
           <div class="form-group">
             <label for="atividade">Atividade *</label>
-            <input
-              type="text"
-              id="atividade"
-              [(ngModel)]="atividade"
-              name="atividade"
-              placeholder="Ex: Aula de Programação, Vídeo Aula, etc"
-              required>
+            <input type="text" id="atividade" [(ngModel)]="atividade" name="atividade"
+              placeholder="Ex: Aula de Programação, Vídeo Aula, etc" required>
           </div>
         </form>
       </div>
 
       <div class="modal-footer">
-        <button class="btn-secundario" (click)="fecharModal()" [disabled]="processando">
-          Cancelar
-        </button>
-        <button
-          class="btn-primary"
-          (click)="criarOuEditarReserva()"
-          [disabled]="processando">
+        <button class="btn-secundario" (click)="fecharModal()" [disabled]="processando">Cancelar</button>
+        <button class="btn-primary" (click)="criarOuEditarReserva()" [disabled]="processando">
           {{ processando ? 'Salvando...' : (editando ? 'Atualizar' : 'Agendar') }}
         </button>
       </div>
     </div>
   </div>
+
+  <!-- MODAL: BLOQUEIO DE PERÍODO -->
+  <div class="modal-overlay" *ngIf="mostrarModalBloqueio" (click)="fecharModalBloqueio()">
+    <div class="modal modal--bloqueio" (click)="$event.stopPropagation()">
+      <div class="modal-header modal-header--bloqueio">
+        <h2>🔒 Novo Bloqueio de Período</h2>
+        <button class="btn-fechar" (click)="fecharModalBloqueio()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="mensagem-erro" *ngIf="mensagemErro">{{ mensagemErro }}</div>
+
+        <form>
+          <div class="form-group">
+            <label>Equipamento *</label>
+            <select [(ngModel)]="bloqueioEquipamento" name="bloqueioEq">
+              <option value="tablet">Tablet</option>
+              <option value="notebook">Notebook</option>
+              <option value="sala-informatica">Sala de Informática</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Professor com prioridade</label>
+            <select [(ngModel)]="bloqueioProfessorId" name="bloqueioProfessor"
+              (change)="onProfessorChange(bloqueioProfessorId)">
+              <option value="">Nenhum (bloqueio geral)</option>
+              <option *ngFor="let p of professoresDaEscola" [value]="p.id">{{ p.nome }}</option>
+            </select>
+            <small class="form-hint">O nome do professor aparecerá quando outro tentar agendar o mesmo horário.</small>
+          </div>
+
+          <div class="form-group">
+            <label>Motivo / Descrição *</label>
+            <input type="text" [(ngModel)]="bloqueioMotivo" name="bloqueioMotivo"
+              placeholder="Ex: Projeto Leitura – Redação e Literatura">
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Data Início *</label>
+              <input type="date" [(ngModel)]="bloqueioDataInicio" name="bloqueioDataIni"
+                [min]="obterDataHoje()">
+            </div>
+            <div class="form-group">
+              <label>Data Fim *</label>
+              <input type="date" [(ngModel)]="bloqueioDataFim" name="bloqueioDataFim"
+                [min]="bloqueioDataInicio || obterDataHoje()">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Dias da Semana *</label>
+            <div class="dias-semana-grid">
+              <button type="button" class="dia-btn"
+                *ngFor="let dia of DIAS_SEMANA"
+                [class.dia-btn--ativo]="diaSelecionado(dia.valor)"
+                (click)="toggleDiaSemana(dia.valor)">
+                {{ dia.label }}
+              </button>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Hora Início *</label>
+              <select [(ngModel)]="bloqueioHoraInicio" name="bloqueioHoraIni">
+                <option value="">Selecione...</option>
+                <option *ngFor="let hora of horarios" [value]="hora">{{ hora }}</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Hora Fim *</label>
+              <select [(ngModel)]="bloqueioHoraFim" name="bloqueioHoraFimSel">
+                <option value="">Selecione...</option>
+                <option *ngFor="let hora of horarios" [value]="hora">{{ hora }}</option>
+              </select>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-secundario" (click)="fecharModalBloqueio()" [disabled]="processandoBloqueio">Cancelar</button>
+        <button class="btn-bloqueio-salvar" (click)="salvarBloqueio()" [disabled]="processandoBloqueio">
+          {{ processandoBloqueio ? 'Salvando...' : '🔒 Criar Bloqueio' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
 </div>

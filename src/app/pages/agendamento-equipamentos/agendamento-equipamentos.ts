@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -19,6 +19,24 @@ interface Reserva {
   status: 'confirmada' | 'cancelada';
   escolaId: string;
   criadoEm: any;
+  tipo?: 'reserva' | 'bloqueio';
+}
+
+interface Bloqueio {
+  id?: string;
+  tipo: 'bloqueio';
+  equipamento: 'tablet' | 'notebook' | 'sala-informatica';
+  professorId: string;
+  professorNome: string;
+  motivo: string;
+  dataInicio: string;
+  dataFim: string;
+  diasSemana: number[];
+  horaInicio: string;
+  horaFim: string;
+  escolaId: string;
+  criadoPor: string;
+  criadoEm?: any;
 }
 
 @Component({
@@ -26,7 +44,8 @@ interface Reserva {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './agendamento-equipamentos.html',
-  styleUrl: './agendamento-equipamentos.scss'
+  styleUrl: './agendamento-equipamentos.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AgendamentoEquipamentosComponent implements OnInit {
   reservas: Reserva[] = [];
@@ -36,12 +55,15 @@ export class AgendamentoEquipamentosComponent implements OnInit {
   mensagemErro = '';
   mensagemSucesso = '';
 
-  // Modal
+  // Aba ativa
+  abaAtiva: 'agendamentos' | 'bloqueios' = 'agendamentos';
+
+  // Modal agendamento
   mostrarModal = false;
   editando = false;
   reservaEmEdicao: Reserva | null = null;
 
-  // Formulário
+  // Formulario agendamento
   dataReserva = '';
   horaInicio = '';
   horaFim = '';
@@ -49,35 +71,62 @@ export class AgendamentoEquipamentosComponent implements OnInit {
   turmaId = '';
   atividade = '';
 
-  // Data para usuario logado
+  // Bloqueios
+  bloqueios: Bloqueio[] = [];
+  mostrarModalBloqueio = false;
+  processandoBloqueio = false;
+  bloqueioEquipamento: 'tablet' | 'notebook' | 'sala-informatica' = 'tablet';
+  bloqueioMotivo = '';
+  bloqueioDataInicio = '';
+  bloqueioDataFim = '';
+  bloqueioDiasSemana: number[] = [];
+  bloqueioHoraInicio = '';
+  bloqueioHoraFim = '';
+  bloqueioProfessorId = '';
+  bloqueioProfessorNome = '';
+  professoresDaEscola: any[] = [];
+
+  readonly DIAS_SEMANA = [
+    { valor: 1, label: 'Seg' },
+    { valor: 2, label: 'Ter' },
+    { valor: 3, label: 'Qua' },
+    { valor: 4, label: 'Qui' },
+    { valor: 5, label: 'Sex' },
+  ];
+
+  // Usuario logado
   usuarioId = '';
   usuarioNome = '';
+  usuarioRole = '';
   escolaId = '';
   turmas: any[] = [];
-  
-  // Tipos de Ensino e Turmas
+
+  get isCoordenacao(): boolean {
+    return ['coordenacao', 'direcao', 'secretaria'].includes(this.usuarioRole);
+  }
+
   tiposEnsino = [
     'Ensino Fundamental de 9 Anos',
-    'Novo Ensino Médio'
+    'Novo Ensino Medio'
   ];
-  
+
   turmasPorTipo: { [key: string]: string[] } = {
     'Ensino Fundamental de 9 Anos': [
-      '6º ano A', '6º ano B', '6º ano C', '6º ano D',
-      '7º ano A', '7º ano B', '7º ano C', '7º ano D',
-      '8º ano A', '8º ano B', '8º ano C', '8º ano D',
-      '9º ano A', '9º ano B', '9º ano C', '9º ano D'
+      '6 ano A', '6 ano B', '6 ano C', '6 ano D',
+      '7 ano A', '7 ano B', '7 ano C', '7 ano D',
+      '8 ano A', '8 ano B', '8 ano C', '8 ano D',
+      '9 ano A', '9 ano B', '9 ano C', '9 ano D'
     ],
-    'Novo Ensino Médio': [
-      '1ª série A', '1ª série B', '1ª série C', '1ª série D',
-      '2ª série A', '2ª série B', '2ª série C', '2ª série D',
-      '3ª série A', '3ª série B', '3ª série C', '3ª série D'
+    'Novo Ensino Medio': [
+      '1 serie A', '1 serie B', '1 serie C', '1 serie D',
+      '2 serie A', '2 serie B', '2 serie C', '2 serie D',
+      '3 serie A', '3 serie B', '3 serie C', '3 serie D'
     ]
   };
-  
+
   turmasFiltradas: string[] = [];
   tipoEnsinoSelecionado = '';
-  
+
   horarios = [
     '07:00', '07:30', '08:00', '08:30', '09:00', '09:30',
     '10:00', '10:30', '11:00', '11:30', '12:00', '12:30',
@@ -88,6 +137,7 @@ export class AgendamentoEquipamentosComponent implements OnInit {
   private firestore = inject(FirestoreService);
   private auth = inject(AuthService);
   private router = inject(Router);
+  private cdr = inject(ChangeDetectorRef);
 
   ngOnInit() {
     this.inicializar();
@@ -106,7 +156,16 @@ export class AgendamentoEquipamentosComponent implements OnInit {
         this.usuarioId = usuario.uid;
         this.usuarioNome = usuario.displayName || 'Professor';
         await this.carregarTurmas();
+        const usuarioData = await this.firestore.buscarUsuario(usuario.uid);
+        this.usuarioRole = usuarioData?.role || 'professor';
       }
+
+      if (this.isCoordenacao) {
+        await this.carregarBloqueios();
+        await this.carregarProfessores();
+      }
+
+      this.cdr.markForCheck();
     } catch (erro) {
       console.error('Erro ao inicializar:', erro);
     }
@@ -114,10 +173,30 @@ export class AgendamentoEquipamentosComponent implements OnInit {
 
   async carregarReservas() {
     try {
-      this.reservas = await this.firestore.obterAgendaEquipamentos(this.escolaId);
+      const todas = await this.firestore.obterAgendaEquipamentos(this.escolaId);
+      this.reservas = todas.filter((r: any) => r.tipo !== 'bloqueio');
+      this.cdr.markForCheck();
     } catch (erro) {
       console.error('Erro ao carregar reservas:', erro);
       this.mensagemErro = 'Erro ao carregar agendamentos';
+    }
+  }
+
+  async carregarBloqueios() {
+    try {
+      this.bloqueios = await this.firestore.obterBloqueiosPeriodo(this.escolaId);
+      this.cdr.markForCheck();
+    } catch (erro) {
+      console.error('Erro ao carregar bloqueios:', erro);
+    }
+  }
+
+  async carregarProfessores() {
+    try {
+      this.professoresDaEscola = await this.firestore.obterProfessoresDaEscola(this.escolaId);
+      this.cdr.markForCheck();
+    } catch (erro) {
+      console.error('Erro ao carregar professores:', erro);
     }
   }
 
@@ -143,6 +222,19 @@ export class AgendamentoEquipamentosComponent implements OnInit {
       const dataB = new Date(b.dataReserva + 'T' + b.horaInicio);
       return dataA.getTime() - dataB.getTime();
     });
+  }
+
+  horarioBloqueado(dataStr: string, horaIni: string, horaFimStr: string, equip: string): Bloqueio | null {
+    const data = new Date(dataStr + 'T12:00:00');
+    const diaSemana = data.getDay();
+    return this.bloqueios.find(b =>
+      b.equipamento === equip &&
+      b.dataInicio <= dataStr &&
+      b.dataFim >= dataStr &&
+      b.diasSemana.includes(diaSemana) &&
+      b.horaInicio <= horaIni &&
+      b.horaFim >= horaFimStr
+    ) ?? null;
   }
 
   abrirModal() {
@@ -181,10 +273,9 @@ export class AgendamentoEquipamentosComponent implements OnInit {
 
   editarReserva(reserva: Reserva) {
     if (reserva.professorId !== this.usuarioId) {
-      this.mensagemErro = 'Você só pode editar seus próprios agendamentos';
+      this.mensagemErro = 'Voce so pode editar seus proprios agendamentos';
       return;
     }
-
     this.editando = true;
     this.reservaEmEdicao = reserva;
     this.dataReserva = reserva.dataReserva;
@@ -222,8 +313,14 @@ export class AgendamentoEquipamentosComponent implements OnInit {
         await this.firestore.atualizarAgendaEquipamento(this.reservaEmEdicao.id, novaReserva);
         this.mensagemSucesso = 'Agendamento atualizado com sucesso!';
       } else {
-        // Verificar se já existe reserva no mesmo horário
-        const conflito = this.reservas.find(r => 
+        const bloqueio = this.horarioBloqueado(this.dataReserva, this.horaInicio, this.horaFim, this.equipamento);
+        if (bloqueio) {
+          this.mensagemErro = 'Horario reservado para: ' + bloqueio.motivo + ' (' + bloqueio.professorNome + '). Entre em contato com a coordenacao.';
+          this.processando = false;
+          return;
+        }
+
+        const conflito = this.reservas.find(r =>
           r.status === 'confirmada' &&
           r.dataReserva === this.dataReserva &&
           r.equipamento === this.equipamento &&
@@ -232,7 +329,8 @@ export class AgendamentoEquipamentosComponent implements OnInit {
         );
 
         if (conflito) {
-          this.mensagemErro = `${this.equipamento.charAt(0).toUpperCase() + this.equipamento.slice(1)} já está reservado neste horário`;
+          const equip = this.equipamento.charAt(0).toUpperCase() + this.equipamento.slice(1);
+          this.mensagemErro = equip + ' ja esta reservado neste horario';
           this.processando = false;
           return;
         }
@@ -241,23 +339,15 @@ export class AgendamentoEquipamentosComponent implements OnInit {
         this.mensagemSucesso = 'Agendamento criado com sucesso!';
       }
 
-      // Fechar modal imediatamente
       this.fecharModal();
-      
-      // Recarregar dados sem bloquear
-      setTimeout(() => {
-        this.carregarReservas();
-      }, 100);
-      
-      // Limpar mensagem após visualização
-      setTimeout(() => {
-        this.mensagemSucesso = '';
-      }, 2500);
+      setTimeout(() => { this.carregarReservas(); }, 100);
+      setTimeout(() => { this.mensagemSucesso = ''; this.cdr.markForCheck(); }, 2500);
     } catch (erro) {
       console.error('Erro:', erro);
       this.mensagemErro = 'Erro ao salvar agendamento. Tente novamente.';
     } finally {
       this.processando = false;
+      this.cdr.markForCheck();
     }
   }
 
@@ -265,31 +355,30 @@ export class AgendamentoEquipamentosComponent implements OnInit {
     this.mensagemErro = '';
 
     if (!this.dataReserva) {
-      this.mensagemErro = 'Data é obrigatória';
+      this.mensagemErro = 'Data e obrigatoria';
       return false;
     }
 
     if (!this.horaInicio || !this.horaFim) {
-      this.mensagemErro = 'Horário de início e fim são obrigatórios';
+      this.mensagemErro = 'Horario de inicio e fim sao obrigatorios';
       return false;
     }
 
     if (this.horaInicio >= this.horaFim) {
-      this.mensagemErro = 'Hora de fim deve ser posterior à hora de início';
+      this.mensagemErro = 'Hora de fim deve ser posterior a hora de inicio';
       return false;
     }
 
     if (this.dataReserva < this.obterDataHoje()) {
-      this.mensagemErro = 'Não é possível agendar para datas passadas';
+      this.mensagemErro = 'Nao e possivel agendar para datas passadas';
       return false;
     }
 
-    // Validar hora passada se for hoje
     if (this.dataReserva === this.obterDataHoje()) {
       const agora = new Date();
       const horaAtualStr = agora.getHours().toString().padStart(2, '0') + ':' + agora.getMinutes().toString().padStart(2, '0');
       if (this.horaInicio < horaAtualStr) {
-        this.mensagemErro = 'Não é possível agendar para horários passados';
+        this.mensagemErro = 'Nao e possivel agendar para horarios passados';
         return false;
       }
     }
@@ -299,7 +388,7 @@ export class AgendamentoEquipamentosComponent implements OnInit {
 
   async cancelarReserva(reserva: Reserva) {
     if (reserva.professorId !== this.usuarioId) {
-      alert('Você só pode cancelar seus próprios agendamentos');
+      alert('Voce so pode cancelar seus proprios agendamentos');
       return;
     }
 
@@ -312,7 +401,7 @@ export class AgendamentoEquipamentosComponent implements OnInit {
         await this.firestore.cancelarAgendaEquipamento(reserva.id);
         this.carregarReservas();
         this.mensagemSucesso = 'Agendamento cancelado';
-        setTimeout(() => this.mensagemSucesso = '', 2000);
+        setTimeout(() => { this.mensagemSucesso = ''; this.cdr.markForCheck(); }, 2000);
       }
     } catch (erro) {
       console.error('Erro ao cancelar:', erro);
@@ -320,21 +409,117 @@ export class AgendamentoEquipamentosComponent implements OnInit {
     }
   }
 
+  // Bloqueios
+
+  abrirModalBloqueio() {
+    this.bloqueioEquipamento = 'tablet';
+    this.bloqueioMotivo = '';
+    this.bloqueioDataInicio = '';
+    this.bloqueioDataFim = '';
+    this.bloqueioDiasSemana = [];
+    this.bloqueioHoraInicio = '';
+    this.bloqueioHoraFim = '';
+    this.bloqueioProfessorId = '';
+    this.bloqueioProfessorNome = '';
+    this.mensagemErro = '';
+    this.mostrarModalBloqueio = true;
+  }
+
+  fecharModalBloqueio() {
+    this.mostrarModalBloqueio = false;
+    this.mensagemErro = '';
+  }
+
+  toggleDiaSemana(dia: number) {
+    const idx = this.bloqueioDiasSemana.indexOf(dia);
+    if (idx >= 0) {
+      this.bloqueioDiasSemana.splice(idx, 1);
+    } else {
+      this.bloqueioDiasSemana.push(dia);
+    }
+  }
+
+  diaSelecionado(dia: number): boolean {
+    return this.bloqueioDiasSemana.includes(dia);
+  }
+
+  onProfessorChange(professorId: string) {
+    const prof = this.professoresDaEscola.find(p => p.id === professorId);
+    this.bloqueioProfessorNome = prof?.nome || '';
+  }
+
+  async salvarBloqueio() {
+    if (!this.bloqueioMotivo || !this.bloqueioDataInicio || !this.bloqueioDataFim ||
+        !this.bloqueioHoraInicio || !this.bloqueioHoraFim || this.bloqueioDiasSemana.length === 0) {
+      this.mensagemErro = 'Preencha todos os campos e selecione ao menos um dia da semana.';
+      return;
+    }
+    if (this.bloqueioDataInicio > this.bloqueioDataFim) {
+      this.mensagemErro = 'Data final deve ser posterior a data inicial.';
+      return;
+    }
+    if (this.bloqueioHoraInicio >= this.bloqueioHoraFim) {
+      this.mensagemErro = 'Hora de fim deve ser posterior a hora de inicio.';
+      return;
+    }
+
+    this.processandoBloqueio = true;
+    this.mensagemErro = '';
+
+    try {
+      const novoBloqueio: Omit<Bloqueio, 'id'> = {
+        tipo: 'bloqueio',
+        equipamento: this.bloqueioEquipamento,
+        professorId: this.bloqueioProfessorId,
+        professorNome: this.bloqueioProfessorNome,
+        motivo: this.bloqueioMotivo,
+        dataInicio: this.bloqueioDataInicio,
+        dataFim: this.bloqueioDataFim,
+        diasSemana: [...this.bloqueioDiasSemana].sort(),
+        horaInicio: this.bloqueioHoraInicio,
+        horaFim: this.bloqueioHoraFim,
+        escolaId: this.escolaId,
+        criadoPor: this.usuarioId
+      };
+
+      await this.firestore.criarBloqueio(novoBloqueio);
+      this.fecharModalBloqueio();
+      await this.carregarBloqueios();
+      this.mensagemSucesso = 'Bloqueio criado com sucesso!';
+      setTimeout(() => { this.mensagemSucesso = ''; this.cdr.markForCheck(); }, 2500);
+    } catch (erro) {
+      console.error('Erro ao salvar bloqueio:', erro);
+      this.mensagemErro = 'Erro ao criar bloqueio. Tente novamente.';
+    } finally {
+      this.processandoBloqueio = false;
+      this.cdr.markForCheck();
+    }
+  }
+
+  async removerBloqueio(bloqueioId: string) {
+    if (!confirm('Remover este bloqueio de periodo?')) return;
+    try {
+      await this.firestore.deletarBloqueio(bloqueioId);
+      await this.carregarBloqueios();
+      this.mensagemSucesso = 'Bloqueio removido';
+      setTimeout(() => { this.mensagemSucesso = ''; this.cdr.markForCheck(); }, 2000);
+    } catch (erro) {
+      console.error('Erro ao remover bloqueio:', erro);
+      this.mensagemErro = 'Erro ao remover bloqueio';
+    }
+    this.cdr.markForCheck();
+  }
+
+  formatarDiasSemana(diasSemana: number[]): string {
+    const nomes = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'];
+    return diasSemana.map(d => nomes[d]).join(', ');
+  }
+
   obterDataHoje(): string {
-    const data = new Date();
-    return data.toISOString().split('T')[0];
-  }
-
-  obterDataProxima7Dias(): string {
-    const data = new Date();
-    data.setDate(data.getDate() + 7);
-    return data.toISOString().split('T')[0];
-  }
-
-  obterDataLimite(): string {
-    const data = new Date();
-    data.setDate(data.getDate() + 60);
-    return data.toISOString().split('T')[0];
+    const hoje = new Date();
+    return hoje.getFullYear() + '-' +
+      String(hoje.getMonth() + 1).padStart(2, '0') + '-' +
+      String(hoje.getDate()).padStart(2, '0');
   }
 
   formatarData(data: string): string {
@@ -347,11 +532,11 @@ export class AgendamentoEquipamentosComponent implements OnInit {
   }
 
   obterEquipamentoEmPortugues(equipamento: string): string {
-    const mapa = {
+    const mapa: Record<string, string> = {
       'tablet': 'Tablet',
       'notebook': 'Notebook',
-      'sala-informatica': 'Sala de Informática'
+      'sala-informatica': 'Sala de Informatica'
     };
-    return mapa[equipamento as keyof typeof mapa] || equipamento;
+    return mapa[equipamento] || equipamento;
   }
 }
