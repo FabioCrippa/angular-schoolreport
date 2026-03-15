@@ -727,7 +727,7 @@ export class AgendamentoEquipamentosComponent implements OnInit {
 
   exportarPDF() {
     const reservasAtivas = this.reservas
-      .filter(r => r.status === 'confirmada')
+      .filter(r => r.status !== 'cancelada')
       .sort((a, b) => a.dataReserva.localeCompare(b.dataReserva) || a.horaInicio.localeCompare(b.horaInicio));
 
     const grupos = new Map<string, Reserva[]>();
