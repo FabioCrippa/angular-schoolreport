@@ -1231,11 +1231,12 @@ Equipe escu
       const col = collection(this.firestore, 'agendaEquipamentos');
       const q = query(col,
         where('escolaId', '==', escolaId),
-        where('tipo', '==', 'bloqueio'),
-        orderBy('dataInicio', 'asc')
+        where('tipo', '==', 'bloqueio')
       );
       const snap = await getDocs(q);
-      return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      return snap.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        .sort((a: any, b: any) => (a.dataInicio ?? '').localeCompare(b.dataInicio ?? ''));
     } catch (error) {
       console.error('Erro ao obter bloqueios:', error);
       throw error;
