@@ -216,6 +216,77 @@ export class AgendamentoEquipamentosComponent implements OnInit {
     return this.filtroData !== '' && this.filtroEquipamento !== 'todos';
   }
 
+  // ── Calendário mensal de disponibilidade ──
+  readonly NOMES_MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
+    'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  readonly NOMES_DIAS_CAL = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  readonly hoje = new Date().toISOString().substring(0, 10);
+
+  mesCalAtual = new Date().toISOString().substring(0, 7);
+
+  get nomeMesAtual(): string {
+    const [ano, mes] = this.mesCalAtual.split('-').map(Number);
+    return `${this.NOMES_MESES[mes - 1]} ${ano}`;
+  }
+
+  navegarMes(delta: number) {
+    const [ano, mes] = this.mesCalAtual.split('-').map(Number);
+    const d = new Date(ano, mes - 1 + delta, 1);
+    this.mesCalAtual = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+    this.cdr.markForCheck();
+  }
+
+  get diasCalMes(): { data: string; dia: number; diaSemana: number; status: 'livre' | 'reservado' | 'bloqueado' | 'fora' | 'fds' }[] {
+    const [ano, mes] = this.mesCalAtual.split('-').map(Number);
+    const primeiroDia = new Date(ano, mes - 1, 1).getDay();
+    const ultimoDia  = new Date(ano, mes, 0).getDate();
+    const dias: { data: string; dia: number; diaSemana: number; status: 'livre' | 'reservado' | 'bloqueado' | 'fora' | 'fds' }[] = [];
+
+    for (let i = 0; i < primeiroDia; i++) {
+      dias.push({ data: '', dia: 0, diaSemana: i, status: 'fora' });
+    }
+
+    for (let d = 1; d <= ultimoDia; d++) {
+      const mm   = String(mes).padStart(2, '0');
+      const dd   = String(d).padStart(2, '0');
+      const data = `${ano}-${mm}-${dd}`;
+      const dow  = new Date(ano, mes - 1, d).getDay();
+
+      if (dow === 0 || dow === 6) {
+        dias.push({ data, dia: d, diaSemana: dow, status: 'fds' });
+        continue;
+      }
+
+      const equip = this.filtroEquipamento;
+
+      const hasBloqueio = this.bloqueios.some(b => {
+        const eqOk = equip === 'todos' || b.equipamento === equip;
+        return eqOk && b.dataInicio <= data && b.dataFim >= data && b.diasSemana.includes(dow);
+      });
+
+      if (hasBloqueio) {
+        dias.push({ data, dia: d, diaSemana: dow, status: 'bloqueado' });
+        continue;
+      }
+
+      const hasReserva = this.reservas.some(r => {
+        const eqOk = equip === 'todos' || r.equipamento === equip;
+        return eqOk && r.status === 'confirmada' && r.dataReserva === data;
+      });
+
+      dias.push({ data, dia: d, diaSemana: dow, status: hasReserva ? 'reservado' : 'livre' });
+    }
+
+    return dias;
+  }
+
+  selecionarDia(data: string, status: string) {
+    if (!data || status === 'fora' || status === 'fds') return;
+    this.filtroData = data;
+    if (this.filtroEquipamento === 'todos') this.filtroEquipamento = 'tablet';
+    this.cdr.markForCheck();
+  }
+
   statusSlot(hora: string): { status: 'livre' | 'ocupado' | 'bloqueado'; info: string } {
     const equip = this.filtroEquipamento as 'tablet' | 'notebook' | 'sala-informatica';
     const data = this.filtroData;

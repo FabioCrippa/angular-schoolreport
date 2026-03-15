@@ -59,6 +59,39 @@
       </button>
     </div>
 
+    <!-- CALENDÁRIO DE DISPONIBILIDADE -->
+    <div class="cal-container">
+      <div class="cal-header">
+        <button class="cal-nav" (click)="navegarMes(-1)">‹</button>
+        <span class="cal-mes-label">{{ nomeMesAtual }}</span>
+        <button class="cal-nav" (click)="navegarMes(1)">›</button>
+        <div class="cal-legenda">
+          <span class="cal-leg cal-leg--livre">Livre</span>
+          <span class="cal-leg cal-leg--reservado">Reservado</span>
+          <span class="cal-leg cal-leg--bloqueado">🔒 Bloqueado</span>
+        </div>
+      </div>
+      <div class="cal-grid">
+        <div class="cal-dia-nome" *ngFor="let d of NOMES_DIAS_CAL">{{ d }}</div>
+        <div
+          *ngFor="let dia of diasCalMes"
+          class="cal-dia"
+          [class.cal-dia--vazio]="dia.status === 'fora'"
+          [class.cal-dia--fds]="dia.status === 'fds'"
+          [class.cal-dia--livre]="dia.status === 'livre'"
+          [class.cal-dia--reservado]="dia.status === 'reservado'"
+          [class.cal-dia--bloqueado]="dia.status === 'bloqueado'"
+          [class.cal-dia--selecionado]="dia.data === filtroData"
+          [class.cal-dia--hoje]="dia.data === hoje"
+          (click)="selecionarDia(dia.data, dia.status)">
+          <span *ngIf="dia.dia > 0">{{ dia.dia }}</span>
+          <span class="cal-lock" *ngIf="dia.status === 'bloqueado'">🔒</span>
+        </div>
+      </div>
+      <p class="cal-dica" *ngIf="filtroEquipamento === 'todos'">Selecione um equipamento specific para ver a disponibilidade.</p>
+      <p class="cal-dica" *ngIf="filtroEquipamento !== 'todos'">Clique em um dia para ver os horários disponíveis.</p>
+    </div>
+
     <!-- GRADE DE DISPONIBILIDADE -->
     <div class="grade-disponibilidade" *ngIf="mostrarGrade">
       <div class="grade-titulo">

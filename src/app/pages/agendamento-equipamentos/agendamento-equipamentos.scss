@@ -531,6 +531,154 @@ form {
   }
 }
 
+// ===== CALENDÁRIO DE DISPONIBILIDADE =====
+.cal-container {
+  background: $bg-white;
+  border: 1px solid $border-color;
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  max-width: 360px;
+}
+
+.cal-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.5rem;
+}
+
+.cal-nav {
+  background: none;
+  border: 1px solid $border-color;
+  border-radius: 5px;
+  width: 1.6rem;
+  height: 1.6rem;
+  font-size: 1rem;
+  cursor: pointer;
+  color: $text-dark;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  &:hover {
+    background: $bg-light;
+    border-color: $primary-blue;
+    color: $primary-blue;
+  }
+}
+
+.cal-mes-label {
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: $text-dark;
+  min-width: 120px;
+}
+
+.cal-legenda {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin-left: auto;
+}
+
+.cal-leg {
+  font-size: 0.62rem;
+  font-weight: 600;
+  padding: 0.1rem 0.4rem;
+  border-radius: 20px;
+}
+
+.cal-leg--livre      { background: #D1FAE5; color: #065F46; }
+.cal-leg--reservado  { background: #FEF3C7; color: #92400E; }
+.cal-leg--bloqueado  { background: #EDE9FE; color: #5B21B6; }
+
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.cal-dia-nome {
+  text-align: center;
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: $text-gray;
+  padding: 0.15rem 0;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.cal-dia {
+  position: relative;
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 5px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.12s;
+  min-height: 28px;
+
+  &--vazio { background: none; cursor: default; pointer-events: none; }
+
+  &--fds {
+    background: #F3F4F6;
+    color: #D1D5DB;
+    cursor: default;
+  }
+
+  &--livre {
+    background: #D1FAE5;
+    color: #065F46;
+    &:hover { background: #A7F3D0; transform: scale(1.08); }
+  }
+
+  &--reservado {
+    background: #FEF3C7;
+    color: #92400E;
+    &:hover { background: #FDE68A; transform: scale(1.08); }
+  }
+
+  &--bloqueado {
+    background: #EDE9FE;
+    color: #5B21B6;
+    &:hover { background: #DDD6FE; transform: scale(1.08); }
+  }
+
+  &--selecionado {
+    border-color: $primary-blue !important;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
+  }
+
+  &--hoje {
+    font-weight: 900;
+    outline: 2px dashed $primary-blue;
+    outline-offset: 1px;
+  }
+}
+
+.cal-lock {
+  font-size: 0.45rem;
+  line-height: 1;
+  position: absolute;
+  bottom: 1px;
+}
+
+.cal-dica {
+  margin: 0.4rem 0 0;
+  font-size: 0.68rem;
+  color: $text-gray;
+  text-align: center;
+}
+
 // ===== GRADE DE DISPONIBILIDADE =====
 .grade-disponibilidade {
   background: $bg-white;
